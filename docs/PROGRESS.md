@@ -1,5 +1,7 @@
 # 인수 현황
 
+병원 재무 담당자는 규정 작업실에서 조직·비목·참석 확인서 조건을 ALL·ANY로 중첩해 모의 판정할 수 있다. 등록된 잎과 중첩 그룹만 받으며 다른 노드 참조가 없어 순환 트리를 표현할 수 없다. 실비 정산의 기본 참석 요건도 같은 파서와 판정기를 쓴다. 브라우저에서 자료 부족·충족·미충족·분기 생략을 확인했다. 로컬 Java 39건과 HTTPS 브라우저 6건 통과. 후보 참석 조건을 발행본에 보존하고 이후 신청에 적용하는 연결은 남아 있다. [조건 파서](../src/main/java/kr/budget/claims/AttendanceRule.java) · [화면 시험](../frontend/tests/hospital-policy.spec.ts)
+
 시연 역할은 방문자 세션에서 정하지만 Spring Boot가 별도 기본 계정까지 생성해 로컬 검증 로그에 비밀번호 생성 메시지가 3회 기록됐다. 기본 메모리 계정 저장소가 없어야 한다는 시험이 실패해 해당 자동 구성만 제외했다. 변경 후 생성 메시지는 0회였고 로컬 Java 시험 38건이 통과했다. 배포용 WAR 기동 시험도 동일 로그 표식을 검사한다. [회귀 시험](../src/test/java/kr/budget/web/ProxyTransportTest.java) · [WAR 기동 검사](../ops/ci_oracle_release.sh)
 
 별도 DB 연결이 본부 예산 행을 잠근 상태에서 지점 승인 트랜잭션을 완료했다. 실제 Oracle에서 지점 약정 200,000원, 본부 약정 0원을 확인했다. H2와 Oracle의 원장 계약 각 15건이 통과했다. Data Pump로 같은 PDB의 별도 스키마에 복원해 본부·지점 식별자와 조직 유형 BANK를 포함한 대사 파일의 SHA-256이 일치함을 확인했다. [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44777958172) · [원본·복원 대사 파일](measurements/oracle-departments-44777958172.zip)

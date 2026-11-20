@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import kr.budget.claims.BudgetMapper;
 import kr.budget.claims.ClaimService;
 import kr.budget.claims.EvidenceService;
+import kr.budget.claims.AttendanceRule;
+import kr.budget.claims.EvidencePolicy;
 import kr.budget.claims.EvidenceMapper;
 import kr.budget.closing.PeriodClosing;
 import kr.budget.closing.ClosingService;
@@ -267,6 +269,17 @@ public class DemoPortal {
     public Map<String, Object> policyHistory(HttpSession session, @RequestParam String category) {
         String workspace = workspace(session);
         return Map.of("versions", policies.history(workspace, category), "drafts", policyMapper.drafts(workspace, category));
+    }
+
+    @PostMapping("/api/policies/attendance-preview")
+    @ResponseBody
+    public EvidencePolicy.Evaluation previewAttendance(HttpSession session, @RequestParam String expression,
+            @RequestParam String category, @RequestParam boolean attached) {
+        String workspace = authorized(session, Role.FINANCE);
+        if (!List.of("EDUCATION","CONFERENCE","TRAVEL").contains(category))
+            throw new IllegalArgumentException("등록되지 않은 비목입니다.");
+        var example = new EvidencePolicy.Inputs(mapper.organization(workspace), category, 180000L, 180000L, attached);
+        return EvidencePolicy.evaluate(example, AttendanceRule.parse(expression));
     }
 
     @PostMapping("/api/policies/preview")

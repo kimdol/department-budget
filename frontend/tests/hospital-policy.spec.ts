@@ -8,6 +8,13 @@ test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구�
   await page.locator("#role").selectOption("FINANCE");
   await page.locator("#policy-panel summary").click();
   const editor = page.getByRole("region", { name: "비용 지원 규정" });
+  const attendance = editor.getByRole("region", {name:"참석 조건 미리보기"});
+  await expect(attendance).toContainText("판정 결과 · 자료 부족");
+  await attendance.getByLabel("비교 사례에 참석 확인서 포함").check();
+  await expect(attendance).toContainText("판정 결과 · 충족");
+  await attendance.getByLabel("비교할 참석 조건").fill("ALL(OUTSIDE_HOSPITAL,ATTACHED)");
+  await expect(attendance).toContainText("판정 결과 · 미충족");
+  await expect(attendance).toContainText("참석 확인서 제출 · 평가 생략");
   await editor.getByLabel("인정액 수식").fill("min(eligible_cost, days)");
   await expect(editor).toContainText("20번째 문자: 단위가 일치하지 않습니다.");
   await expect(editor.getByRole("button", { name: "검토 요청" })).toBeDisabled();

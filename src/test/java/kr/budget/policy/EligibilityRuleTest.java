@@ -2,6 +2,7 @@ package kr.budget.policy;
 
 import java.util.List;
 import kr.budget.claims.EvidencePolicy;
+import kr.budget.claims.AttendanceRule;
 import kr.budget.claims.OrganizationType;
 import org.junit.jupiter.api.Test;
 import static kr.budget.policy.EligibilityRule.Operator.*;
@@ -22,6 +23,17 @@ class EligibilityRuleTest {
                 assertEquals(first == FAIL,all.skipped().contains("B"));
                 assertEquals(first == PASS,any.skipped().contains("B"));
             }
+        }
+    }
+
+    @Test
+    void parsesOnlyBoundedTreesOfRegisteredAttendanceConditions() {
+        var input = new EvidencePolicy.Inputs(OrganizationType.HOSPITAL,"CONFERENCE",180000L,180000L,true);
+        var tree = AttendanceRule.parse("ALL(ATTACHED, ANY(OTHER_CATEGORY, OUTSIDE_HOSPITAL))");
+        assertEquals(FAIL, tree.evaluate(input).verdict());
+        for (String invalid : List.of("SELF","ANY()", "ATTACHED()", "ALL(ATTACHED,)",
+                "ANY(".repeat(8)+"ATTACHED"+")".repeat(8), "ALL("+"ATTACHED,".repeat(62)+"ANY(ATTACHED))")) {
+            assertThrows(IllegalArgumentException.class, () -> AttendanceRule.parse(invalid));
         }
     }
 

@@ -28,6 +28,37 @@ async function request<T>(url:string, data?:Record<string,string>, signal?:Abort
   return response.json();
 }
 
+type AttendanceDecision = {verdict:"PASS"|"FAIL"|"MISSING"; evaluated:{name:string; verdict:"PASS"|"FAIL"|"MISSING"}[]; skipped:string[]};
+const verdicts = {PASS:"충족",FAIL:"미충족",MISSING:"자료 부족"};
+
+function AttendancePreview({category}:{category:string}) {
+  const [expression,setExpression] = useState("ANY(OUTSIDE_HOSPITAL,OTHER_CATEGORY,ATTACHED)");
+  const [attached,setAttached] = useState(false);
+  const [result,setResult] = useState<AttendanceDecision>();
+  const [error,setError] = useState("");
+  useEffect(()=>{
+    const controller = new AbortController();
+    setResult(undefined);
+    setError("");
+    const timer = window.setTimeout(()=>{
+      request<{attendance:AttendanceDecision}>("/api/policies/attendance-preview",
+        {expression,category,attached:String(attached)},controller.signal)
+        .then(value=>{if (!controller.signal.aborted) setResult(value.attendance);})
+        .catch(reason=>{if (!controller.signal.aborted) setError(reason.message);});
+    },250);
+    return ()=>{window.clearTimeout(timer);controller.abort();};
+  },[expression,category,attached]);
+  return <section aria-label="참석 조건 미리보기">
+    <h3>참석 조건 미리보기</h3>
+    <label>비교할 참석 조건<textarea value={expression} maxLength={512} onChange={e=>setExpression(e.target.value)}/></label>
+    <small>ALL은 모두 충족, ANY는 하나 이상 충족입니다. OUTSIDE_HOSPITAL은 병원 외 조직, OTHER_CATEGORY는 학회비 외 비목, ATTACHED는 참석 확인서 제출을 뜻합니다.</small>
+    <label><input type="checkbox" checked={attached} onChange={e=>setAttached(e.target.checked)}/>비교 사례에 참석 확인서 포함</label>
+    <p role="status">{error || (result ? "판정 결과 · "+verdicts[result.verdict] : "계산 중")}</p>
+    {result && <ul>{[...result.evaluated.map(s=>s.name+" · "+verdicts[s.verdict]),
+      ...result.skipped.map(name=>name+" · 평가 생략")].map((step,index)=><li key={index}>{step}</li>)}</ul>}
+  </section>;
+}
+
 function PolicyEditor() {
   const [category,setCategory] = useState("CONFERENCE");
   const [history,setHistory] = useState<History>();
@@ -91,6 +122,7 @@ function PolicyEditor() {
     {preview && <p>직원 부담액 기존 {won(Number(cost)-preview.original)} / 후보 {won(Number(cost)-preview.candidate)}</p>}
     {preview && <p>승인 경로 기존 {routes[preview.originalRoute]} / 후보 {routes[preview.candidateRoute]}</p>}
     {role==="FINANCE" && <button disabled={!preview || busy} onClick={()=>change("/api/policies/drafts",{category,formula,cost,days,...restoration,generation:String(current.generation)},"부서장 검토를 요청했습니다.")}>검토 요청</button>}
+    {role==="FINANCE" && <AttendancePreview category={category}/>}
     <h3>검토 대기</h3>
     {history!.drafts.filter(d=>d.baseGeneration===current.generation).map(d=><div key={d.draftId}><code>{d.formula}</code>
       {d.sampleCost!=null && d.originalSupport!=null && d.candidateSupport!=null &&
