@@ -1,6 +1,7 @@
 package kr.budget.web;
 
 import java.util.Map;
+import java.util.UUID;
 import jakarta.servlet.http.HttpSession;
 import kr.budget.claims.BudgetMapper;
 import kr.budget.claims.ClaimService;
@@ -56,9 +57,9 @@ public class DemoPortal {
 
     @PostMapping("/api/claims")
     @ResponseBody
-    public Map<String, String> submit(HttpSession session, @RequestParam String title,
+    public Map<String, String> submit(HttpSession session, @RequestParam UUID requestKey, @RequestParam String title,
             @RequestParam String category, @RequestParam long estimated, @RequestParam(defaultValue="1") int days) {
-        return Map.of("claimId", service.submit(authorized(session, Role.EMPLOYEE), title, category, estimated, days));
+        return Map.of("claimId", service.submit(authorized(session, Role.EMPLOYEE), requestKey, title, category, estimated, days));
     }
 
     @PostMapping("/api/claims/{id}/approve")

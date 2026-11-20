@@ -23,7 +23,7 @@ public class ClaimService {
         return workspace;
     }
 
-    public String submit(String workspace, String title, String category, long estimated, int days) {
+    public String submit(String workspace, UUID requestKey, String title, String category, long estimated, int days) {
         checkAmount(estimated);
         if (title == null || title.isBlank() || title.length() > 100 || days < 1 || days > 365)
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -32,8 +32,17 @@ public class ClaimService {
             case "TRAVEL" -> ExpenseFormula.TRAVEL;
             default -> throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         };
+        mapper.lockBalance(workspace);
+        String key = requestKey.toString();
+        Claim previous = mapper.previousSubmission(workspace, key);
+        if (previous != null) {
+            if (previous.title().equals(title.strip()) && previous.category().equals(category)
+                    && previous.estimated() == estimated && previous.days() == days) return previous.claimId();
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
         String id = UUID.randomUUID().toString();
         mapper.submit(id, workspace, title.strip(), category, estimated, days, formula);
+        mapper.rememberSubmission(workspace, key, id);
         return id;
     }
 

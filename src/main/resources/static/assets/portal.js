@@ -36,6 +36,13 @@ $("#role").on("change",event=>api("/api/demo/role",{role:event.target.value}).th
 $("#submit").on("submit",event=>{
   event.preventDefault();
   const button = $(event.target).find("button").prop("disabled",true);
-  api("/api/claims",$(event.target).serialize()).then(refresh).fail(reportError).always(()=>button.prop("disabled",false));
+  const fields = $(event.target).serialize();
+  const previous = JSON.parse(sessionStorage.getItem("pending-claim") || "null");
+  const key = previous?.fields === fields ? previous.key : crypto.randomUUID();
+  sessionStorage.setItem("pending-claim", JSON.stringify({fields, key}));
+  api("/api/claims", fields + "&requestKey=" + encodeURIComponent(key)).then(() => {
+    sessionStorage.removeItem("pending-claim");
+    return refresh();
+  }).fail(reportError).always(()=>button.prop("disabled",false));
 });
 $.getJSON("/api/workspace").done(render);

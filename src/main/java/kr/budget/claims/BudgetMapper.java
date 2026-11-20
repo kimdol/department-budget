@@ -22,6 +22,13 @@ public interface BudgetMapper {
 
     String COLUMNS = "claim_id,title,category,status,estimated,days,formula,approved,actual,settled";
 
+    @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id = " +
+            "(select claim_id from submission_receipt where workspace_id=#{workspace} and request_key=#{key})")
+    Claim previousSubmission(String workspace, String key);
+
+    @Insert("insert into submission_receipt (workspace_id,request_key,claim_id) values (#{workspace},#{key},#{id})")
+    void rememberSubmission(String workspace, String key, String id);
+
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id=#{id} for update")
     Claim lockClaim(String workspace, String id);
 
