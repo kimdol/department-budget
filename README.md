@@ -27,7 +27,7 @@ Chrome, Java 21, Maven과 Node.js가 설치된 환경에서 `frontend` 디렉터
 
 Java 21과 Maven을 사용한다. `mvn test`는 계산 규칙과 로컬 H2 계약 시험을 실행한다. 실제 Oracle 통합 시험은 **비어 있는 전용 시험 스키마**를 준비하고 `BUDGET_TEST_EMPTY_SCHEMA=yes`, `BUDGET_DB_URL`, `BUDGET_DB_USER`, `BUDGET_DB_PASSWORD`를 환경 변수로 설정한 뒤 같은 명령으로 실행한다. 이 모드는 시험 시작 시 스키마를 생성한다.
 
-애플리케이션용 Oracle 스키마에 [원장 스키마](src/main/resources/db/V001__budget.sql), [신청 접수 키](src/main/resources/db/V002__submission_receipt.sql), [규정 버전](src/main/resources/db/V003__policy_versions.sql), [검토 이력](src/main/resources/db/V004__claim_review.sql), [합성 증빙](src/main/resources/db/V005__claim_evidence.sql)을 버전 순서대로 적용한다. frontend 디렉터리에서 npm ci와 npm run build를 실행한다. 저장소 루트로 돌아와 애플리케이션 DB 접속 환경 변수를 설정하고 `mvn package`, `java -jar target/department-budget-0.1.0.war`를 실행한다. 로컬 HTTP 시험에 한해 `HTTPS_ONLY=false`를 지정한다. 공개 배포와 실측 성능은 [검증 현황](docs/PROGRESS.md)에서 확인할 수 있다.
+frontend 디렉터리에서 npm ci와 npm run build를 실행한다. 저장소 루트로 돌아와 애플리케이션 DB 접속 환경 변수를 설정하고 `mvn package`, `java -jar target/department-budget-0.1.0.war`를 실행한다. 최초 기동 전에 같은 WAR에서 업무 테이블과 배치 메타데이터를 추출해 설치한다. [Oracle 설치·마이그레이션·백업 및 복원](docs/ORACLE.md)을 참조한다. 로컬 HTTP 시험에 한해 `HTTPS_ONLY=false`를 지정한다. 공개 배포와 실측 성능은 [검증 현황](docs/PROGRESS.md)에서 확인할 수 있다.
 
 ## 소스 따라가기
 
