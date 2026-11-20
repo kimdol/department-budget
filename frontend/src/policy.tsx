@@ -61,6 +61,38 @@ function AttendancePreview({category,expression,setExpression}:{category:string;
   </section>;
 }
 
+type Impact = {claimId:string; title:string; generation:number; estimated:number; original:number;
+  originalRoute:keyof typeof routes; candidate:number|null; candidateRoute:keyof typeof routes|null; error:string|null};
+
+function HistoricalImpact({parameters}:{parameters:Record<string,string>}) {
+  const [pages,setPages] = useState<string[]>([]);
+  const [result,setResult] = useState<{claims:Impact[];nextCursor:number|null}>();
+  const [error,setError] = useState("");
+  const before = pages.at(-1);
+  const query = JSON.stringify(parameters);
+  useEffect(()=>{
+    setResult(undefined);
+    setError("");
+    if (before === undefined) return;
+    const controller = new AbortController();
+    const data:Record<string,string> = JSON.parse(query);
+    if (before) data.before = before;
+    request<{claims:Impact[];nextCursor:number|null}>("/api/policies/impact",data,controller.signal)
+      .then(value=>{if (!controller.signal.aborted) setResult(value);})
+      .catch(reason=>{if (!controller.signal.aborted) setError(reason.message);});
+    return ()=>controller.abort();
+  },[before,query]);
+  return <section aria-label="과거 신청 영향 비교">
+    <button onClick={()=>setPages(pages.length ? [] : [""])}>{pages.length ? "과거 비교 닫기" : "과거 신청과 비교"}</button>
+    {pages.length>0 && <><p role="status">{error || (result ? result.claims.length ? "접수 당시와 후보 규정의 사전승인 결과" : "이 비목으로 접수한 신청이 없습니다." : "계산 중")}</p>
+      {result?.claims.map(row=><p key={row.claimId}><strong>{row.title}</strong> · {row.claimId} · 예정 {won(row.estimated)} · 당시 규정 {row.generation} ·
+        {" "}{won(row.original)} ({routes[row.originalRoute]}) → {row.error || (row.candidate!==null && row.candidateRoute && won(row.candidate)+" ("+routes[row.candidateRoute]+")")}</p>)}
+      {pages.length>1 && <button onClick={()=>setPages(pages.slice(0,-1))}>앞선 비교 목록</button>}
+      {result?.nextCursor!=null && <button onClick={()=>setPages([...pages,String(result.nextCursor)])}>다음 비교 목록</button>}
+    </>}
+  </section>;
+}
+
 function PolicyEditor() {
   const [category,setCategory] = useState("CONFERENCE");
   const [history,setHistory] = useState<History>();
@@ -141,6 +173,8 @@ function PolicyEditor() {
     {conflict && <button disabled={busy} onClick={compareLatest}>최신 규정과 다시 비교</button>}
     {role==="FINANCE" && <button disabled={!preview || busy || conflict} onClick={()=>change("/api/policies/drafts",{category,formula,cost,days,attendanceRule,...restoration,generation:String(current.generation)},"부서장 검토를 요청했습니다.")}>검토 요청</button>}
     {role==="FINANCE" && <AttendancePreview category={category} expression={attendanceRule} setExpression={value=>{setRestoreGeneration(undefined);setAttendanceRule(value);}}/>}
+    {role==="FINANCE" && preview && <HistoricalImpact key={JSON.stringify([category,formula,attendanceRule,current.generation,restoreGeneration])}
+      parameters={{category,formula,attendanceRule,generation:String(current.generation),...restoration}}/>}
     <h3>검토 대기</h3>
     {history!.drafts.filter(d=>d.baseGeneration===current.generation).map(d=><div key={d.draftId}><code>{d.formula}</code><p>참석 조건 · <code>{d.attendanceRule}</code></p>
       {d.sampleCost!=null && d.originalSupport!=null && d.candidateSupport!=null &&

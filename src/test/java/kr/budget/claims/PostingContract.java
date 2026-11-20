@@ -115,6 +115,36 @@ abstract class PostingContract {
     }
 
     @Test
+    void historicalImpactUsesSubmittedRulesAndPaginatesWithinTheDepartmentAndCategory() {
+        var departments = service.openDepartments(OrganizationType.HOSPITAL);
+        String workspace = departments.primaryId();
+        String category = "CONFERENCE";
+        String first = service.submit(workspace,UUID.randomUUID(),"기존 학회",category,300000,1);
+        service.approve(workspace,first);
+        publishReviewed(workspace,policies.draft(workspace,category,0,"eligible_cost * 0.5"));
+        for (int i=0;i<50;i++) service.submit(workspace,UUID.randomUUID(),"신규 학회 "+i,category,300000,1);
+        service.submit(workspace,UUID.randomUUID(),"일반 교육","EDUCATION",300000,1);
+        service.submit(departments.secondaryId(),UUID.randomUUID(),"타 부서 학회",category,300000,1);
+        var before = mapper.balance(workspace);
+        var latest = policies.impact(workspace,category,"eligible_cost",null,null,1,Long.MAX_VALUE);
+        assertEquals(50,latest.claims().size());
+        for (var row : latest.claims()) {
+            assertEquals(1,row.generation());
+            assertEquals(150000,row.original());
+            assertEquals(300000L,row.candidate());
+            assertEquals(ApprovalRoute.MANAGER_FINANCE,row.candidateRoute());
+        }
+        var older = policies.impact(workspace,category,"eligible_cost",null,null,1,latest.nextCursor());
+        assertNull(older.nextCursor());
+        assertEquals(1,older.claims().size());
+        assertEquals(first,older.claims().getFirst().claimId());
+        assertEquals(200000,older.claims().getFirst().original());
+        assertEquals(0,older.claims().getFirst().generation());
+        assertEquals(before,mapper.balance(workspace));
+        assertEquals(1,jdbc.queryForObject("select count(*) from budget_posting where workspace_id=?",Integer.class,workspace));
+    }
+
+    @Test
     void oneThousandPolicyPreviewsLeaveCommittedBudgetAndPostingRowsUntouched() {
         String workspace = service.open();
         String claim = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);

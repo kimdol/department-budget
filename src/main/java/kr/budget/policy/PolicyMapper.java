@@ -10,6 +10,16 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface PolicyMapper {
+    record ClaimSample(String claimId, String title, long estimated, int days, long policyGeneration,
+                       String formula, String evaluatorVersion, kr.budget.claims.ApprovalRoute approvalRoute, long inboxOrder) {}
+
+    @Select("""
+        select claim_id,title,estimated,days,policy_generation,formula,evaluator_version,approval_route,inbox_order
+        from expense_claim where workspace_id=#{workspace} and category=#{category} and inbox_order < #{before}
+        order by inbox_order desc fetch first 51 rows only
+        """)
+    List<ClaimSample> samples(String workspace, String category, long before);
+
     record Draft(String draftId, String category, long baseGeneration, String formula, String evaluatorVersion,
                  Long sampleCost, Integer sampleDays, Long originalSupport, Long candidateSupport, String attendanceRule) {
         public String getReviewHash() {

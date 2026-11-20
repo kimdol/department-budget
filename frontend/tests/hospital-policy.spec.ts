@@ -47,6 +47,9 @@ test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구�
   await page.getByRole("button",{name:"지원 예정액 확인"}).click();
   await expect(page.locator("#estimate-result")).toContainText("정산 준비 · 지출 영수증이 필요합니다.");
   await expect(page.locator("#estimate-result")).not.toContainText("참석 확인서");
+  await page.locator('#submit [name="category"]').selectOption("CONFERENCE");
+  await page.getByRole("button",{name:"신청 제출"}).click();
+  await expect(page.locator(".claim")).toContainText("결재 대기");
   await page.locator("#role").selectOption("FINANCE");
   await page.locator("#policy-panel summary").click();
   const editor = page.getByRole("region", { name: "비용 지원 규정" });
@@ -63,6 +66,9 @@ test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구�
   await editor.getByLabel("비교할 실비(원)").fill("300000");
   await editor.getByLabel("인정액 수식").fill("eligible_cost");
   await expect(editor).toContainText("승인 경로 기존 부서장 / 후보 부서장 → 재무");
+  const impacts = editor.getByRole("region",{name:"과거 신청 영향 비교"});
+  await impacts.getByRole("button",{name:"과거 신청과 비교"}).click();
+  await expect(impacts).toContainText("200,000원 (부서장) → 300,000원 (부서장 → 재무)");
   await editor.getByLabel("비교할 실비(원)").fill("299999");
   await expect(editor.getByText("승인 경로 기존 부서장 / 후보 부서장", {exact:true})).toBeVisible();
   await editor.getByLabel("비교할 실비(원)").fill("180000");

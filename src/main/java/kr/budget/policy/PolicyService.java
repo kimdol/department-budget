@@ -15,6 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class PolicyService {
     public record Preview(long generation, long original, long candidate,
                           ApprovalRoute originalRoute, ApprovalRoute candidateRoute) {}
+    public record Impact(String claimId, String title, long generation, long estimated, long original,
+                         ApprovalRoute originalRoute, Long candidate, ApprovalRoute candidateRoute, String error) {}
+    public record ImpactPage(List<Impact> claims, Long nextCursor) {}
     private final PolicyMapper policies;
     private final BudgetMapper budgets;
 
@@ -50,6 +53,32 @@ public class PolicyService {
     @Transactional
     public String draft(String workspace, String category, long expected, String formula) {
         return draft(workspace, category, expected, formula, 180000, 1, null);
+    }
+
+    @Transactional(readOnly=true)
+    public ImpactPage impact(String workspace, String category, String formula, Long restoreGeneration,
+                             String attendanceRule, long generation, long before) {
+        var active = active(workspace,category);
+        checkGeneration(generation,active);
+        var proposal = candidate(workspace,category,formula,restoreGeneration,attendanceRule,active);
+        var samples = policies.samples(workspace,category,before);
+        var rows = new ArrayList<Impact>();
+        for (var sample : samples.stream().limit(50).toList()) {
+            long original = new PolicyVersion(sample.policyGeneration(),sample.formula(),sample.evaluatorVersion())
+                    .calculate(sample.estimated(),sample.days());
+            Long amount = null;
+            ApprovalRoute route = null;
+            String error = null;
+            try {
+                amount = proposal.calculate(sample.estimated(),sample.days());
+                route = ApprovalRoute.forSupport(amount);
+            } catch (IllegalArgumentException invalid) {
+                error = invalid.getMessage();
+            }
+            rows.add(new Impact(sample.claimId(),sample.title(),sample.policyGeneration(),sample.estimated(),
+                    original,sample.approvalRoute(),amount,route,error));
+        }
+        return new ImpactPage(rows,samples.size() > 50 ? samples.get(49).inboxOrder() : null);
     }
 
     @Transactional

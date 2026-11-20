@@ -301,6 +301,16 @@ public class DemoPortal {
         return Map.of("draftId", policies.draft(authorized(session, Role.FINANCE), category, generation, formula, cost, days, restoreGeneration, attendanceRule));
     }
 
+    @PostMapping("/api/policies/impact")
+    @ResponseBody
+    public PolicyService.ImpactPage impact(HttpSession session, @RequestParam String category,
+            @RequestParam String formula, @RequestParam(required=false) Long restoreGeneration,
+            @RequestParam(required=false) String attendanceRule, @RequestParam long generation,
+            @RequestParam(required=false) Long before) {
+        return policies.impact(authorized(session,Role.FINANCE), category, formula, restoreGeneration,
+                attendanceRule, generation, before == null ? Long.MAX_VALUE : before);
+    }
+
     @PostMapping("/api/policies/drafts/{id}/publish")
     @ResponseBody
     public Map<String, Long> publish(HttpSession session, @PathVariable String id, @RequestParam String reviewHash) {
