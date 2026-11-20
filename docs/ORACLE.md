@@ -29,6 +29,8 @@ Oracle Free의 같은 PDB 내 별도 스키마에 복원한 CI 실행에서 Data
 
 ## 기존 버전에서 올리기
 
+Oracle Free에서 V017 WAR의 정산 신청과 전표 두 건을 넣은 스키마를 V024로 올렸다. 업그레이드 후 이전 신청의 약정 잔액은 0원, 집행액은 180,000원, 가용액은 820,000원이었다. 스키마 상태는 READY였고 같은 업그레이드의 재실행은 ORA-20002로 거절됐다. [결과 원자료](measurements/oracle-upgrade-44799267812.txt) · [시험 실행](https://github.com/kimdol/department-budget/actions/runs/44799267812/job/136506837479)
+
 현재 생성기로 설치한 스키마에서는 배포 중인 WAR와 새 WAR를 모두 보관한다. 요청과 배치 쓰기를 중지하고 백업한 후 다음 명령으로 차이 SQL을 생성한다.
 
 ```sh

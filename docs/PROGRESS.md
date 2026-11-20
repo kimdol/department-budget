@@ -1,5 +1,9 @@
 # 인수 현황
 
+실제 Oracle V017→V024 업그레이드 후 스키마 상태 READY, 기존 정산 신청의 전표 2건·약정 잔액 0원·집행액 180,000원·가용액 820,000원을 확인했다. 같은 차이 SQL은 첫 DDL 전에 재실행을 거절했다. [원자료](measurements/oracle-upgrade-44799267812.txt) · [재현 절차](ORACLE.md)
+
+V024에서 자기 결재·증액 차단을 포함한 실제 Oracle 원장 시험 26건이 실패·오류·건너뜀 없이 통과했다. 담당 구성원 식별자와 기존 전표 보존을 같은 시험에서 검증했다. [Oracle 시험 보고서](measurements/oracle-contracts-44798868587.txt) · [실행](https://github.com/kimdol/department-budget/actions/runs/44798868587)
+
 패키지 WAR로 빈 Oracle 스키마를 설치할 때 업무 SQL·Spring Batch 정의의 해시와 마지막 적용 버전을 기록한다. 이후 두 WAR에서 차이 SQL을 생성할 때 이전 정의가 바뀌거나 추가 버전이 없으면 생성이 거절된다. 로컬에서 V023 구성과 V024 WAR로 추가 파일 하나만 생성되는 것을 확인했다. Oracle CI에는 V017 스키마에 정산 전표를 넣고 최신 WAR로 업그레이드한 뒤 전표 2건·가용액 820,000원과 재실행 거절을 확인하는 단계를 추가했다. [생성기](../ops/oracle_install.py) · [실행 절차](ORACLE.md) · [업그레이드 시험](../ops/ci_oracle_upgrade.sh)
 
 직원 신원으로 부서장을 대행해도 자기 신청의 사전승인과 증액은 403으로 거절된다. 로컬 원장 시험에서 거절 후 최초 전표 0건, 증액 거절 후 기존 약정 80,000원을 확인했다. 신청자와 다른 부서장의 정상 결재 이력에는 처리자 식별자가 남는다. 첫 Chrome 회귀 실행은 식별자를 역할과 사건 사이에 삽입해 기존 ‘직원 · 신청 접수 · 300,000원’ 표시가 끊긴 것을 발견했다. 식별자를 이력 끝에 표시해 기존 읽기 순서를 유지했다. [업무 시험](../src/test/java/kr/budget/claims/PostingContract.java) · [대행 전환·복귀 시험](../frontend/tests/employee-form.spec.ts)
