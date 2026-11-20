@@ -1,0 +1,221 @@
+{
+  "revision": "eeffcdf214e53928e68b0c7b629f5786b9dff17a",
+  "chromium": "157.0.8103.79",
+  "platform": "win32",
+  "arch": "x64",
+  "cpu": "AMD Ryzen 5 3600 6-Core Processor              ",
+  "logicalCpus": 12,
+  "memoryGiB": 16,
+  "samples": [
+    {
+      "iteration": 1,
+      "visit": "cold",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 87833,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    },
+    {
+      "iteration": 1,
+      "visit": "warm",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 0,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "visit": "cold",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 87833,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "visit": "warm",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 0,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "visit": "cold",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 87833,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "visit": "warm",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 0,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    },
+    {
+      "iteration": 4,
+      "visit": "cold",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 87833,
+          "encodedBodySize": 87533
+        }
+      ]
+    },
+    {
+      "iteration": 4,
+      "visit": "warm",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 0,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    },
+    {
+      "iteration": 5,
+      "visit": "cold",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 87833,
+          "encodedBodySize": 87533
+        }
+      ]
+    },
+    {
+      "iteration": 5,
+      "visit": "warm",
+      "resources": [
+        {
+          "path": "/assets/portal.css",
+          "transferSize": 1830,
+          "encodedBodySize": 1530
+        },
+        {
+          "path": "/webjars/jquery/3.7.1/jquery.min.js",
+          "transferSize": 0,
+          "encodedBodySize": 87533
+        },
+        {
+          "path": "/assets/portal.js",
+          "transferSize": 20204,
+          "encodedBodySize": 19904
+        }
+      ]
+    }
+  ]
+}

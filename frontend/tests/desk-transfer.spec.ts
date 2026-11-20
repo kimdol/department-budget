@@ -6,7 +6,6 @@ import path from "node:path";
 
 test("같은 결재함을 다시 열 때의 정적 자산 전송량", async ({ browser, baseURL }) => {
   const samples = [];
-  const dependencies = ["/assets/portal.css", "/assets/portal.js", "/webjars/jquery/3.7.1/jquery.min.js"];
   for (let iteration = 1; iteration <= 5; iteration++) {
     const context = await browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } });
     try {
@@ -14,12 +13,12 @@ test("같은 결재함을 다시 열 때의 정적 자산 전송량", async ({ b
       for (const visit of ["cold", "warm"]) {
         await page.goto("/");
         await expect(page.getByRole("button", { name: "개인 데모 시작" })).toBeVisible();
-        const resources = await page.evaluate(paths => performance.getEntriesByType("resource")
+        const resources = await page.evaluate(() => performance.getEntriesByType("resource")
           .map(entry => {
             const resource = entry as PerformanceResourceTiming;
             return { path: new URL(resource.name).pathname, transferSize: resource.transferSize,
               encodedBodySize: resource.encodedBodySize };
-          }).filter(resource => paths.includes(resource.path)), dependencies);
+          }).filter(resource => ["/portal.css","/portal.js","/jquery.min.js"].some(name=>resource.path.endsWith(name))));
         expect(resources).toHaveLength(3);
         samples.push({ iteration, visit, resources });
         await page.goto("about:blank");
@@ -29,7 +28,7 @@ test("같은 결재함을 다시 열 때의 정적 자산 전송량", async ({ b
     }
   }
   const label = process.env.MEASURE_DESK;
-  if (label === "before" || label === "after") {
+  if (label && ["before","after","assets-before","assets-after"].includes(label)) {
     const directory = path.resolve(__dirname, "../../docs/measurements");
     await mkdir(directory, { recursive: true });
     const metadata = { revision: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
