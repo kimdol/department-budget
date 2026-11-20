@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class StatementComparisonTest {
     private final String header = "period,category,count,spent\r\n";
     private final PeriodClosing.Statement statement = new PeriodClosing.Statement("2026-12", "CLOSED", null,
-            List.of(new ClosingMapper.Line("EDUCATION", 1, -30000)), List.of());
+            List.of(new ClosingMapper.Line("EDUCATION", 1, -30000)), List.of(), null);
 
     @Test
     void comparesSignedCorrectionsAndShowsMissingCategoriesOnBothSides() {

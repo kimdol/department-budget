@@ -290,6 +290,27 @@ abstract class PostingContract {
     }
 
     @Test
+    void closingReportsLedgerDifferenceAndRefusesToArchiveUntilReconciled() {
+        String workspace = service.open();
+        String id = service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1);
+        service.approve(workspace,id);
+        evidence.attach(workspace,id,EvidenceService.Type.RECEIPT,225000);
+        service.review(workspace,id,225000);
+        service.settle(workspace,id);
+        mapper.changeBalance(workspace,0,-700);
+        var report = periods.statement(workspace);
+        assertEquals(0,report.difference().committed());
+        assertEquals(700,report.difference().spent());
+        assertFalse(report.difference().isBalanced());
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->closing.close(workspace)).getStatusCode().value());
+        assertEquals("OPEN",periods.statement(workspace).state());
+        assertEquals(0,jdbc.queryForObject("select count(*) from budget_statement_balance where workspace_id=?",Integer.class,workspace));
+        mapper.changeBalance(workspace,0,700);
+        assertTrue(periods.statement(workspace).difference().isBalanced());
+        assertEquals(820000,closing.close(workspace).balance().getAvailable());
+    }
+
+    @Test
     void resumesAfterPreparingCloseAndFreezesExactlyOneStatement() {
         String workspace = service.open();
         String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);

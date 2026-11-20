@@ -10,13 +10,16 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PeriodClosing {
-    public record Statement(String period, String state, Balance balance, List<ClosingMapper.Line> lines, List<String> pending) {}
+    public record Statement(String period, String state, Balance balance, List<ClosingMapper.Line> lines,
+                            List<String> pending, LedgerReconciliation.Difference difference) {}
     private final BudgetMapper budgets;
     private final ClosingMapper ledger;
 
-    public PeriodClosing(BudgetMapper budgets, ClosingMapper ledger) {
+    private final LedgerReconciliation reconciliation;
+    public PeriodClosing(BudgetMapper budgets, ClosingMapper ledger, LedgerReconciliation reconciliation) {
         this.budgets = budgets;
         this.ledger = ledger;
+        this.reconciliation = reconciliation;
     }
 
     @Transactional
@@ -26,7 +29,7 @@ public class PeriodClosing {
         boolean closed = period.periodState().equals("CLOSED");
         if (closed) return archive(workspace, period.periodKey());
         return new Statement(period.periodKey(), period.periodState(), balance, ledger.currentLines(workspace, period.periodKey()),
-                ledger.pending(workspace));
+                ledger.pending(workspace),reconciliation.compare(workspace,balance));
     }
 
     @Transactional
@@ -69,7 +72,7 @@ public class PeriodClosing {
     public Statement archive(String workspace, String period) {
         Balance frozen = ledger.archivedBalance(workspace, period);
         if (frozen == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        return new Statement(period, "CLOSED", frozen, ledger.lines(workspace, period), List.of());
+        return new Statement(period, "CLOSED", frozen, ledger.lines(workspace, period), List.of(),null);
     }
 
     @Transactional
@@ -101,10 +104,9 @@ public class PeriodClosing {
     }
 
     private void verify(String workspace, Balance balance) {
-        var totals = ledger.totals(workspace);
         if (!ledger.pending(workspace).isEmpty() || balance.committed() != 0)
             throw new ResponseStatusException(HttpStatus.CONFLICT,"진행 중인 신청을 먼저 처리하세요.");
-        if (totals.reserved() != balance.committed() || totals.spent() != balance.spent())
+        if (!reconciliation.compare(workspace,balance).isBalanced())
             throw new ResponseStatusException(HttpStatus.CONFLICT,"원장 대사가 필요합니다.");
     }
 }

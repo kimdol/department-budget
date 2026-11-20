@@ -31,6 +31,18 @@ public interface ClosingMapper {
         """)
     Totals totals(String workspace);
 
+    @Update("""
+        BEGIN
+          SELECT NVL(SUM(committed_delta),0) - #{committed,jdbcType=NUMERIC},
+                 NVL(SUM(spent_delta),0) - #{spent,jdbcType=NUMERIC}
+          INTO #{committedDifference,mode=OUT,jdbcType=NUMERIC,javaType=java.math.BigDecimal},
+               #{spentDifference,mode=OUT,jdbcType=NUMERIC,javaType=java.math.BigDecimal}
+          FROM budget_posting WHERE workspace_id=#{workspace,jdbcType=VARCHAR};
+        END;
+        """)
+    @Options(statementType=org.apache.ibatis.mapping.StatementType.CALLABLE)
+    void compareOracle(java.util.Map<String,Object> values);
+
     @Update("update budget_workspace set period_state=#{state} where workspace_id=#{workspace}")
     void setState(String workspace, String state);
 

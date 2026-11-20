@@ -212,7 +212,10 @@ function showStatement(report) {
   }
   $("<p>").text("누적 집행 " + money(report.balance.spent) + " / 가용 예산 " + money(report.balance.available)).appendTo(box);
   if (report.pending.length) $("<p>").text("진행 중인 신청 " + report.pending.join(", ")).appendTo(box);
-  $("#close-period").prop("hidden", report.state === "CLOSED" || report.pending.length > 0);
+  const mismatch = report.difference && !report.difference.balanced;
+  if (mismatch) $("<p>").text("마감 보류 · 전표 합계에서 잔액을 뺀 차이 · 약정 " +
+    money(report.difference.committed) + " / 집행 " + money(report.difference.spent)).appendTo(box);
+  $("#close-period").prop("hidden", report.state === "CLOSED" || report.pending.length > 0 || mismatch || report.balance.committed !== 0);
   if (report.state === "CLOSED") {
     const details = $("<details>").appendTo(box);
     $("<summary>").text("구 결산표 CSV 대조").appendTo(details);

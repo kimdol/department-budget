@@ -1,5 +1,7 @@
 # 인수 현황
 
+월마감에서 전표 합계와 부서 잔액의 약정·집행 차이를 금액으로 제공한다. Oracle은 MyBatis 호출형 매퍼의 PL/SQL 출력 매개변수를 사용하고 H2는 같은 계약의 집계 SQL을 사용한다. 로컬 계약 시험에서 정산 후 집행 잔액을 700원 낮추자 차이 +700원, 마감 요청 409, 확정 보고서 0건을 확인했다. 시험 데이터를 복원한 후에만 가용액 820,000원으로 마감됐다. [대사 코드](../src/main/java/kr/budget/closing/LedgerReconciliation.java) · [마감 인수 시험](../src/test/java/kr/budget/claims/PostingContract.java)
+
 키보드로 교육비를 신청하고 역할을 바꿔 승인·보완·재제출·정산했다. 보완 사유가 비거나 공백뿐이면 입력란으로 포커스가 돌아간다. 승인·보완 후에는 갱신된 같은 신청의 제목으로 이동한다. Chrome에서 최종 가용액 820,000원까지 확인했고 로컬 HTTPS 브라우저 시험 8건이 통과했다. [키보드 인수 시험](../frontend/tests/keyboard-review.spec.ts)
 
 재무 담당자가 규정 작업실에서 같은 부서·비목의 실제 신청을 50건씩 열어 사전승인 영향을 비교할 수 있다. 신청별 당시 수식·평가기·결재 경로를 사용하며 후보의 입력별 오류는 해당 행에 표시한다. 51건 계약 시험에서 이전 규정 신청 1건의 당시 인정액은 200,000원, 이후 50건은 150,000원, 후보는 모두 300,000원이었다. 타 부서·타 비목 제외와 원장 잔액·전표 수 보존을 확인했다. [규정 서비스](../src/main/java/kr/budget/policy/PolicyService.java) · [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java)
