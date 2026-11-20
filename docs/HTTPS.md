@@ -2,6 +2,25 @@
 
 Java 21과 Caddy 2가 설치된 Linux VM을 기준으로 한다. 홈 디렉터리에서 학습용으로 실행한 서버를 종료해도 동작하도록 Java와 Caddy를 각각 서비스로 관리한다. 공개 호스트명과 Oracle 접속 정보는 배포 계정에서 설정한다.
 
+## 검증한 WAR 받기
+
+메인 브랜치의 Oracle·Chrome·Caddy 검증을 통과하면 해당 Actions 실행에 `department-budget-release-<전체 커밋 SHA>`가 3일 동안 보관된다. WAR 해시는 기존 신청의 전표를 읽은 복귀 시험 기록과 대조하고, 설치 SQL은 같은 WAR에서 생성한 정의와 대조한다. 설치 SQL은 빈 스키마용이다. 기존 스키마의 업그레이드는 [Oracle 마이그레이션 절차](ORACLE.md)를 따른다.
+
+GitHub에 로그인된 배포 작업 환경에서 성공한 실행 번호를 `RUN_ID`에, 배포하기로 정한 커밋의 40자리 SHA를 `RELEASE_SHA`에 지정한다. 새 디렉터리에서 다음 명령을 실행한다.
+
+```sh
+set -eu
+: "${RUN_ID:?성공한 실행 번호 필요}" "${RELEASE_SHA:?배포 커밋 SHA 필요}"
+gh run download "$RUN_ID" --repo kimdol/department-budget --name "department-budget-release-$RELEASE_SHA" --dir release
+cd release
+test "$(cat commit.txt)" = "$RELEASE_SHA"
+sha256sum --check SHA256SUMS
+```
+
+검사가 끝난 `department-budget.war`를 아래 서비스 설치 경로에 배치한다. `Caddyfile`과 서비스 정의도 같은 묶음에 포함된다. 운영 계정·비밀번호·호스트명은 배포 VM에서 제공한다. 보관 기간이 지난 커밋은 해당 소스와 시험 결과를 대조하고 새 배포 묶음을 준비한다.
+
+## 배포 순서
+
 1. VM의 공인 주소를 가리키는 DNS 레코드를 준비한다. OCI 수신 규칙과 OS 방화벽에서 웹용 TCP 80·443을 허용한다. Java 포트는 같은 머신의 Caddy만 연결하도록 루프백에 바인딩한다.
 2. [Oracle 설치 절차](ORACLE.md)에 따라 운영 스키마를 준비한다. 전용 OS 사용자로 실행할 Java 서비스에 `BUDGET_DB_URL`, `BUDGET_DB_USER`, `BUDGET_DB_PASSWORD`를 제공한다. 자격 증명 파일은 관리자만 읽도록 설정한다. 서비스의 작업 디렉터리에 WAR를 두고 `java -jar department-budget-0.1.0.war --spring.profiles.active=proxy`로 실행한다.
 3. Caddy 서비스 환경에 실제 DNS 이름을 `BUDGET_PUBLIC_HOST`로 설정한다. 같은 변수가 설정된 셸에서 `caddy validate --config ops/Caddyfile --adapter caddyfile`을 실행하고 [설정 파일](../ops/Caddyfile)을 서비스에 적용한다. 인증서 저장 공간은 재기동 후에도 보존한다. Caddy가 전달하는 원래 접속 프로토콜은 같은 VM의 루프백에서만 신뢰한다. [Caddy 프록시 헤더 동작](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#headers)

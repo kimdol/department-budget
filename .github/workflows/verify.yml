@@ -121,3 +121,17 @@ jobs:
             target/https-proxy/settlement-proof.json
             target/https-proxy/portal-replay.csv
           if-no-files-found: error
+      - name: Package tested WAR and Oracle installation SQL
+        if: github.ref == 'refs/heads/main'
+        run: |
+          python3 ops/test_package_release.py
+          python3 ops/package_release.py "$GITHUB_SHA" target/verified-release
+          (cd target/verified-release && sha256sum --check SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: department-budget-release-${{ github.sha }}
+          path: target/verified-release/
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: error
