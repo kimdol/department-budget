@@ -53,4 +53,5 @@ fi
 (
     cd frontend
     TEST_EXTERNAL_RELEASE=1 npx --no-install playwright test claims.spec.ts hospital-policy.spec.ts travel-approval.spec.ts inbox-pages.spec.ts keyboard-review.spec.ts bank-allocation.spec.ts employee-form.spec.ts personal-ledger.spec.ts --reporter=list
+    TEST_EXTERNAL_RELEASE=1 RECORD_APPROVAL_CONTENTION="$PWD/../target/approval-contention.json" npx --no-install playwright test approval-contention.spec.ts --reporter=list
 )

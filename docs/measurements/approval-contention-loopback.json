@@ -1,0 +1,412 @@
+{
+  "origin": "https://127.0.0.1:18754",
+  "db": "local-test",
+  "node": "v24.12.0",
+  "cpu": "AMD Ryzen 5 3600 6-Core Processor              ",
+  "logicalCpus": 12,
+  "memoryBytes": 17107628032,
+  "platform": "win32",
+  "kernel": "10.0.26300",
+  "p95Ms": {
+    "approved": 6.0949999999998,
+    "rejected": 11.307999999999993
+  },
+  "samples": [
+    {
+      "pair": 0,
+      "warmup": true,
+      "claimId": "07414be9-8335-4823-b132-ce6bdf09d770",
+      "status": 200,
+      "milliseconds": 10.515700000000152,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 0,
+      "warmup": true,
+      "claimId": "f1b2445c-55c0-4812-8c14-fd7a96eb5a7d",
+      "status": 422,
+      "milliseconds": 12.624000000000024,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 1,
+      "warmup": true,
+      "claimId": "e5e7395a-14fe-4f51-a68c-db6fd50efe29",
+      "status": 200,
+      "milliseconds": 6.743200000000115,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 1,
+      "warmup": true,
+      "claimId": "e9c60e5b-4dbc-44c8-bb07-bc510deff97c",
+      "status": 422,
+      "milliseconds": 12.375300000000152,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 2,
+      "warmup": false,
+      "claimId": "2fc0d09c-0760-4bc7-a32e-ded62cdca472",
+      "status": 200,
+      "milliseconds": 6.0949999999998,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 2,
+      "warmup": false,
+      "claimId": "d5d15343-af60-4c98-b670-4ae20811e26d",
+      "status": 422,
+      "milliseconds": 11.3774999999996,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 3,
+      "warmup": false,
+      "claimId": "a7525df0-f258-4e31-9402-123914e71e21",
+      "status": 200,
+      "milliseconds": 6.958999999999833,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 3,
+      "warmup": false,
+      "claimId": "39fcbcb6-bfa5-4d8a-ad7b-907d9363533d",
+      "status": 422,
+      "milliseconds": 11.307999999999993,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 4,
+      "warmup": false,
+      "claimId": "c3f8a986-da2f-4f57-ae22-23ad9a5b33ae",
+      "status": 200,
+      "milliseconds": 4.995099999999638,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 4,
+      "warmup": false,
+      "claimId": "f1edd003-1059-4b94-977f-0967353ac5d2",
+      "status": 422,
+      "milliseconds": 9.775900000000092,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 5,
+      "warmup": false,
+      "claimId": "d093239e-951d-4852-815c-f5f1e3555b2f",
+      "status": 200,
+      "milliseconds": 5.953799999999774,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 5,
+      "warmup": false,
+      "claimId": "ee29a6c9-27cd-41ab-8e77-d492fe7dd82c",
+      "status": 422,
+      "milliseconds": 9.476400000000012,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 6,
+      "warmup": false,
+      "claimId": "ec18863b-fa1b-435a-bea0-c9443d927f66",
+      "status": 200,
+      "milliseconds": 5.392699999999877,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 6,
+      "warmup": false,
+      "claimId": "4a8afa4a-400a-425a-aaa9-5d7798557430",
+      "status": 422,
+      "milliseconds": 9.232899999999972,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 7,
+      "warmup": false,
+      "claimId": "940cf932-af4f-49d4-9a56-172d6ff40541",
+      "status": 200,
+      "milliseconds": 5.274699999999939,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 7,
+      "warmup": false,
+      "claimId": "4d11e3f6-b89f-4eef-acaf-5bb8c11877f7",
+      "status": 422,
+      "milliseconds": 8.99239999999918,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 8,
+      "warmup": false,
+      "claimId": "9abdc1fb-2eac-48af-9936-1a2f2f8e4a0a",
+      "status": 200,
+      "milliseconds": 5.0468999999993684,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 8,
+      "warmup": false,
+      "claimId": "a043c2dc-6c5c-47db-8737-14a693a4e04b",
+      "status": 422,
+      "milliseconds": 8.203099999999722,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 9,
+      "warmup": false,
+      "claimId": "d293edf8-5a8e-42f2-9fe2-99cc1078ab72",
+      "status": 200,
+      "milliseconds": 4.4210000000002765,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 9,
+      "warmup": false,
+      "claimId": "22a74236-0f54-4b5a-96a9-71fd21eecdce",
+      "status": 422,
+      "milliseconds": 8.703800000000228,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 10,
+      "warmup": false,
+      "claimId": "a06384a8-f37f-4ab1-8dd4-f0592209fa1c",
+      "status": 200,
+      "milliseconds": 4.988500000000386,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 10,
+      "warmup": false,
+      "claimId": "83c370de-6fbc-4f83-91fc-842b257865fe",
+      "status": 422,
+      "milliseconds": 7.826000000000022,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 11,
+      "warmup": false,
+      "claimId": "378cf3a1-3d53-4625-9b6e-7cd303139678",
+      "status": 200,
+      "milliseconds": 4.53859999999986,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 11,
+      "warmup": false,
+      "claimId": "10dd96a6-4a0b-4562-9e36-a9565ff8b3b2",
+      "status": 422,
+      "milliseconds": 7.800199999999677,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 12,
+      "warmup": false,
+      "claimId": "823e488f-a41b-4757-9e28-1d1d22e87dcf",
+      "status": 200,
+      "milliseconds": 4.47150000000056,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 12,
+      "warmup": false,
+      "claimId": "6c852a41-481e-4da7-a050-eda42277add6",
+      "status": 422,
+      "milliseconds": 7.451399999999921,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 13,
+      "warmup": false,
+      "claimId": "6d37fa52-0806-45a8-8dbe-7e93c3fb1bfe",
+      "status": 200,
+      "milliseconds": 4.767000000000735,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 13,
+      "warmup": false,
+      "claimId": "9c7584d2-aef9-4f86-a213-5538cb4da68e",
+      "status": 422,
+      "milliseconds": 8.211599999999635,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 14,
+      "warmup": false,
+      "claimId": "d7b9e0a8-c33c-488b-a79a-dc40499d8f36",
+      "status": 200,
+      "milliseconds": 4.940899999999601,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 14,
+      "warmup": false,
+      "claimId": "1c7a5d18-ec20-4566-958c-4f6a22e66a13",
+      "status": 422,
+      "milliseconds": 7.984999999999673,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 15,
+      "warmup": false,
+      "claimId": "bc1b69e8-b704-4d73-947f-689783a96433",
+      "status": 200,
+      "milliseconds": 3.848599999999351,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 15,
+      "warmup": false,
+      "claimId": "0a07819f-9c0f-45af-9e5c-eb09fdcc2170",
+      "status": 422,
+      "milliseconds": 7.4483000000000175,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 16,
+      "warmup": false,
+      "claimId": "54230d3b-2adc-4861-b746-91897657a6bc",
+      "status": 200,
+      "milliseconds": 3.9465000000000146,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 16,
+      "warmup": false,
+      "claimId": "9a3bcea1-54d9-4207-af37-c925f93a989f",
+      "status": 422,
+      "milliseconds": 7.79529999999977,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 17,
+      "warmup": false,
+      "claimId": "01c76c2a-609a-4cf5-9604-7bcc7967a027",
+      "status": 200,
+      "milliseconds": 5.009100000000217,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 17,
+      "warmup": false,
+      "claimId": "c1e0dfc9-fe30-4ae3-9761-b9d4f39cc98a",
+      "status": 422,
+      "milliseconds": 8.584799999999632,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 18,
+      "warmup": false,
+      "claimId": "9a3fe9d1-a1c2-4009-9f69-cb07193239d0",
+      "status": 200,
+      "milliseconds": 5.147899999999936,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 18,
+      "warmup": false,
+      "claimId": "32ba4c68-4a2a-4456-ad41-06f19a59539f",
+      "status": 422,
+      "milliseconds": 8.232599999999366,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 19,
+      "warmup": false,
+      "claimId": "43d0d883-7276-496e-b950-4d67480f3273",
+      "status": 200,
+      "milliseconds": 5.077900000000227,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 19,
+      "warmup": false,
+      "claimId": "23114484-6598-4bd4-b7a8-d694fe34cf5f",
+      "status": 422,
+      "milliseconds": 8.59020000000055,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 20,
+      "warmup": false,
+      "claimId": "9451536a-79de-4471-bc96-91c859025d25",
+      "status": 200,
+      "milliseconds": 3.875900000000911,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 20,
+      "warmup": false,
+      "claimId": "5ef82081-888e-4683-8df1-3122af4d3a1d",
+      "status": 422,
+      "milliseconds": 7.577199999999721,
+      "postings": 0,
+      "available": 20000
+    },
+    {
+      "pair": 21,
+      "warmup": false,
+      "claimId": "3d64a3ef-724b-442b-aeb1-8055ecfda3ca",
+      "status": 200,
+      "milliseconds": 3.469100000000253,
+      "postings": 1,
+      "available": 20000
+    },
+    {
+      "pair": 21,
+      "warmup": false,
+      "claimId": "e3f48696-8182-40e9-951a-bd3405badab5",
+      "status": 422,
+      "milliseconds": 6.712199999999939,
+      "postings": 0,
+      "available": 20000
+    }
+  ]
+}

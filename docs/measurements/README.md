@@ -72,3 +72,10 @@ Intel Xeon 6975P-C, 논리 CPU 4개, 메모리 약 15.3 GiB의 Linux CI에서 �
 두 번째 100만 전표 실험에서도 월 집계의 DB p95는 51.203ms에서 5.893ms로 줄었다. 같은 실행에서 전표 500건을 한 건씩 삽입·동기 커밋했다. 인덱스를 실제로 생성·제거하고 후보·기존·기존·후보 순서로 블록별 1회 예열 후 10회씩 측정했다. 500건 묶음의 p95는 기존 260.655ms, 후보 171.916ms였지만 CI 디스크 부하의 영향은 분리할 수 없다. 세션 redo는 전표 한 건당 평균 1,021.66B에서 1,398.29B로 376.63B 증가했다. 읽기 이점과 쓰기 비용을 함께 고려해 부서·기간·신청번호 인덱스를 V023에 포함했다. [스키마](../../src/main/resources/db/V023__posting_month_index.sql) · [쓰기 시험](../../ops/measure_oracle_posting_writes.py)
 
 같은 환경에서 두 JDBC 세션으로 승인에 사용하는 부서 예산 행을 조회했다. 첫 세션이 잠금을 잡고 두 번째 세션의 측정 시작 신호를 받은 뒤 100ms 후 해제했다. 동일 부서의 잠금 조회 p95는 101.134ms, 다른 부서는 0.660ms였다. 조건별 예열 1회와 측정 20회를 교대로 수행했다. 이 시간에는 JDBC 왕복이 포함된다. 위 월 집계 재현 명령에 이어 워크플로의 JDK 21·Oracle JDBC 명령과 `python3 ops/measure_oracle_posting_writes.py`를 실행하면 결과를 비교할 수 있다. [DB 실행 계획·쓰기 44회·잠금 CSV 원자료](oracle-posting-costs-44796949735.zip) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44796949735)
+## 동시 승인 HTTP 응답 시간
+
+새 은행 업무 공간에서 본부가 지점에 900,000원을 배정해 가용액 100,000원을 남긴다. 직원이 실비 예정 100,000원의 교육비 두 건을 제출하면 건별 지원액은 80,000원이다. 같은 부서장 세션에서 두 승인 POST를 동시에 시작하고 응답 완료까지의 클라이언트 경과 시간을 각각 기록한다. 준비·역할 전환·사후 조회는 시간에서 제외한다. 매 쌍에서 응답 200·422가 하나씩인지, 성공한 신청에만 약정 전표가 있는지, 가용액이 20,000원인지 확인한다.
+
+한 서버 프로세스에서 새 방문자와 부서를 매번 생성한다. 캐시는 비우지 않고 첫 2쌍을 예열로 별도 표시한다. 뒤의 20쌍을 상태별로 정렬해 19번째 값을 p95로 쓴다. 이 측정은 동시 요청 두 건의 루프백 HTTP 왕복 시간이며 인터넷 지연, 화면 렌더링, DB 잠금 단독 시간과는 측정 범위가 다르다. 로컬 H2·HTTPS에서 측정 절차를 실행했을 때 승인 p95는 6.095ms, 예산 부족 응답 p95는 11.308ms였다. [로컬 44개 표본](approval-contention-loopback.json) · [측정 코드](../../frontend/tests/approval-contention.spec.ts)
+
+실제 Oracle 측정은 Linux CI의 배포 WAR 브라우저 검증 직후 같은 Tomcat을 사용한다. `frontend`에서 `TEST_EXTERNAL_RELEASE=1 RECORD_APPROVAL_CONTENTION=../target/approval-contention.json npx --no-install playwright test approval-contention.spec.ts --reporter=list`로 재현한다. 시험용 WAR는 루프백 18753 포트에서 실행돼야 한다. `oracle-approval-contention` 아티팩트에는 CPU·메모리·커널·커밋·개별 응답과 전표 수를 기록한다.

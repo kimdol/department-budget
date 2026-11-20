@@ -60,6 +60,11 @@ jobs:
           ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
           BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
           RECORD_ROLLBACK_CLAIM: ${{ runner.temp }}/rollback-claim.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oracle-approval-contention
+          path: target/approval-contention.json
+          if-no-files-found: error
       - name: Roll back WAR and compare original claim postings
         run: bash ops/ci_war_rollback.sh
         env:
