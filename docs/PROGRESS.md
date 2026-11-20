@@ -1,5 +1,7 @@
 # 인수 현황
 
+영수증 225,000원만 첨부하고 실비를 제출하지 않으면 ‘실제 지출 대조’가 충족으로 표시됐다. 두 금액이 있어야 비교할 수 있어 자료 부족을 기대한 회귀 시험에서 PASS가 반환되는 것을 재현했다. 영수증과 실비 중 하나라도 없으면 MISSING, 둘이 다르면 FAIL, 같으면 PASS로 판정하도록 수정했다. 조건 시험 3건과 루프백 HTTPS 브라우저 시험 6건 통과. 실비 제출 뒤 180,000원 정산까지 확인했다. [조건 회귀 시험](../src/test/java/kr/budget/policy/EligibilityRuleTest.java) · [대표 업무 브라우저 시험](../frontend/tests/claims.spec.ts)
+
 ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서장이 승인했다. Chrome 재무 화면에서 원신청과 HTTP 404를 확인하고 수신기 복원 후 같은 이벤트를 다시 보냈다. MySQL의 1차 수신액과 Oracle 약정은 모두 200,000원이었고 송신 실패 목록은 비었다. 별도 응답 유실 계약 시험에서는 수신 완료 뒤 재전송돼도 정산 2차가 한 번만 반영되고 다른 공간은 재처리 대상을 조회할 수 없음을 확인했다. [실제 Oracle·MySQL 장애 복구 실행](https://github.com/kimdol/department-budget/actions/runs/44775611695/job/136424489990) · [구현과 재현](ARCHITECTURE.md#포털-장애-중-승인-처리)
 
 6da84c9에서 Oracle을 포함한 Java 시험 49건이 누락·실패 없이 통과했다. CI Chrome에서 Caddy를 거쳐 재무팀이 합성 신청 51cb5571-acfd-48b5-805d-2ef6c2f74359를 정산한 뒤, 서버가 PHP 포털에서 조회한 수신 차수 2와 180,000원을 확인했다. Oracle 전표·송신함 SQL과 MySQL 수신 요약 SQL이 같은 공간·신청·차수·종류·금액을 반환했다. 공개 호스트 접속은 OCI 배포 후 검증한다. [직접 대사한 실행](https://github.com/kimdol/department-budget/actions/runs/44774362675/job/136420076607)

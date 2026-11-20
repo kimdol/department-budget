@@ -26,6 +26,16 @@ class EligibilityRuleTest {
     }
 
     @Test
+    void receiptCannotConfirmAnUnsubmittedExpense() {
+        var before = EvidencePolicy.evaluate(new EvidencePolicy.Inputs(OrganizationType.COMPANY,"EDUCATION",null,225000L,false));
+        assertEquals(MISSING, before.receipt().verdict());
+        assertEquals(List.of("실제 지출액을 제출해야 영수증 금액을 대조할 수 있습니다."), before.issues());
+        var mismatch = EvidencePolicy.evaluate(new EvidencePolicy.Inputs(OrganizationType.COMPANY,"EDUCATION",220000L,225000L,false));
+        assertEquals(FAIL, mismatch.receipt().verdict());
+        assertEquals(List.of("영수증 금액과 실제 지출액이 다릅니다."), mismatch.issues());
+    }
+
+    @Test
     void bankConferenceSkipsAttendanceWhileHospitalRequestsTheDocument() {
         var bank = EvidencePolicy.evaluate(new EvidencePolicy.Inputs(OrganizationType.BANK,"CONFERENCE",225000L,225000L,false));
         var hospital = EvidencePolicy.evaluate(new EvidencePolicy.Inputs(OrganizationType.HOSPITAL,"CONFERENCE",225000L,225000L,false));

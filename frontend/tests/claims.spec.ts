@@ -29,6 +29,10 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(claim.getByText("참석 확인서 제출 · 앞선 조건으로 판정되어 생략", { exact:true })).toBeVisible();
     await claim.getByRole("button", { name: "합성 증빙 첨부" }).click();
     expect((await uploaded).ok()).toBe(true);
+    await claim.getByRole("button", { name: "증빙 요건 확인" }).click();
+    await expect(claim).toContainText("실제 지출액을 제출해야 영수증 금액을 대조할 수 있습니다.");
+    await claim.getByText("판정 근거", {exact:true}).click();
+    await expect(claim.getByText("실제 지출 대조 · 자료 부족", {exact:true})).toBeVisible();
     await claim.getByRole("button", { name: "정산 신청" }).click();
     await expect(claim).toContainText("정산 검토");
     await claim.getByRole("button", { name: "증빙 요건 확인" }).click();
