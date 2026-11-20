@@ -1,5 +1,7 @@
 # 인수 현황
 
+직원은 결재함을 열면 각 신청 상태 아래에서 다음 담당자와 할 일을 확인할 수 있다. Chrome 모바일 에뮬레이션(360×800)에서 6일 출장을 신청해 부서장 결재 후 재무 담당자에게 넘어가고, 최종 승인 후 직원이 실제 지출을 제출해야 한다는 안내를 확인했다. 약정액은 300,000원, 가용 예산은 700,000원이었다. 직원 화면에서 안내 전체가 뷰포트 안에 들어왔고 문서에 가로 넘침이 없었다. 로컬 HTTPS 브라우저 시험 18건 통과, 별도 환경 조건 2건 건너뜀. [모바일 결재 시험](../frontend/tests/travel-approval.spec.ts)
+
 실제 Oracle Data Pump 복원 대사에 포털 송신 메시지 47건이 포함됐다. 원본과 별도 스키마 복원본의 대사 파일을 바이트 단위로 비교해 일치함을 확인했다. 내보내기 44초, 가져오기 29초였다. [원자료](measurements/oracle-restore-44801501494.zip) · [송신함 대사 추가](https://github.com/kimdol/department-budget/commit/d3fc4e0)
 
 배포 VM의 JDBC 사전 검사는 설치 SQL을 생성할 때와 같은 방식으로 WAR의 버전·정의 해시를 계산해 DB의 READY 상태와 대조한다. 로컬에서 실제 V025 WAR 식별값 생성, 설치 도구 시험 2건, Java 검사기 컴파일을 확인했다. [배포 전 검사 절차](ORACLE.md) · [구현](https://github.com/kimdol/department-budget/commit/26cdbc8)

@@ -1,5 +1,10 @@
 const statusName = {SUBMITTED:"결재 대기", FINANCE_PENDING:"재무 사전승인 대기", APPROVED:"약정 완료", IN_REVIEW:"정산 검토", SETTLED:"정산 완료",
   INCREASE_REQUESTED:"증액 승인 대기", NEEDS_RECEIPT:"보완 요청", CANCELLED:"취소 완료"};
+const pendingAction = {
+  SUBMITTED:"부서장 · 사전 결재", FINANCE_PENDING:"재무 담당자 · 최종 사전승인",
+  APPROVED:"신청 직원 · 실제 지출 제출", IN_REVIEW:"재무 담당자 · 정산 검토",
+  INCREASE_REQUESTED:"부서장 · 증액 검토", NEEDS_RECEIPT:"신청 직원 · 보완 후 재제출"
+};
 const money = value => new Intl.NumberFormat("ko-KR").format(value) + "원";
 const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
@@ -73,6 +78,7 @@ function render(state) {
     row.attr("aria-labelledby",headingId);
     const refreshClaim = () => refresh().then(()=>document.getElementById(headingId)?.focus());
     $("<small>").text(claim.claimId).appendTo(row);
+    if (pendingAction[claim.status]) $("<p>").text("다음 담당자 · " + pendingAction[claim.status]).appendTo(row);
     if (claim.reviewNote) $("<p>").text("보완 사유 · " + claim.reviewNote).appendTo(row);
     $("<p>").text("예정 " + money(claim.estimated) + " / 승인 " + money(claim.approved) + " / 정산 " + money(claim.settled)).appendTo(row);
     const actions = $("<div>").addClass("actions").appendTo(row);
