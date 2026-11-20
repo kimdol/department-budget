@@ -1,5 +1,7 @@
 # 인수 현황
 
+커밋 98cf644의 실제 Oracle CI에서 V015를 포함한 빈 스키마 설치, 계약 시험, Data Pump 복원·대사와 배포용 WAR의 Chrome 시험이 모두 통과했다. 병원 규정 검토 요청 당시의 비교 사례 보존을 배포본에서도 확인했다. [실행 단계](https://github.com/kimdol/department-budget/actions/runs/44768400881/job/136399149853) · [학습용 스키마에서 비교 사례 조회](ORACLE-WALKTHROUGH.md#규정-변경-후-재현)
+
 재무 담당자가 규정 검토를 요청하면 서버가 해당 세대를 잠금 안에서 확인하고 실비·일수·두 지원액을 초안과 함께 저장한다. 부서장이 자기 화면의 비교 실비를 10,000원으로 바꿔도 검토 요청 당시 180,000원 사례의 144,000원 → 162,000원이 유지되는 것을 루프백 HTTPS Chrome에서 확인했다. V015 이전 초안은 당시 입력이 없어 비교 사례를 표시하지 않는다. [스키마 변경](../src/main/resources/db/V015__draft_comparison.sql) · [검토 화면 시험](../frontend/tests/hospital-policy.spec.ts)
 
 규정 미리보기에서 기존·후보 인정액에 대해 신청 제출과 같은 [승인 경로 판정](../src/main/java/kr/budget/claims/ApprovalRoute.java)을 호출한다. 병원 학회비 전액 지원 후보를 입력하고 지원 예정액 299,999원에서는 부서장, 300,000원에서는 부서장 → 재무로 바뀜을 Chrome에서 확인했다. 루프백 HTTPS 시험 6건 통과. [경계값 시험](../frontend/tests/hospital-policy.spec.ts) · [재무 최종 사전승인 시 약정 시험](../frontend/tests/travel-approval.spec.ts)

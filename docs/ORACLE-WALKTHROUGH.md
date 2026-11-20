@@ -33,4 +33,18 @@ where c.claim_id = :claim_id
 
 병원 조직에서 학회비를 신청하고 규정 작업실에서 우대 수식을 발행한다. 발행 전후의 학회 신청 두 건에 대해 위 SQL을 실행하여 formula와 policy_generation을 비교한다. 신청 카드에서 ‘신청 당시 계산 근거’를 열고 당시 입력과 실제 인정액이 Oracle 조회 결과와 일치하는지 확인한다. 기존 버전을 복구한 뒤 신규 학회 신청도 같은 순서로 비교한다.
 
+재무 담당자로 학회비 실비 180,000원, 1일, 후보 수식 `min(eligible_cost * 0.90, event_cap)`을 넣고 검토를 요청한다. 아래 쿼리에는 같은 병원 업무 공간의 신청번호를 입력한다. 초기 규정에서 출발했다면 원래 지원액은 144,000원, 후보 지원액은 162,000원이다. 부서장 화면에서 비교 실비를 바꾼 뒤 다시 조회해 요청 당시의 입력이 보존되는지 확인한다.
+
+```sql
+select d.draft_id, d.base_generation, d.formula, d.sample_cost, d.sample_days,
+       d.original_support, d.candidate_support,
+       d.candidate_support - d.original_support as support_difference
+from policy_draft d
+join expense_claim c on c.workspace_id = d.workspace_id
+where c.claim_id = :claim_id and d.category = 'CONFERENCE'
+order by d.base_generation, d.draft_id
+```
+
+한 세대에 초안 여러 건을 요청할 수 있다. 결과에서는 수식과 비교 실비가 일치하는 행을 찾는다. V015 적용 이전 초안의 비교값은 NULL이다.
+
 [금액 계산과 신청 처리](../src/main/java/kr/budget/claims/ClaimService.java) · [학회비 변경 회귀 시험](../src/test/java/kr/budget/claims/PostingContract.java) · [실제 스키마 복원 절차](ORACLE.md)
