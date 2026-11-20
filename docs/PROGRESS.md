@@ -1,5 +1,7 @@
 # 인수 현황
 
+로컬 H2에서 서로 다른 요청번호로 본부 예산 1,000,000원에 각각 600,000원을 동시에 배정했다. 한 건은 성공하고 한 건은 가용액 초과로 거절됐으며, 이력에는 600,000원 한 건만 남았다. 본부 잔액 400,000원과 지점 잔액 1,600,000원의 합은 최초 합계와 일치했다. [동시 배정 계약 시험](../src/test/java/kr/budget/claims/PostingContract.java)
+
 본부 재무가 지점에 예산을 배정하면 한 트랜잭션에서 두 부서의 배정액과 배정 이력을 갱신한다. 로컬 원장 시험에서 약정 200,000원이 있는 본부의 800,001원 배정을 거절하고, 300,000원 배정을 재전송해도 배정 이력이 한 건임을 확인했다. HTTPS Chrome에서 본부 가용액 700,000원과 지점 가용액 1,300,000원을 확인했다. [배정 서비스](../src/main/java/kr/budget/claims/BranchAllocation.java) · [브라우저 시험](../frontend/tests/bank-allocation.spec.ts)
 
 Linux CI에서 Caddy의 HTTP 308 이동, 경로·쿼리 보존, TLS 1.3, 결재함·규정 편집기 요청의 동일 출처를 확인했다. 별도 CI에서 패키지 WAR의 JDBC 드라이버로 Oracle Free에 TCP 접속해 업무·배치 스키마 조회 5건을 통과했고 같은 세션에 TCPS를 요구하면 검사가 실패했다. OCI 배포 VM의 DB 전송 방식과 공개 인증서 검증은 대기 중이다. [웹 응답 원자료](measurements/proxy-transport-44788840479.json) · [JDBC 검사 실행](https://github.com/kimdol/department-budget/actions/runs/44789061101/job/136471567405)

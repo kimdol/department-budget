@@ -67,6 +67,31 @@ abstract class PostingContract {
     }
 
     @Test
+    void competingBranchAllocationsConserveTheCombinedBudget() throws Exception {
+        String head = service.openDepartments(OrganizationType.BANK).primaryId();
+        CyclicBarrier start = new CyclicBarrier(2);
+        Callable<Integer> allocate = () -> {
+            start.await(10, TimeUnit.SECONDS);
+            try {
+                allocations.allocate(head, UUID.randomUUID(), 600000);
+                return 200;
+            } catch (ResponseStatusException rejected) {
+                return rejected.getStatusCode().value();
+            }
+        };
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var first = executor.submit(allocate);
+            var second = executor.submit(allocate);
+            var statuses = List.of(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS));
+            assertEquals(List.of(200, 422), statuses.stream().sorted().toList());
+        }
+        var result = allocations.report(head);
+        assertEquals(400000, result.head().getAvailable());
+        assertEquals(1600000, result.branch().getAvailable());
+        assertEquals(List.of(600000L), result.recent().stream().map(BranchAllocation.Entry::amount).toList());
+    }
+
+    @Test
     void branchCanCommitWhileHeadOfficeBudgetIsLocked() throws Exception {
         var departments = service.openDepartments(OrganizationType.BANK);
         String headOffice = departments.primaryId();
