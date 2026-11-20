@@ -44,7 +44,7 @@ def timing_block(queries):
 
 def measurement_sql():
     mapper = Path("src/main/java/kr/budget/claims/BudgetMapper.java").read_text(encoding="utf-8")
-    columns = re.search(r'String COLUMNS = "([^"]+)";', mapper)[1]
+    columns = re.search(r'String INBOX_COLUMNS = "([^"]+)";', mapper)[1]
     sql = [
         "whenever sqlerror exit failure rollback",
         "whenever oserror exit failure",

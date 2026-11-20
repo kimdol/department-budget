@@ -46,10 +46,16 @@ public interface BudgetMapper {
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id=#{id}")
     Claim findClaim(String workspace, String id);
 
-    @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and inbox_order < #{before} order by inbox_order desc fetch first 51 rows only")
-    List<Claim> inbox(String workspace,long before);
+    record InboxItem(String claimId, String title, String category, String status, long estimated,
+                     long approved, Long actual, long settled, int reviewRound, String reviewNote,
+                     ApprovalRoute approvalRoute, long inboxOrder) {}
 
-    default List<Claim> claims(String workspace) {
+    String INBOX_COLUMNS = "claim_id,title,category,status,estimated,approved,actual,settled,review_round,review_note,approval_route,inbox_order";
+
+    @Select("select " + INBOX_COLUMNS + " from expense_claim where workspace_id=#{workspace} and inbox_order < #{before} order by inbox_order desc fetch first 51 rows only")
+    List<InboxItem> inbox(String workspace,long before);
+
+    default List<InboxItem> claims(String workspace) {
         return inbox(workspace,Long.MAX_VALUE).stream().limit(50).toList();
     }
 

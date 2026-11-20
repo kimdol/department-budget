@@ -18,6 +18,14 @@ test("이전 신청을 다음 페이지에서 결재한 뒤 최신 신청으로 
   await page.reload();
   await page.locator("#role").selectOption("MANAGER");
   await expect(page.locator(".claim")).toHaveCount(50);
+  const firstPage = await (await page.request.get("/api/workspace")).json();
+  const summary = firstPage.claims[0];
+  for (const field of ["formula","policyGeneration","evaluatorVersion","attendanceRule","days"]) {
+    expect(summary).not.toHaveProperty(field);
+  }
+  const detail = await page.request.get("/api/claims/"+summary.claimId+"/calculation");
+  expect(detail.ok()).toBe(true);
+  expect(await detail.json()).toMatchObject({days:1, generation:0, initialSupport:8000, evaluatorVersion:"decimal-v1"});
   const measurement = process.env.MEASURE_INBOX_PAYLOAD;
   if (measurement === "before" || measurement === "after") {
     const bytes = [];

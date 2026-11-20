@@ -1,5 +1,13 @@
 # 결재함 재방문 전송량
 
+## 신청 50건의 목록 응답
+
+동일 PC의 루프백 HTTPS·H2에서 실비 10,000원인 교육 신청 51건을 제출했다. 부서장으로 첫 페이지를 열고 예열된 상태에서 동시 사용자 1명이 `GET /api/workspace`를 5회 호출했다. 응답 전체의 디코딩된 JSON은 매회 22,454바이트에서 12,904바이트로 줄었다(42.5%). HTTP 헤더와 TLS·압축을 포함한 네트워크 전송량은 측정하지 않았다.
+
+이전 목록은 신청마다 수식, 평가기 버전, 규정 세대, 일수, 참석 조건을 반복했다. 목록 전용 SQL은 이 다섯 개 열을 읽지 않는다. 상세 계산 근거 조회는 유지했으며 이전 페이지 승인과 최신 목록 복귀를 같은 시험에서 검증했다. 기준 커밋 `11be150`에서 `MEASURE_INBOX_PAYLOAD=before`, 변경 후에는 `MEASURE_INBOX_PAYLOAD=after`를 설정해 `python ops/test_https.py`를 실행한다. [측정 코드](../../frontend/tests/inbox-pages.spec.ts) · [변경 전](inbox-payload-before.json) · [변경 후](inbox-payload-after.json)
+
+## 정적 자산 재사용
+
 로컬 Chrome에서 새 방문자가 결재함을 열고 빈 탭으로 이동한 뒤 같은 주소를 다시 열었다. 첫 방문에 필요한 세 정적 자산 중 jQuery 하나가 87,833바이트를 차지했다. 버전이 URL에 들어 있는 해당 라이브러리에 1년 공개 캐시를 적용했다. JSP, 업무 API와 같은 이름으로 갱신하는 자체 스크립트에는 no-store를 유지했다.
 
 | Chrome Resource Timing 합계 | 첫 방문 | 같은 세션 재방문 |

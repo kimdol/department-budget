@@ -390,7 +390,7 @@ abstract class PostingContract {
         service.submit(workspace,UUID.randomUUID(),"추가 신청","EDUCATION",1000,1);
         var other = service.open();
         service.submit(other,UUID.randomUUID(),"별도 공간","EDUCATION",1000,1);
-        assertEquals(List.of(ordered.get(1),ordered.getFirst()),mapper.inbox(workspace,cursor).stream().map(Claim::claimId).toList());
+        assertEquals(List.of(ordered.get(1),ordered.getFirst()),mapper.inbox(workspace,cursor).stream().map(BudgetMapper.InboxItem::claimId).toList());
         assertTrue(mapper.inbox(other,cursor).isEmpty());
     }
 
