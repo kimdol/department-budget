@@ -1,5 +1,7 @@
 # 인수 현황
 
+최초 공개 Oracle CI는 V001에서 ORA-01408로 실패했다. expense_claim의 (workspace_id, claim_id) 유일 제약이 동일 열 인덱스를 이미 생성했다. H2에서는 통과했던 명시적 인덱스를 제거했다. 빈 Oracle 스키마에 최초 설치가 실패한 단계이므로 V001의 중복 선언을 직접 정정했다. [실패한 실행](https://github.com/kimdol/department-budget/actions/runs/44763501353)
+
 로컬의 H2 업무 원장 → Java HTTPS 송신 → PHP 수신 → 실제 MySQL 8.4.13 → 재무 담당자의 Chrome 조회를 한 번에 시험했다. 대표 신청에서 포털 2차 정산 180,000원과 결재함 집행액이 일치했다. 합성 예산 업무·브라우저 격리·포털을 함께 확인하는 명령은 `python ops/test_portal.py --browser`다. 공개 인터넷 배포 검증은 별도다.
 
 포털 송신 설정을 활성화하면 재무 결재함에서 MySQL에 도착한 신청별 수신 차수·종류·금액을 확인할 수 있다. 조회용 비밀 값은 Java 서버에서 PHP로 전송한다. PHP·MySQL 직접 시험에서 정산 2차 180,000원, 타 공간 404, 비인증 403과 no-store를 확인했다. 외부 Java 서버와 실제 포털의 HTTPS 연결은 미검증이다.

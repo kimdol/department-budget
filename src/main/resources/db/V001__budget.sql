@@ -29,4 +29,3 @@ CREATE TABLE budget_posting (
     PRIMARY KEY (claim_id, kind),
     FOREIGN KEY (workspace_id, claim_id) REFERENCES expense_claim (workspace_id, claim_id)
 );
-CREATE INDEX claim_workspace_list ON expense_claim (workspace_id, claim_id);
