@@ -124,7 +124,9 @@ class PortalHttpTest {
         assertEquals("CLOSED", report.get("state").asText());
         assertEquals(180000, report.at("/lines/0/spent").longValue());
         assertEquals(820000, report.at("/balance/available").longValue());
-        assertEquals(302, first.post("/api/demo/end", "").statusCode());
+        var ended = first.post("/api/demo/end", "");
+        assertEquals(302, ended.statusCode());
+        assertEquals("/", ended.headers().firstValue("Location").orElseThrow());
         assertEquals(401, first.request("/api/workspace", null, false).statusCode());
         assertEquals(1000000, second.state().at("/balance/available").longValue());
         assertTrue(second.state().get("claims").isEmpty());

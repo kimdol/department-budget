@@ -1,5 +1,7 @@
 # 인수 현황
 
+비표준 HTTPS 포트의 Caddy를 거친 Chrome 시험에서 TLS·쿠키·캐시 검사는 성공했지만 체험 종료 후 시작 버튼에 도달하지 못했다. 로그아웃 성공 응답이 프록시 뒤에서 외부 주소를 다시 구성하지 않도록 302 Location을 같은 원점의 `/`로 고정했다. Tomcat HTTP 회귀 시험에서 Location 값과 종료된 세션의 401을 확인했다. [재현 실행](https://github.com/kimdol/department-budget/actions/runs/44771940670) · [응답 회귀 시험](../src/test/java/kr/budget/web/PortalHttpTest.java)
+
 기존 수식 평가기는 피연산자와 괄호 중첩을 세어 왼쪽 결합 연산이 긴 식의 트리 깊이를 제한하지 못했다. 같은 입력에 1을 32번 곱하면 이전 평가기는 225,000원을 계산한다. 신규 초안의 decimal-v2는 연산·함수·값의 노드와 높이를 세어 깊이 32, 노드 256 상한을 적용한다. 저장된 decimal-v1 신청은 이전 계약으로 재현한다. 복구 요청은 업무 공간·비목의 과거 세대와 수식을 대조하고 당시 평가기를 다시 발행한다. 로컬 Java 시험 33건과 루프백 Chrome 시험 6건 통과. [수식 경계값](../src/test/java/kr/budget/policy/ExpenseFormulaTest.java) · [결정 재현](../src/test/java/kr/budget/claims/PostingContract.java) · [복구 화면](../frontend/tests/hospital-policy.spec.ts)
 
 다른 방문자가 증빙 목록을 열면 전용 SQL이 문서를 반환하지 않아 HTTP 200과 빈 목록이 내려왔다. 같은 신청의 증빙 요건과 파일은 404였다. 목록 조회도 세션 업무 공간 안에 신청이 있는지 확인하도록 변경했다. 직원·부서장·재무 역할 모두 다른 공간의 목록·요건·파일에서 404를 확인했다. 같은 공간의 재무 담당자는 Chrome으로 225,000원 영수증을 받았고 첨부 변경 요청은 403이었다. H2 HTTP 시험 2건과 루프백 HTTPS 브라우저 시험 6건 통과. [HTTP 회귀 시험](../src/test/java/kr/budget/web/PortalHttpTest.java) · [다운로드 검증](../frontend/tests/claims.spec.ts)
@@ -39,10 +41,10 @@
 | 구분 | 업무 | 확인된 범위 · 남은 검증 |
 | --- | --- | --- |
 | 필수 | 신청·약정·정산·정정 | H2와 실제 Oracle에서 같은 원장 계약 각 14건 통과 |
-| 필수 | 규정 발행·복구·계산 재현 | Java 수식 11건·조건 트리 2건 통과. Chrome에서 병원 학회비 발행 및 복구 확인 |
+| 필수 | 규정 발행·복구·계산 재현 | 수식 시험 14건·조건 트리 2건 통과. 이전·새 평가기의 과거 결정 재현과 복구를 실제 Oracle과 Chrome에서 확인 |
 | 필수 | 세션·증빙·웹 응답 | Tomcat HTTP 시험 2건, 로컬 HTTPS Chrome 6건 통과. 외부 공개 도메인의 역할 시연 대기 |
-| 필수 | 월마감·포털 | 실패한 배치 재시작과 원본 기간 보존을 H2에서 확인. 실제 PHP·MySQL 수신 구간 검증. 외부 송신 경로 대기 |
-| 심화 | 성능·복원 | 재방문 전송량 측정과 실제 Oracle 별도 스키마 복원 대사 완료. Oracle 실행 계획·잠금 대기 측정 대기 |
+| 필수 | 월마감·포털 | 실패한 배치 재시작과 원본 기간 보존을 H2·Oracle 원장 계약에서 확인. 실제 PHP·MySQL 수신 구간 검증. 외부 송신 경로 대기 |
+| 심화 | 성능·복원 | 재방문 전송량, 수식 미리보기 지연, Oracle 깊은 페이지의 논리 읽기 측정 완료. 같은 PDB의 별도 스키마 복원 대사 완료. 승인 잠금 대기 시간 미측정 |
 | 선택 | 상용 UI·리포팅 전환 | 제품 환경 미확보 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
@@ -50,8 +52,8 @@
 ## 재개할 때
 
 1. git status, git log -1과 git ls-remote origin refs/heads/main을 대조한다.
-2. 다음 기능 변경에서도 Verify Oracle Ledger의 계약 시험과 복원 산출물 일치를 확인한다. 실제 Oracle 근거가 있는 기준 커밋은 75f463d다.
-3. 독립 호스팅과 Oracle 연결 권한이 확보되면 공개 URL에서 새 브라우저 두 개로 대표 업무와 격리를 재현한다. 공개 전 대기 중인 설계 범위에는 포털 조회 화면·레거시 CSV, 별도 부서 구성원 인가, 운영자 규정 조건 편집이 포함된다.
+2. 다음 기능 변경에서도 Verify Oracle Ledger의 계약 시험과 복원 산출물 일치를 확인한다. 수식 평가기 교체를 포함한 [Oracle 기준 실행](https://github.com/kimdol/department-budget/actions/runs/44771763566)은 80ac4c6에 해당한다.
+3. 독립 호스팅과 Oracle 연결 권한이 확보되면 공개 URL에서 새 브라우저 두 개로 대표 업무와 격리를 재현한다. 공개 전 대기 중인 설계 범위에는 레거시 CSV, 별도 부서 구성원 인가, 운영자 규정 조건 편집이 포함된다.
 4. 로컬 재현은 frontend에서 npm ci와 npm run build, 루트에서 mvn package, python ops/test_https.py 순서다. 포털 수신 시험은 python ops/test_portal.py로 실행한다.
 
 ## 외부 환경

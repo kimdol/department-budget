@@ -13,7 +13,10 @@ public class WebSecurity {
                 .requestMatchers("/", "/api/**", "/webjars/**", "/assets/**", "/error").permitAll()
                 .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD).permitAll()
                 .anyRequest().denyAll())
-                .logout(logout -> logout.logoutUrl("/api/demo/end").logoutSuccessUrl("/"))
+                .logout(logout -> logout.logoutUrl("/api/demo/end").logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(302);
+                    response.setHeader("Location", "/");
+                }))
                 .build();
     }
 }
