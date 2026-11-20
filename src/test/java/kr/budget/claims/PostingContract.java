@@ -88,6 +88,33 @@ abstract class PostingContract {
     }
 
     @Test
+    void approvalRollsBackWhenTheFinalHistoryInsertFails() {
+        String workspace = service.open();
+        String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
+        mapper.event(workspace, id, 0, "FINAL_APPROVAL", "MANAGER", 200000, null);
+        var historyBefore = mapper.history(workspace,id);
+        var balanceBefore = mapper.balance(workspace);
+        assertThrows(org.springframework.dao.DuplicateKeyException.class, () -> service.approve(workspace,id));
+        assertEquals("SUBMITTED", mapper.findClaim(workspace,id).status());
+        assertEquals(0, mapper.findClaim(workspace,id).approved());
+        assertEquals(balanceBefore, mapper.balance(workspace));
+        assertEquals(historyBefore, mapper.history(workspace,id));
+        String postings = "select count(*) from budget_posting where workspace_id=? and claim_id=?";
+        String deliveries = "select count(*) from portal_outbox where workspace_id=? and claim_id=?";
+        assertEquals(0, jdbc.queryForObject(postings,Integer.class,workspace,id));
+        assertEquals(0, jdbc.queryForObject(deliveries,Integer.class,workspace,id));
+        assertEquals(1, jdbc.update("delete from claim_review_event where workspace_id=? and claim_id=? and review_round=0 and event_type='FINAL_APPROVAL'",workspace,id));
+        service.approve(workspace,id);
+        service.approve(workspace,id);
+        assertEquals("APPROVED", mapper.findClaim(workspace,id).status());
+        assertEquals(800000, mapper.balance(workspace).getAvailable());
+        assertEquals(1, jdbc.queryForObject(postings,Integer.class,workspace,id));
+        assertEquals(1, jdbc.queryForObject(deliveries,Integer.class,workspace,id));
+        assertEquals(List.of("SUBMIT","FINAL_APPROVAL"),
+                mapper.history(workspace,id).stream().map(BudgetMapper.ReviewEvent::eventType).toList());
+    }
+
+    @Test
     void oneThousandPolicyPreviewsLeaveCommittedBudgetAndPostingRowsUntouched() {
         String workspace = service.open();
         String claim = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
