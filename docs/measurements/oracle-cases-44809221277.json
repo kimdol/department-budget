@@ -1,0 +1,118 @@
+{
+  "suite": "kr.budget.claims.OraclePostingTest",
+  "passed": 28,
+  "cases": [
+    {
+      "name": "approvalRollsBackWhenTheFinalHistoryInsertFails",
+      "seconds": 0.027
+    },
+    {
+      "name": "attendancePolicyChangesAndRestorationPreserveEachSubmissionsEvidenceRequirements",
+      "seconds": 0.056
+    },
+    {
+      "name": "branchCanCommitWhileHeadOfficeBudgetIsLocked",
+      "seconds": 0.084
+    },
+    {
+      "name": "calculationReadsCommittedInputsWhileAnotherSessionEditsTheClaim",
+      "seconds": 0.024
+    },
+    {
+      "name": "cancellationReleasesOnlyAnExistingCommitmentOnce",
+      "seconds": 0.029
+    },
+    {
+      "name": "categoryReplacementReleasesTheOriginalCommitmentAndStartsFreshApproval",
+      "seconds": 0.031
+    },
+    {
+      "name": "closingReportsLedgerDifferenceAndRefusesToArchiveUntilReconciled",
+      "seconds": 0.097
+    },
+    {
+      "name": "competingApprovalsCannotExceedAllocation",
+      "seconds": 0.023
+    },
+    {
+      "name": "competingBranchAllocationsConserveTheCombinedBudget",
+      "seconds": 0.033
+    },
+    {
+      "name": "conferenceRulesArePinnedAtSubmissionAndCanBeRestoredForNewClaims",
+      "seconds": 0.078
+    },
+    {
+      "name": "delegatedApplicantCannotApproveOrIncreaseTheirOwnClaim",
+      "seconds": 0.017
+    },
+    {
+      "name": "deliveryCanResumeAfterReceiverCommitsButItsAcknowledgementIsLost",
+      "seconds": 0.058
+    },
+    {
+      "name": "displayedEstimateDetectsPublicationBeforeSubmissionAndPreservesCommittedRetry",
+      "seconds": 0.019
+    },
+    {
+      "name": "failedSnapshotRestartsTheSameBatchInstance",
+      "seconds": 0.117
+    },
+    {
+      "name": "financeApprovalReservesTravelCostsOnlyAfterBothSteps",
+      "seconds": 0.023
+    },
+    {
+      "name": "headOfficeTransfersOnlyAvailableFundsAndKeepsBranchAllocationOnRetry",
+      "seconds": 0.045
+    },
+    {
+      "name": "historicalImpactUsesSubmittedRulesAndPaginatesWithinTheDepartmentAndCategory",
+      "seconds": 0.201
+    },
+    {
+      "name": "incompleteConferenceEvidenceBlocksPostingUntilTheEmployeeCorrectsIt",
+      "seconds": 0.059
+    },
+    {
+      "name": "increasesOnlyTheDifferenceAndRequiresTheLatestReviewRound",
+      "seconds": 0.035
+    },
+    {
+      "name": "laterPagesKeepTheirBoundaryWhenAnotherApplicationArrives",
+      "seconds": 0.138
+    },
+    {
+      "name": "lostSubmissionResponseReplaysOriginalClaimOnlyForSameInput",
+      "seconds": 0.026
+    },
+    {
+      "name": "oneThousandPolicyPreviewsLeaveCommittedBudgetAndPostingRowsUntouched",
+      "seconds": 0.314
+    },
+    {
+      "name": "publishingBindsTheExactComparisonReviewedByTheManager",
+      "seconds": 0.016
+    },
+    {
+      "name": "resumesAfterPreparingCloseAndFreezesExactlyOneStatement",
+      "seconds": 0.072
+    },
+    {
+      "name": "retriesLeaveOneSettlementAndTheExactLedgerBalance",
+      "seconds": 0.054
+    },
+    {
+      "name": "reversesClosedSettlementOnlyInAnOpenPeriodWithoutChangingOriginalStatement",
+      "seconds": 0.094
+    },
+    {
+      "name": "revisedScopeKeepsEveryVersionAndRequiresNewApproval",
+      "seconds": 0.084
+    },
+    {
+      "name": "scheduledRuleActivatesOnceWhenTheNextAccountingPeriodOpens",
+      "seconds": 0.406
+    }
+  ]
+}
