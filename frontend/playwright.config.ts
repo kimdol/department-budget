@@ -15,7 +15,7 @@ export default defineConfig({
   workers: 1,
   use: { baseURL, channel: "chrome", viewport: { width: 1280, height: 900 },
     launchOptions: { args: tls ? ["--ignore-certificate-errors-spki-list=" + tls] : [] } },
-  webServer: {
+  webServer: process.env.TEST_EXTERNAL_RELEASE === "1" ? undefined : {
     cwd: root,
     command: `"${maven}" ${process.env.TEST_MAVEN_OPTIONS || ""} -B -ntp spring-boot:run -Dspring-boot.run.useTestClasspath=true`,
     url: baseURL,

@@ -48,3 +48,8 @@ jobs:
         with:
           name: oracle-restore-comparison
           path: target/oracle-restore/
+      - name: Install packaged WAR schema and exercise Oracle in Chrome
+        run: bash ops/ci_oracle_release.sh
+        env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+          BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
