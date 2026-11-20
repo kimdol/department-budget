@@ -67,6 +67,7 @@ for database in "$HOME/.pki/nssdb" "$HOME/.local/share/pki/nssdb"; do
 done
 cd frontend
 export RECORD_PORTAL_CLAIM="$PWD/../$work/claim.txt"
+export RECORD_SETTLEMENT="$PWD/../$work/settlement-proof.json"
 CI_PROXY_PROBE=1 RECORD_TLS=1 TEST_PHP_ADDRESS=127.0.0.1:18760 node node_modules/@playwright/test/cli.js test https.spec.ts claims.spec.ts portal-retry.spec.ts --reporter=list
 claim=$(cat "$RECORD_PORTAL_CLAIM")
 [[ "$claim" =~ ^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$ ]]

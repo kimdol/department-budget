@@ -11,6 +11,18 @@ Ubuntu CI에서 실제 Caddy가 시험 CA로 발급한 인증서를 신뢰 목�
 
 ## Java 서비스 설치와 중지
 
+외부 배포 뒤 대표 정산과 TLS 원자료를 함께 남기려면 저장소의 `frontend`에서 아래 명령을 실행한다. 셸의 `TEST_DEPLOYMENT_URL`에는 이미 배포한 공개 HTTPS 원점을 지정한다. 새 Chrome 세션 두 개가 독립된 합성 업무를 생성한다. 정산 재전송 직후 같은 신청번호의 전표 두 건과 결재함·보고서 잔액을 대조하고, TLS 및 세션 쿠키의 속성을 별도 파일로 남긴다.
+
+```sh
+: "${TEST_DEPLOYMENT_URL:?공개 HTTPS 원점을 지정하세요}"
+export TEST_DEPLOYMENT_URL
+mkdir -p ../target
+RECORD_SETTLEMENT="$PWD/../target/public-settlement.json" RECORD_TLS=1 \
+  npx --no-install playwright test claims.spec.ts https.spec.ts --reporter=list
+```
+
+정산 결과는 `target/public-settlement.json`, 전송·캐시 응답은 `docs/measurements/deployment-https.json`에서 확인한다. CI 프록시의 결과는 해당 실행의 `proxy-transport` 아티팩트에 저장된다.
+
 배포 검사 시 브라우저는 자동 이동을 끈 HTTP GET으로 경로·쿼리 보존 여부를 확인한 후 HTTPS에서 업무 공간과 규정 편집기를 연다. Linux CI의 Caddy가 308로 같은 자산 경로와 쿼리를 돌려줬고, 시험 CA를 신뢰한 클라이언트가 TLS 1.3으로 연결했다. 관찰한 고유 요청 주소 11개는 같은 HTTPS 출처였다. 공개 URL에서는 `TEST_DEPLOYMENT_URL`과 `RECORD_TLS=1`로 동일 시험을 다시 수행한다. [CI 실응답](measurements/proxy-transport-44788840479.json)
 
 배포 전에는 직전 WAR의 커밋·SHA-256과 해당 버전이 읽을 수 있는 스키마 버전을 기록하고 WAR를 보관한다. 현재 스키마와 호환되는 버전으로 복귀할 때는 서비스를 중지하고 보관한 WAR의 SHA-256을 확인한 뒤 같은 설치 경로에 배치하고 서비스를 시작한다. 새 세션에서 신청·승인을 처리하고, 배포 전 기록한 신청번호의 원장과 비교한다. 이 절차는 서버 세션을 다시 시작하므로 데모 방문자는 새 업무 공간에서 시작한다. 대상 WAR가 현재 스키마와 호환되지 않으면 별도 스키마 복원 후 데이터 차이를 확인해야 한다. [Oracle 백업·복원](ORACLE.md)

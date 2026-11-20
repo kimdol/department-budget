@@ -1,0 +1,63 @@
+{
+  "origin": "https://127.0.0.1:18754",
+  "claimId": "b8b0f8ef-bada-4447-bb8f-e600a6f3885d",
+  "retryStatus": 200,
+  "before": [
+    {
+      "claimId": "b8b0f8ef-bada-4447-bb8f-e600a6f3885d",
+      "kind": "APPROVAL",
+      "committedDelta": 200000,
+      "spentDelta": 0,
+      "periodKey": "2026-11",
+      "originalKind": null
+    },
+    {
+      "claimId": "b8b0f8ef-bada-4447-bb8f-e600a6f3885d",
+      "kind": "SETTLEMENT",
+      "committedDelta": -200000,
+      "spentDelta": 180000,
+      "periodKey": "2026-11",
+      "originalKind": null
+    }
+  ],
+  "after": [
+    {
+      "claimId": "b8b0f8ef-bada-4447-bb8f-e600a6f3885d",
+      "kind": "APPROVAL",
+      "committedDelta": 200000,
+      "spentDelta": 0,
+      "periodKey": "2026-11",
+      "originalKind": null
+    },
+    {
+      "claimId": "b8b0f8ef-bada-4447-bb8f-e600a6f3885d",
+      "kind": "SETTLEMENT",
+      "committedDelta": -200000,
+      "spentDelta": 180000,
+      "periodKey": "2026-11",
+      "originalKind": null
+    }
+  ],
+  "balance": {
+    "allocation": 1000000,
+    "committed": 0,
+    "spent": 180000,
+    "available": 820000
+  },
+  "report": {
+    "period": "2026-11",
+    "balance": {
+      "allocation": 1000000,
+      "committed": 0,
+      "spent": 180000,
+      "available": 820000
+    },
+    "lines": [
+      {
+        "category": "EDUCATION",
+        "claimCount": 1,
+        "spent": 180000
+      }
+    ]
+  }
+}

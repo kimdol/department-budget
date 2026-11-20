@@ -86,6 +86,33 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     }
     await expect(page.locator("#committed")).toHaveText("0원");
     await expect(claim.locator("small")).toHaveText(number);
+    const claimApi = "/api/claims/"+number.trim();
+    async function getJson(url:string) {
+      const response = await page.request.get(url);
+      expect(response.status()).toBe(200);
+      return response.json();
+    }
+    const before = await getJson(claimApi+"/postings");
+    expect(before).toHaveLength(2);
+    expect(before).toEqual(expect.arrayContaining([
+      expect.objectContaining({claimId:number.trim(),kind:"APPROVAL",committedDelta:200000,spentDelta:0}),
+      expect.objectContaining({claimId:number.trim(),kind:"SETTLEMENT",committedDelta:-200000,spentDelta:180000})
+    ]));
+    const csrf = await page.locator('meta[name="csrf-token"]').getAttribute("content");
+    const retry = await page.request.post(claimApi+"/settle",{headers:{"X-CSRF-TOKEN":csrf!},form:{round:1}});
+    expect(retry.status()).toBe(200);
+    const after = await getJson(claimApi+"/postings");
+    expect(after).toEqual(before);
+    const statement = await getJson("/api/statement");
+    const balance = (await getJson("/api/workspace")).balance;
+    expect(balance).toEqual({allocation:1000000,committed:0,spent:180000,available:820000});
+    expect(statement.balance).toEqual(balance);
+    expect(statement.lines).toContainEqual({category:"EDUCATION",claimCount:1,spent:180000});
+    if (process.env.RECORD_SETTLEMENT) {
+      const result = {origin:baseURL,claimId:number.trim(),retryStatus:retry.status(),before,after,balance,
+        report:{period:statement.period,balance:statement.balance,lines:statement.lines}};
+      await writeFile(process.env.RECORD_SETTLEMENT,JSON.stringify(result,null,2)+"\n");
+    }
     await claim.getByRole("button",{name:"결재 이력"}).click();
     for (const decision of ["직원 · 신청 접수 · 300,000원","부서장 · 최종 사전승인 · 200,000원",
       "직원 · 실제 지출 제출 · 225,000원","재무 · 정산 확정 · 180,000원"]) {
