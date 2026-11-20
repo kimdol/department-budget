@@ -87,3 +87,24 @@ SQL
 oracle=$(printf '%s' "$oracle" | sed '/^[[:space:]]*$/d;s/[[:space:]]*$//')
 [[ "$projection" == *"|$claim|2|SETTLEMENT|180000" && "$projection" == "$oracle" ]]
 printf 'Oracle and MySQL reconciliation: %s\n' "$projection"
+cd ..
+docker exec -i "$ORACLE_SERVICE_CONTAINER" sqlplus -s '/ as sysdba' > "$work/settlement.csv" <<SQL
+whenever sqlerror exit failure rollback
+set heading off feedback off pagesize 0 verify off linesize 512 trimout on
+alter session set container=FREEPDB1;
+select event_id||','||workspace_id||','||claim_id||','||sequence_no||','||event_type||','||amount
+from budget_release.portal_outbox where claim_id='$claim' and sequence_no=2;
+exit success
+SQL
+jar=portal-importer/target/portal-importer-0.1.0.jar
+java -jar "$jar" csv < "$work/settlement.csv" > "$work/settlement.json"
+java -jar "$jar" json < "$work/settlement.json" > "$work/replay.json"
+cmp "$work/settlement.json" "$work/replay.json"
+event_id=$(python3 -c 'import json,sys,uuid; print(uuid.UUID(json.load(open(sys.argv[1]))["eventId"]))' "$work/replay.json")
+receipt_count() { mysql_query "select count(*) from budget_event_receipt where event_id='$event_id'"; }
+[[ "$(receipt_count)" == 1 ]]
+http_status=$(curl --cacert "$NODE_EXTRA_CA_CERTS" -sS -o /dev/null -w '%{http_code}' \
+    -H "Authorization: Bearer $BUDGET_PORTAL_TOKEN" -H 'Content-Type: application/json' \
+    --data-binary "@$work/replay.json" "$BUDGET_PORTAL_URL")
+[[ "$http_status" == 204 && "$(receipt_count)" == 1 ]]
+[[ "$(mysql_query "select amount from budget_claim_summary where claim_id='$claim' and sequence_no=2")" == 180000 ]]

@@ -39,3 +39,13 @@
 ## 신청자가 결재 대행을 맡은 경우
 
 조직 데모의 구성원 식별자는 방문자·부서별 업무 공간 안에서 해석한다. 직원은 `STAFF_01`, 부서장은 `HEAD_01`, 재무 담당자는 `FIN_01`이다. 부서장 화면에서 **신청 직원의 부서장 대행 체험**을 누르면 서버가 시연 세션에 직원 신원과 대행 권한을 함께 설정한다. 사전승인·증액·보완 판단은 잠근 신청 행의 신청자와 결재자의 식별자가 같으면 403을 반환한다. 결재 요청 본문으로 처리자 신원을 지정할 수 없다. 결재 이력의 `actorMemberId`는 해당 사건의 실제 시연 구성원이다. V024 이전 이력에는 역할만 보존된다. [서비스의 결재 검증](../src/main/java/kr/budget/claims/ClaimService.java) · [대행 체험 시험](../frontend/tests/employee-form.spec.ts)
+## 포털 메시지 재처리
+
+포털 운영자는 원송신함에서 추출한 JSON 또는 헤더 없는 CSV 한 행을 Apache Camel 변환기에 입력한다. CSV 필드는 차례로 이벤트 ID, 부서 업무 공간 ID, 신청번호, 차수, 유형, 원 단위 금액이다. 차수 1은 APPROVAL, 차수 2는 SETTLEMENT 또는 CANCELLATION이다. 같은 메시지를 복구할 때는 원송신함의 이벤트 ID를 보존한다.
+
+```sh
+mvn -f portal-importer/pom.xml verify
+java -jar portal-importer/target/portal-importer-0.1.0.jar csv < original.csv > replay.json
+```
+
+원본이 JSON이면 마지막 명령의 인수를 `json`으로 지정한다. 변환 종료 코드가 0이면 기존 HTTPS 수신기의 POST 본문으로 `replay.json`을 전송한다. 수신기는 기존 연계 자격 증명을 검사하고 같은 이벤트 ID·내용의 재처리에 204, 같은 ID의 금액 변경에는 409를 반환한다. 변환기는 독립된 운영 도구이며 애플리케이션 WAR에 포함되지 않는다. [변환 경로](../portal-importer/src/main/java/kr/budget/portal/PortalImport.java) · [실제 수신기 재시험](../ops/test_portal.py)

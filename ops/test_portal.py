@@ -97,7 +97,17 @@ def main():
         approval = dict(eventId=str(uuid.uuid4()), claimId=str(uuid.uuid4()), workspaceId=str(uuid.uuid4()),
                         sequenceNo=1, eventType="APPROVAL", amount=200000)
         settlement = dict(approval, eventId=str(uuid.uuid4()), sequenceNo=2, eventType="SETTLEMENT", amount=180000)
-        statuses = [send(settlement), send(approval), send(approval), send(settlement), send(settlement),
+        replay = settlement
+        if "--importer" in sys.argv:
+            jar = root / "portal-importer/target/portal-importer-0.1.0.jar"
+            csv = ",".join(str(settlement[k]) for k in ("eventId","workspaceId","claimId","sequenceNo","eventType","amount"))
+            def normalize(fmt, value):
+                return subprocess.run(["java","-jar",str(jar),fmt], input=value.encode(), capture_output=True, check=True).stdout
+            canonical = normalize("csv",csv)
+            if canonical != normalize("json",json.dumps(settlement)):
+                raise AssertionError("JSON·CSV 메시지 불일치")
+            replay = json.loads(canonical)
+        statuses = [send(settlement), send(approval), send(approval), send(settlement), send(replay),
                     send(dict(settlement, amount=179999)), send(dict(approval, eventId=str(uuid.uuid4())))]
         if statuses != [409, 204, 204, 204, 204, 409, 409]:
             raise AssertionError(statuses)
