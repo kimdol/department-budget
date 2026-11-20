@@ -22,6 +22,9 @@ test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, ba
   expect(cookie).toMatchObject({ secure:true, httpOnly:true, sameSite:"Lax" });
   await page.getByRole("button",{name:"개인 데모 시작"}).click();
   await expect(page.locator("#available")).toHaveText("1,000,000원");
+  const activeCookie = (await page.context().cookies()).find(value => value.name === "JSESSIONID");
+  expect(activeCookie).toMatchObject({ secure:true, httpOnly:true, sameSite:"Lax" });
+  expect(activeCookie!.value !== cookie!.value).toBe(true);
   const snapshot = await page.request.get("/api/workspace");
   expect(snapshot.status()).toBe(200);
   expect(snapshot.headers()["cache-control"]).toContain("no-store");

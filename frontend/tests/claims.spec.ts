@@ -120,8 +120,11 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(other.locator(".claim")).toContainText("다른 방문자의 교육 신청");
     page.once("dialog", dialog => dialog.accept());
     await page.getByRole("button", { name: "내 체험 종료" }).click();
+    await expect(page.getByRole("button", { name: "개인 데모 시작" })).toBeVisible();
+    expect((await page.request.get(receiptUrl!)).status()).toBe(401);
     await page.getByRole("button", { name: "개인 데모 시작" }).click();
     await expect(page.locator("#available")).toHaveText("1,000,000원");
+    expect((await page.request.get(receiptUrl!)).status()).toBe(404);
     await expect(page.locator("#claims")).toHaveText("아직 신청한 비용이 없습니다.");
     await other.reload();
     await expect(other.locator(".claim")).toContainText("다른 방문자의 교육 신청");

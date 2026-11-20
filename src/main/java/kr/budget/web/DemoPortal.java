@@ -74,6 +74,7 @@ public class DemoPortal {
             @RequestParam(defaultValue="COMPANY") kr.budget.claims.OrganizationType organization) {
         synchronized (session) {
             if (session.getAttribute("departments") == null) {
+                request.changeSessionId();
                 session.setAttribute("departments", service.openDepartments(organization));
                 session.setAttribute("role-PRIMARY", Role.EMPLOYEE);
                 session.setAttribute("role-SECONDARY", Role.EMPLOYEE);

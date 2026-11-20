@@ -1,5 +1,7 @@
 # 인수 현황
 
+체험 시작 전후의 JSESSIONID를 Chrome에서 비교하는 시험이 실패했다. 시작 처리가 익명 세션에 업무 공간과 역할을 추가하면서 식별자를 그대로 사용했다. 최초 업무 공간을 할당할 때 서블릿 컨테이너가 식별자를 갱신하도록 바꿨다. 변경 후 Secure·HttpOnly·SameSite=Lax를 유지하며 값이 달라졌다. 체험 종료 직후 이전 영수증 URL은 401, 새 체험 시작 뒤에는 404였고 다른 방문자의 신청은 그대로였다. 로컬 Java 41건, HTTPS 브라우저 7건 통과. [세션 회귀 시험](../frontend/tests/https.spec.ts) · [이전 영수증 접근 시험](../frontend/tests/claims.spec.ts)
+
 Oracle Free에서 신청 당시 규정, 증빙 보완, 1,000회 미리보기의 전표 보존을 포함한 원장 계약 17건을 실행했다. 실패·오류·건너뜀은 모두 0건이다. 합성 신청 100만 건에서 같은 부서의 깊은 페이지를 조회한 실행 계획은 OFFSET 307회, 키셋 13회의 논리 읽기를 기록했다. [Oracle 시험 결과](measurements/oracle-contracts-44781612255.txt) · [100만 건 실행 계획](measurements/oracle-inbox-44781386053.zip)
 
 20만 원 약정 전표가 있는 부서에서 한도 25만 원의 후보 규정을 서로 다른 실비로 1,000번 미리 봤다. H2에서 매회 기존·후보 인정액이 기대값과 일치했고, 미리보기 전후 약정·집행·가용액과 전표 내역·규정 세대가 유지됐다. 로컬 Java 시험 41건 통과, Oracle 계약 17건은 CI에서 별도로 실행한다. [회계 계약 시험](../src/test/java/kr/budget/claims/PostingContract.java)
