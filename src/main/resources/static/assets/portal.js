@@ -85,6 +85,20 @@ function render(state) {
       }).appendTo(actions);
     }
     const documents = $("<div>").appendTo(row);
+    $("<button>").text("결재 이력").on("click", () =>
+      $.getJSON(path+"/history").done(events => {
+        const names = {SUBMIT:"신청 접수",FORWARD_FINANCE:"재무로 결재 요청",FINAL_APPROVAL:"최종 사전승인",
+          SUBMIT_ACTUAL:"실제 지출 제출",APPROVE_INCREASE:"증액 승인",RETURN:"보완 요청",SETTLE:"정산 확정",
+          WITHDRAW:"신청 철회",CANCEL_APPROVAL:"약정 취소"};
+        const roles = {EMPLOYEE:"직원",MANAGER:"부서장",FINANCE:"재무"};
+        documents.empty();
+        if (!events.length) documents.text("저장된 결재 이력이 없습니다.");
+        for (const event of events) {
+          const phase = event.reviewRound ? "정산 "+event.reviewRound+"차" : "사전 결재";
+          $("<p>").text([event.recordedAt.replace("T"," "),phase,roles[event.actorRole],
+            names[event.eventType] || event.eventType,money(event.amount),event.note].filter(Boolean).join(" · ")).appendTo(documents);
+        }
+      }).fail(reportError)).appendTo(actions);
     if (state.role === "FINANCE" && state.portalEnabled) $("<button>").text("사내 포털 수신 결과").on("click",() =>
       $.getJSON(path+"/portal-receipt").done(receipt => {
         if (!receipt) {documents.text("아직 포털에 도착한 결과가 없습니다."); return;}

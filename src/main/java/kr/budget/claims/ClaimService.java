@@ -80,6 +80,7 @@ public class ClaimService {
         var route = ApprovalRoute.forSupport(policy.calculate(estimated, days));
         mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation(),policy.evaluatorVersion(),route,policy.attendanceRule());
         mapper.rememberSubmission(workspace, key, id);
+        mapper.event(workspace, id, 0, "SUBMIT", "EMPLOYEE", estimated, null);
         return id;
     }
 
@@ -111,6 +112,7 @@ public class ClaimService {
             return;
         }
         commitApproval(workspace,id,balance,amount);
+        mapper.event(workspace,id,0,"FINAL_APPROVAL","MANAGER",amount,null);
     }
 
     public void financeApproval(String workspace,String id) {
@@ -190,6 +192,7 @@ public class ClaimService {
         long amount = amount(claim, claim.actual());
         mapper.settle(workspace, id, amount);
         post(workspace, id, "SETTLEMENT", -claim.approved(), amount);
+        mapper.event(workspace, id, round, "SETTLE", "FINANCE", amount, null);
         outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(),workspace,id,2,"SETTLEMENT",amount));
     }
 

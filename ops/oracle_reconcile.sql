@@ -28,4 +28,8 @@ select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || 
 from expense_claim order by workspace_id,claim_id;
 select 'EVIDENCE|' || workspace_id || '|' || claim_id || '|' || evidence_type || '|' || receipt_amount
 from claim_evidence order by workspace_id,claim_id,evidence_type;
+select 'REVIEW|' || workspace_id || '|' || claim_id || '|' || review_round || '|' || event_type ||
+       '|' || actor_role || '|' || amount || '|' || nvl(rawtohex(standard_hash(note,'SHA256')),'-') ||
+       '|' || to_char(recorded_at,'YYYY-MM-DD"T"HH24:MI:SS.FF6')
+from claim_review_event order by workspace_id,claim_id,review_round,event_type;
 exit success

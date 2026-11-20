@@ -80,6 +80,17 @@ public interface BudgetMapper {
         """)
     void event(String workspace, String id, int round, String type, String actor, long amount, String note);
 
+    record ReviewEvent(int reviewRound, String eventType, String actorRole, Long amount,
+                       String note, java.time.LocalDateTime recordedAt) {}
+
+    @Select("""
+        select review_round,event_type,actor_role,amount,note,recorded_at from claim_review_event
+        where workspace_id=#{workspace} and claim_id=#{id}
+        order by review_round, recorded_at, case event_type when 'SUBMIT' then 0 when 'FORWARD_FINANCE' then 1
+            when 'FINAL_APPROVAL' then 2 when 'SUBMIT_ACTUAL' then 3 when 'APPROVE_INCREASE' then 4 else 5 end
+        """)
+    List<ReviewEvent> history(String workspace, String id);
+
     @Update("update expense_claim set status='SETTLED', settled=#{settled} where workspace_id=#{workspace} and claim_id=#{id}")
     void settle(String workspace, String id, long settled);
 

@@ -144,6 +144,14 @@ public class DemoPortal {
         return service.replay(workspace(session),id);
     }
 
+    @GetMapping("/api/claims/{id}/history")
+    @ResponseBody
+    public List<BudgetMapper.ReviewEvent> history(HttpSession session, @PathVariable String id) {
+        String workspace = workspace(session);
+        if (mapper.findClaim(workspace,id) == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return mapper.history(workspace,id);
+    }
+
     @GetMapping("/api/portal/failures")
     @ResponseBody
     public List<PortalOutbox.Failure> portalFailures(HttpSession session) {

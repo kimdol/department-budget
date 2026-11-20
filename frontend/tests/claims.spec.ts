@@ -78,6 +78,12 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     }
     await expect(page.locator("#committed")).toHaveText("0원");
     await expect(claim.locator("small")).toHaveText(number);
+    await claim.getByRole("button",{name:"결재 이력"}).click();
+    for (const decision of ["직원 · 신청 접수 · 300,000원","부서장 · 최종 사전승인 · 200,000원",
+      "직원 · 실제 지출 제출 · 225,000원","재무 · 정산 확정 · 180,000원"]) {
+      await expect(claim).toContainText(decision);
+    }
+    expect((await other.request.get("/api/claims/"+number.trim()+"/history")).status()).toBe(404);
     await claim.getByRole("button", { name: "신청 당시 계산 근거" }).click();
     await expect(claim).toContainText("평가기 decimal-v1");
     await expect(claim).toContainText("실제 지출 225,000원 → 인정 180,000원");

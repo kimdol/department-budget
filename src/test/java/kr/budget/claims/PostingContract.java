@@ -167,7 +167,8 @@ abstract class PostingContract {
             service.cancel(workspace, id, approved);
             assertThrows(ResponseStatusException.class, () -> service.approve(workspace, id));
             assertEquals(approved ? 2 : 0, jdbc.queryForObject("select count(*) from budget_posting where claim_id=?", Integer.class, id));
-            assertEquals(1, jdbc.queryForObject("select count(*) from claim_review_event where claim_id=?", Integer.class, id));
+            assertEquals(1, mapper.history(workspace,id).stream()
+                    .filter(event -> event.eventType().equals(approved ? "CANCEL_APPROVAL" : "WITHDRAW")).count());
             assertEquals(1000000, mapper.balance(workspace).getAvailable());
         }
         assertTrue(periods.statement(workspace).pending().isEmpty());
@@ -355,6 +356,11 @@ abstract class PostingContract {
         assertEquals(0, balance.committed());
         assertEquals(180000, balance.spent());
         assertEquals(820000, balance.getAvailable());
+        var history = mapper.history(workspace,id);
+        assertEquals(List.of("SUBMIT","FINAL_APPROVAL","SUBMIT_ACTUAL","SETTLE"),
+                history.stream().map(BudgetMapper.ReviewEvent::eventType).toList());
+        assertEquals(List.of(300000L,200000L,225000L,180000L),
+                history.stream().map(BudgetMapper.ReviewEvent::amount).toList());
         assertEquals(2, jdbc.queryForObject("select count(*) from budget_posting where claim_id=?", Integer.class, id));
         assertEquals(180000, jdbc.queryForObject("select sum(spent_delta) from budget_posting where claim_id=?", Long.class, id));
         assertThrows(ResponseStatusException.class, () -> service.settle(service.open(), id));
@@ -375,7 +381,8 @@ abstract class PostingContract {
         service.financeApproval(workspace,id);
         assertEquals(300000,mapper.balance(workspace).committed());
         assertEquals(1,jdbc.queryForObject("select count(*) from budget_posting where claim_id=?",Integer.class,id));
-        assertEquals(2,jdbc.queryForObject("select count(*) from claim_review_event where claim_id=?",Integer.class,id));
+        assertEquals(List.of("EMPLOYEE","MANAGER","FINANCE"),
+                mapper.history(workspace,id).stream().map(BudgetMapper.ReviewEvent::actorRole).toList());
     }
 
     @Test

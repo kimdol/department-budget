@@ -1,5 +1,7 @@
 # 인수 현황
 
+결재 이력 화면과 API에서 직원 접수 → 부서장 승인 → 실비 제출 → 재무 정산을 역할·차수·금액과 함께 조회한다. 이전에는 일반 교육비의 접수·단일 승인·정산 확정이 검토 이벤트에 남지 않았다. 세 업무 트랜잭션에 각각 이력 쓰기를 추가했다. 재요청 후에도 대표 신청의 이벤트는 4건이며 별도 방문자가 같은 이력을 요청하면 404다. 로컬 Java 41건 및 HTTPS 브라우저 7건 통과. [HTTP 계약](API.md) · [중복 처리 계약](../src/test/java/kr/budget/claims/PostingContract.java)
+
 Oracle Free에서 현재 WAR(c7f477c)로 200,000원을 약정하고 실비 225,000원에 대해 180,000원을 정산한 뒤, 다음 달에 30,000원을 환입했다. 같은 스키마를 사용하는 이전 WAR(d45c847)로 복귀하고 새 Chrome 세션에서 출장비 300,000원을 승인했다. 원래 교육비 신청에는 전표 3건, 약정 잔액 0원, 환입 후 순집행 150,000원이 남았고 귀속 월까지 복귀 전후가 일치했다. 이 검증은 두 WAR가 같은 V017 스키마를 사용하는 Linux CI에서 수행했다. [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44783938530) · [두 WAR 해시와 Oracle 대사 원자료](measurements/war-rollback-44783938530.zip) · [역할별 API 안내](API.md)
 
 결재함에서 사용하지 않는 수식·증빙 조건 등 다섯 열을 목록 매퍼에서 제외했다. 50개 행을 반환하는 부서장 목록 본문이 22,454바이트에서 12,904바이트로 줄었다. 계산 근거 조회와 커서 이동 후 승인까지 로컬 HTTPS에서 확인했다. [전후 측정](measurements/README.md) · [목록 매퍼](../src/main/java/kr/budget/claims/BudgetMapper.java)
