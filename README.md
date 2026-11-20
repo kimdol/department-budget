@@ -11,7 +11,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 | 업무 영역 | 구현과 검증 결과 |
 | --- | --- |
 | Java·Oracle 조회 최적화 | 합성 신청 100만 건을 100개 부서에 나눠 넣었다. 한 부서의 결재함에서 앞선 9,000건 이후 같은 51건을 조회할 때 Oracle 논리 읽기는 OFFSET 307회, 키셋 13회였다. 실행 순서를 교대한 4회 모두 같은 결과였다. [실행 계획 원자료](docs/measurements/oracle-inbox-44781386053.zip) |
-| 금융·경영지원 SI/SM | Oracle 원장 시험 25건을 통과했다. 같은 본부 예산을 동시에 배정해도 잔액을 초과하지 않았고, 비목이 바뀐 신청은 원래 약정을 한 번만 해제했다. Data Pump로 같은 PDB의 별도 스키마에 복원한 뒤 신청 138건, 전표 44건, 원신청·재신청 연결을 포함해 원본과 복원 결과가 일치했다. [시험 결과](docs/measurements/oracle-contracts-44795805725.txt) · [복원 대사 원자료](docs/measurements/oracle-restore-44795805725.zip) |
+| 금융·경영지원 SI/SM | 실제 Oracle 원장 시험 27건을 통과했다. 같은 본부 예산을 동시에 배정해도 잔액을 초과하지 않았고, 신청을 변경해도 이전 약정과 새 결재를 버전별로 추적할 수 있었다. Data Pump로 같은 PDB의 별도 스키마에 복원한 결과, 포털 송신 메시지 47건을 포함한 대사 파일이 원본과 일치했다. [시험 결과](docs/measurements/oracle-contracts-44800719035.txt) · [복원 대사 원자료](docs/measurements/oracle-restore-44801501494.zip) |
 | 웹 화면 성능 | 자체 JS·CSS의 내용 해시를 URL에 반영했다. 로컬 Chrome 결재함 재방문 때 정적 자산 3개의 전송량은 22,034B에서 0B로 줄었고, 첫 방문 전송량은 101B 증가했다. [전후 5회 측정](docs/measurements/README.md) |
 | 병원 행정·규정 관리 | 학회비 지원율을 80%에서 90%로 바꾼 뒤에도 이전 신청의 인정액 144,000원을 재현했다. 같은 실비 180,000원의 신규 신청은 162,000원, 이전 규정 복구 후 접수한 신청은 144,000원이었다. [발행·복구 계약 시험](src/test/java/kr/budget/claims/PostingContract.java) |
 
