@@ -37,7 +37,7 @@ pump() {
 pump expdp budget schemas=BUDGET directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=export.log
 pump impdp budget_restore remap_schema=BUDGET:BUDGET_RESTORE directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=import.log
 read_ledger budget_restore "$work/restored.txt"
-for kind in WORKSPACE DEPARTMENT POSTING BALANCE LINE; do
+for kind in WORKSPACE DEPARTMENT POSTING BALANCE LINE POLICY CLAIM EVIDENCE; do
     grep -q "^${kind}|" "$work/source.txt"
 done
 diff -u "$work/source.txt" "$work/restored.txt"

@@ -17,4 +17,15 @@ select 'BALANCE|' || workspace_id || '|' || period_key || '|' || allocation || '
 from budget_statement_balance order by workspace_id,period_key;
 select 'LINE|' || workspace_id || '|' || period_key || '|' || category || '|' || claim_count || '|' || spent
 from budget_statement_line order by workspace_id,period_key,category;
+select 'POLICY|' || workspace_id || '|' || category || '|' || generation || '|' || evaluator_version ||
+       '|' || rawtohex(standard_hash(formula,'SHA256')) || '|' || rawtohex(standard_hash(attendance_rule,'SHA256'))
+from policy_publication order by workspace_id,category,generation;
+select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || policy_generation ||
+       '|' || evaluator_version || '|' || rawtohex(standard_hash(formula,'SHA256')) ||
+       '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) || '|' || approval_route ||
+       '|' || estimated || '|' || days || '|' || approved || '|' || nvl(to_char(actual),'-') ||
+       '|' || settled || '|' || status || '|' || review_round
+from expense_claim order by workspace_id,claim_id;
+select 'EVIDENCE|' || workspace_id || '|' || claim_id || '|' || evidence_type || '|' || receipt_amount
+from claim_evidence order by workspace_id,claim_id,evidence_type;
 exit success
