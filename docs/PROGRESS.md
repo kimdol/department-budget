@@ -1,5 +1,7 @@
 # 인수 현황
 
+공개 커밋 d0316d9에서 Oracle 원장 계약 14건과 전체 Java 시험 43건이 누락·실패 없이 통과했다. 이어지는 Data Pump 단계는 표준 입력 비밀번호를 받지 못해 ORA-01005로 종료됐다. 컨테이너 내부 임시 파라미터 파일을 소유자만 읽게 생성하고 명령 종료 시 제거하도록 수정했다. [실제 Oracle 실행](https://github.com/kimdol/department-budget/actions/runs/44764118942)
+
 최초 공개 Oracle CI는 V001에서 ORA-01408로 실패했다. expense_claim의 (workspace_id, claim_id) 유일 제약이 동일 열 인덱스를 이미 생성했다. H2에서는 통과했던 명시적 인덱스를 제거했다. 빈 Oracle 스키마에 최초 설치가 실패한 단계이므로 V001의 중복 선언을 직접 정정했다. [실패한 실행](https://github.com/kimdol/department-budget/actions/runs/44763501353)
 
 로컬의 H2 업무 원장 → Java HTTPS 송신 → PHP 수신 → 실제 MySQL 8.4.13 → 재무 담당자의 Chrome 조회를 한 번에 시험했다. 대표 신청에서 포털 2차 정산 180,000원과 결재함 집행액이 일치했다. 합성 예산 업무·브라우저 격리·포털을 함께 확인하는 명령은 `python ops/test_portal.py --browser`다. 공개 인터넷 배포 검증은 별도다.

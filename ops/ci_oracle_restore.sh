@@ -28,8 +28,14 @@ read_ledger() {
 }
 
 read_ledger budget "$work/source.txt"
-printf '%s\n' "$BUDGET_DB_PASSWORD" | "${database[@]}" expdp budget@//localhost:1521/FREEPDB1 schemas=BUDGET directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=export.log
-printf '%s\n' "$BUDGET_DB_PASSWORD" | "${database[@]}" impdp budget_restore@//localhost:1521/FREEPDB1 remap_schema=BUDGET:BUDGET_RESTORE directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=import.log
+pump() {
+    local program="$1" schema="$2"
+    shift 2
+    printf 'userid=%s/%s@//localhost:1521/FREEPDB1\n' "$schema" "$BUDGET_DB_PASSWORD" |
+        "${database[@]}" bash -c 'umask 077; file=$(mktemp); trap '\''rm -f "$file"'\'' EXIT; cat > "$file"; "$1" parfile="$file" "${@:2}"' bash "$program" "$@"
+}
+pump expdp budget schemas=BUDGET directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=export.log
+pump impdp budget_restore remap_schema=BUDGET:BUDGET_RESTORE directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=import.log
 read_ledger budget_restore "$work/restored.txt"
 for kind in WORKSPACE POSTING BALANCE LINE; do
     grep -q "^${kind}|" "$work/source.txt"
