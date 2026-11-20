@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import kr.budget.policy.PolicyService;
 import kr.budget.policy.PolicyVersion;
+import kr.budget.portal.PortalOutbox;
 
 @Service
 @Transactional
@@ -14,10 +15,12 @@ public class ClaimService {
     private final BudgetMapper mapper;
 
     private final PolicyService policies;
+    private final PortalOutbox outbox;
 
-    public ClaimService(BudgetMapper mapper, PolicyService policies) {
+    public ClaimService(BudgetMapper mapper, PolicyService policies, PortalOutbox outbox) {
         this.mapper = mapper;
         this.policies = policies;
+        this.outbox = outbox;
     }
 
     public String open() {
@@ -56,6 +59,7 @@ public class ClaimService {
         if (amount > balance.getAvailable()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         mapper.approve(workspace, id, amount);
         post(workspace, id, "APPROVAL", amount, 0);
+        outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(),workspace,id,1,"APPROVAL",amount));
     }
 
     public void review(String workspace, String id, long actual) {
@@ -115,6 +119,7 @@ public class ClaimService {
         long amount = amount(claim, claim.actual());
         mapper.settle(workspace, id, amount);
         post(workspace, id, "SETTLEMENT", -claim.approved(), amount);
+        outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(),workspace,id,2,"SETTLEMENT",amount));
     }
 
     private Claim locked(String workspace, String id) {

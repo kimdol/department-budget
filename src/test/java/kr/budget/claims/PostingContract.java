@@ -17,6 +17,32 @@ abstract class PostingContract {
     @Autowired kr.budget.policy.PolicyService policies;
     @Autowired kr.budget.closing.PeriodClosing periods;
     @Autowired kr.budget.closing.ClosingService closing;
+    @Autowired kr.budget.portal.PortalOutbox outbox;
+
+    @Test
+    void deliveryCanResumeAfterReceiverCommitsButItsAcknowledgementIsLost() {
+        String workspace = service.open();
+        String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
+        service.approve(workspace, id);
+        service.review(workspace, id, 225000);
+        service.settle(workspace, id);
+        var receipts = new java.util.LinkedHashMap<String,Long>();
+        var attempts = new java.util.ArrayList<Integer>();
+        var relay = new kr.budget.portal.PortalRelay(outbox,event -> {
+            if (!event.claimId().equals(id)) return;
+            receipts.putIfAbsent(event.eventId(),event.amount());
+            attempts.add(event.sequenceNo());
+            if (attempts.size() == 1) throw new IllegalStateException("응답 유실");
+        });
+        relay.deliverPending();
+        assertEquals(180000, mapper.balance(workspace).spent());
+        relay.deliverPending();
+        relay.deliverPending();
+        relay.deliverPending();
+        assertEquals(List.of(1,1,2), attempts);
+        assertEquals(List.of(200000L,180000L), List.copyOf(receipts.values()));
+        assertEquals(2, jdbc.queryForObject("select count(*) from portal_outbox where claim_id=? and delivered=1", Integer.class, id));
+    }
 
     @Test
     void resumesAfterPreparingCloseAndFreezesExactlyOneStatement() {
