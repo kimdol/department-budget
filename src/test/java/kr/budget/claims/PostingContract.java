@@ -21,6 +21,31 @@ abstract class PostingContract {
     @Autowired kr.budget.portal.PortalOutbox outbox;
 
     @Test
+    void branchCanCommitWhileHeadOfficeBudgetIsLocked() throws Exception {
+        var departments = service.openDepartments(OrganizationType.BANK);
+        String headOffice = departments.primaryId();
+        String branch = departments.secondaryId();
+        String claim = service.submit(branch, UUID.randomUUID(), "지점 교육", "EDUCATION", 300000, 1);
+        assertEquals(headOffice, jdbc.queryForObject(
+                "select parent_workspace from budget_workspace where workspace_id=?", String.class, branch));
+        try (var worker = Executors.newSingleThreadExecutor();
+             var connection = jdbc.getDataSource().getConnection()) {
+            connection.setAutoCommit(false);
+            try (var lock = connection.prepareStatement("select allocation from budget_workspace where workspace_id=? for update")) {
+                lock.setString(1, headOffice);
+                try (var rows = lock.executeQuery()) {
+                    assertTrue(rows.next());
+                    worker.submit(() -> service.approve(branch, claim)).get(10, TimeUnit.SECONDS);
+                }
+            } finally {
+                connection.rollback();
+            }
+        }
+        assertEquals(200000, mapper.balance(branch).committed());
+        assertEquals(0, mapper.balance(headOffice).committed());
+    }
+
+    @Test
     void reversesClosedSettlementOnlyInAnOpenPeriodWithoutChangingOriginalStatement() {
         String workspace = service.open();
         String id = service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1);

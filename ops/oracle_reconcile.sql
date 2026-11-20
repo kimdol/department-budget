@@ -8,6 +8,8 @@ select 'WORKSPACE|' || w.workspace_id || '|' || w.period_key || '|' || w.period_
 from budget_workspace w left join budget_posting p on w.workspace_id=p.workspace_id
 group by w.workspace_id,w.period_key,w.period_state,w.allocation,w.committed,w.spent
 order by w.workspace_id;
+select 'DEPARTMENT|' || parent_workspace || '|' || workspace_id || '|' || organization_type
+from budget_workspace where parent_workspace is not null order by parent_workspace,workspace_id;
 select 'POSTING|' || workspace_id || '|' || period_key || '|' || claim_id || '|' || kind ||
        '|' || committed_delta || '|' || spent_delta || '|' || nvl(original_kind,'-')
 from budget_posting order by workspace_id,period_key,claim_id,kind;
