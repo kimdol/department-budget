@@ -34,7 +34,27 @@ function render(state) {
           documents.empty();
           if (!entries.length) documents.text("기록된 전표가 없습니다.");
           for (const item of entries) $("<p>").text(item.kind + " · 약정 증감 " + money(item.committedDelta) +
-              " · 집행 증감 " + money(item.spentDelta)).appendTo(documents);
+              " · 집행 증감 " + money(item.spentDelta) + " · " + item.periodKey).appendTo(documents);
+          const original = entries.find(item => item.kind === "SETTLEMENT");
+          if (!original) return;
+          $("<button>").text("원래 기간 결산표").on("click", () =>
+            $.getJSON("/api/statements/" + original.periodKey).done(report =>
+              $("<p>").text(report.period + " 마감 당시 가용 예산 " + money(report.balance.available)).appendTo(documents)
+            ).fail(() => notice("해당 기간의 확정 결산표가 없습니다."))).appendTo(documents);
+          $.getJSON("/api/statement").done(report => {
+            const remaining = entries.reduce((sum,item) => sum + item.spentDelta,0);
+            if (report.state !== "OPEN" || report.period <= original.periodKey || remaining <= 0) return;
+            const round = entries.filter(item => item.originalKind === "SETTLEMENT").length + 1;
+            const form = $("<form>").appendTo(documents);
+            const label = $("<label>").text("환입 금액(원) · 잔여 " + money(remaining)).appendTo(form);
+            const amount = $("<input>").attr({type:"number",required:true,min:1,max:remaining}).appendTo(label);
+            $("<button>").text("정정 전표 발행").appendTo(form);
+            form.on("submit",event => {
+              event.preventDefault();
+              if (window.confirm(money(amount.val()) + "을 " + report.period + "에 환입할까요?"))
+                api(path+"/reverse",{amount:amount.val(),round,period:report.period}).then(refresh).fail(reportError);
+            });
+          }).fail(reportError);
         }).fail(reportError);
       }).appendTo(actions);
     }
@@ -88,6 +108,8 @@ function showStatement(report) {
   $("<p>").text("누적 집행 " + money(report.balance.spent) + " / 가용 예산 " + money(report.balance.available)).appendTo(box);
   if (report.pending.length) $("<p>").text("진행 중인 신청 " + report.pending.join(", ")).appendTo(box);
   $("#close-period").prop("hidden", report.state === "CLOSED" || report.pending.length > 0);
+  if (report.state === "CLOSED") $("<button>").text("다음 달 열기").on("click", () =>
+    api("/api/statements/"+report.period+"/advance",{}).done(showStatement).fail(reportError)).appendTo(box);
 }
 $("#view-statement").on("click",()=>$.getJSON("/api/statement").done(showStatement).fail(reportError));
 $("#close-period").on("click",function() {

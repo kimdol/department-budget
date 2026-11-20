@@ -66,8 +66,8 @@ public interface BudgetMapper {
     void changeBalance(String workspace, long reserved, long spent);
 
     @Insert("""
-        insert into budget_posting (workspace_id,claim_id,kind,committed_delta,spent_delta)
-        values (#{workspace},#{id},#{kind},#{reserved},#{spent})
+        insert into budget_posting (workspace_id,claim_id,kind,committed_delta,spent_delta,period_key)
+        select workspace_id,#{id},#{kind},#{reserved},#{spent},period_key from budget_workspace where workspace_id=#{workspace}
         """)
     void post(String workspace, String id, String kind, long reserved, long spent);
 }

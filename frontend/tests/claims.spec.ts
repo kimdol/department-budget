@@ -39,6 +39,18 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
       await mkdir(folder, { recursive: true });
       await page.screenshot({ path: path.join(folder, "settlement.png"), fullPage: true });
     }
+    page.once("dialog", dialog => dialog.accept());
+    await page.getByRole("button", { name: "이 기간 마감 확정" }).click();
+    await page.getByRole("button", { name: "다음 달 열기" }).click();
+    await expect(page.locator("#statement")).toContainText("마감 전");
+    await claim.getByRole("button", { name: "전표 조회" }).click();
+    await claim.getByLabel(/환입 금액/).fill("30000");
+    page.once("dialog", dialog => dialog.accept());
+    await claim.getByRole("button", { name: "정정 전표 발행" }).click();
+    await expect(page.locator("#available")).toHaveText("850,000원");
+    await claim.getByRole("button", { name: "전표 조회" }).click();
+    await claim.getByRole("button", { name: "원래 기간 결산표" }).click();
+    await expect(claim).toContainText("마감 당시 가용 예산 820,000원");
     await other.reload();
     await expect(other.locator("#available")).toHaveText("1,000,000원");
     await expect(other.locator("#claims")).toHaveText("아직 신청한 비용이 없습니다.");

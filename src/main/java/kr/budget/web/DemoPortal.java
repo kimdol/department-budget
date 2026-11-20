@@ -108,6 +108,19 @@ public class DemoPortal {
         return statements.postings(authorized(session, Role.FINANCE), id);
     }
 
+    @PostMapping("/api/statements/{period}/advance")
+    @ResponseBody
+    public PeriodClosing.Statement advance(HttpSession session,@PathVariable String period) {
+        return periods.advance(authorized(session, Role.FINANCE), period);
+    }
+
+    @PostMapping("/api/claims/{id}/reverse")
+    @ResponseBody
+    public void reverse(HttpSession session,@PathVariable String id,@RequestParam int round,@RequestParam long amount,
+            @RequestParam String period) {
+        periods.reverse(authorized(session, Role.FINANCE),id,round,amount,period);
+    }
+
     @GetMapping("/api/statements/{period}")
     @ResponseBody
     public PeriodClosing.Statement archive(HttpSession session, @PathVariable String period) {

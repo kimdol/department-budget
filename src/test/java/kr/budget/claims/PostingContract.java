@@ -20,6 +20,25 @@ abstract class PostingContract {
     @Autowired kr.budget.portal.PortalOutbox outbox;
 
     @Test
+    void reversesClosedSettlementOnlyInAnOpenPeriodWithoutChangingOriginalStatement() {
+        String workspace = service.open();
+        String id = service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1);
+        service.approve(workspace,id);
+        service.review(workspace,id,225000);
+        service.settle(workspace,id);
+        var closed = closing.close(workspace);
+        String next = periods.advance(workspace,closed.period()).period();
+        periods.reverse(workspace,id,1,30000,next);
+        periods.reverse(workspace,id,1,30000,next);
+        assertThrows(ResponseStatusException.class, () -> periods.reverse(workspace,id,1,20000,next));
+        assertThrows(ResponseStatusException.class, () -> periods.reverse(workspace,id,2,150001,next));
+        var corrected = closing.close(workspace);
+        assertEquals(-30000,corrected.lines().getFirst().spent());
+        assertEquals(850000,corrected.balance().getAvailable());
+        assertEquals(closed,periods.archive(workspace,closed.period()));
+    }
+
+    @Test
     void cancellationReleasesOnlyAnExistingCommitmentOnce() {
         String workspace = service.open();
         for (boolean approved : List.of(false, true)) {

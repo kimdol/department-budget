@@ -25,8 +25,45 @@ public class PeriodClosing {
         var period = ledger.period(workspace);
         boolean closed = period.periodState().equals("CLOSED");
         if (closed) return archive(workspace, period.periodKey());
-        return new Statement(period.periodKey(), period.periodState(), balance, ledger.currentLines(workspace),
+        return new Statement(period.periodKey(), period.periodState(), balance, ledger.currentLines(workspace, period.periodKey()),
                 ledger.pending(workspace));
+    }
+
+    @Transactional
+    public Statement advance(String workspace, String closedPeriod) {
+        budgets.lockBalance(workspace);
+        var current = ledger.period(workspace);
+        if (ledger.archivedBalance(workspace, closedPeriod) == null) throw new ResponseStatusException(HttpStatus.CONFLICT);
+        String next = java.time.YearMonth.parse(closedPeriod).plusMonths(1).toString();
+        if (current.periodKey().equals(next)) return statement(workspace);
+        if (!current.periodKey().equals(closedPeriod) || !current.periodState().equals("CLOSED"))
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        ledger.advance(workspace,next);
+        return statement(workspace);
+    }
+
+    @Transactional
+    public void reverse(String workspace, String id, int round, long amount, String expectedPeriod) {
+        budgets.lockBalance(workspace);
+        var period = ledger.period(workspace);
+        var postings = ledger.postings(workspace,id);
+        var original = postings.stream().filter(p -> p.kind().equals("SETTLEMENT")).findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (round < 1 || amount < 1) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        String kind = "REV_" + round;
+        var previous = postings.stream().filter(p -> p.kind().equals(kind)).findFirst();
+        if (previous.isPresent()) {
+            if (previous.get().spentDelta() == -amount && previous.get().periodKey().equals(expectedPeriod)) return;
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+        if (!period.periodState().equals("OPEN") || !period.periodKey().equals(expectedPeriod)
+                || original.periodKey().compareTo(expectedPeriod) >= 0
+                || round != 1 + postings.stream().filter(p -> p.originalKind() != null).count())
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        long remaining = postings.stream().mapToLong(ClosingMapper.Posting::spentDelta).sum();
+        if (amount > remaining) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        ledger.reverse(workspace,id,kind,-amount,expectedPeriod);
+        budgets.changeBalance(workspace,0,-amount);
     }
 
     public Statement archive(String workspace, String period) {
@@ -57,7 +94,9 @@ public class PeriodClosing {
         ledger.freezeLines(workspace, expectedPeriod);
         ledger.freezeBalance(workspace, expectedPeriod);
         long snapshot = ledger.lines(workspace, expectedPeriod).stream().mapToLong(ClosingMapper.Line::spent).sum();
-        if (snapshot != balance.spent()) throw new IllegalStateException("보고서와 집행액이 일치하지 않습니다.");
+        var previous = ledger.archivedBalance(workspace,java.time.YearMonth.parse(expectedPeriod).minusMonths(1).toString());
+        long opening = previous == null ? 0 : previous.spent();
+        if (snapshot + opening != balance.spent()) throw new IllegalStateException("보고서와 집행액이 일치하지 않습니다.");
         ledger.setState(workspace, "CLOSED");
     }
 
