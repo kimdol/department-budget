@@ -66,6 +66,28 @@ abstract class PostingContract {
     }
 
     @Test
+    void oneThousandPolicyPreviewsLeaveCommittedBudgetAndPostingRowsUntouched() {
+        String workspace = service.open();
+        String claim = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
+        service.approve(workspace, claim);
+        var balance = mapper.balance(workspace);
+        String postingRows = "select claim_id, kind, committed_delta, spent_delta from budget_posting where workspace_id=? order by claim_id, kind";
+        var postings = jdbc.queryForList(postingRows, workspace);
+        assertEquals(1, postings.size());
+        assertEquals(200000, balance.committed());
+        for (int index = 0; index < 1000; index++) {
+            long cost = 200000L + index * 100;
+            var preview = policies.preview(workspace, "EDUCATION",
+                    "min(eligible_cost * support_rate, event_cap * 1.25)", cost, 1);
+            assertEquals(Math.min(cost * 8 / 10, 200000), preview.original());
+            assertEquals(cost * 8 / 10, preview.candidate());
+        }
+        assertEquals(balance, mapper.balance(workspace));
+        assertEquals(postings, jdbc.queryForList(postingRows, workspace));
+        assertEquals(1, policies.history(workspace, "EDUCATION").size());
+    }
+
+    @Test
     void displayedEstimateDetectsPublicationBeforeSubmissionAndPreservesCommittedRetry() {
         String workspace = service.open();
         var estimate = service.estimate(workspace,"EDUCATION",300000,1);
