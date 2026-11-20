@@ -1,5 +1,7 @@
 # 인수 현황
 
+Oracle·MySQL·Caddy 브라우저 시연에서 직원으로 전환한 직후 증빙 요건을 열면 ‘판정 근거’가 클릭 전에 화면에서 사라져 시험이 중단됐다. 역할 선택값은 즉시 바뀌지만 새 결재함은 비동기로 도착해 기존 화면을 교체했다. 업무 버튼을 누를 수 있는 시점을 새 역할의 결재함 표시 이후로 옮겼다. 회귀 시험은 역할 변경 응답을 직접 보류하고 이 구간에 이전 신청·결재 화면을 조작할 수 없는지 검사한다. [실패 실행](https://github.com/kimdol/department-budget/actions/runs/44790716638/job/136477325495) · [회귀 시험](../frontend/tests/employee-form.spec.ts)
+
 직원은 비용 신청을 작성하다가 React 화면으로 전환해 입력 내용을 이어갈 수 있다. JSP와 React는 같은 제출·미리보기 처리기를 쓴다. 로컬 HTTPS Chrome에서 두 화면 모두 금액 0원 입력 시 금액란에 포커스가 남고, 다른 탭에서 역할을 바꾼 뒤 제출하면 권한 오류가 표시됐다. 직원 역할로 돌아와 Enter로 제출한 뒤 승인하면 약정 200,000원, 가용액 800,000원이었다. [React 신청 화면](../frontend/src/employee.tsx) · [화면 전환 계약 시험](../frontend/tests/employee-form.spec.ts)
 
 수식은 원문 SHA-256과 평가기 버전으로 구문 트리를 찾아 매번 그 신청의 입력으로 계산한다. 최근 트리 256개를 보존한다. 같은 트리에 서로 다른 실비 500개를 병렬로 넣은 결과와, 캐시에서 빠진 이전 수식을 재해석한 결과를 확인했다. [평가기](../src/main/java/kr/budget/policy/ExpenseFormula.java) · [수식 시험](../src/test/java/kr/budget/policy/ExpenseFormulaTest.java)

@@ -336,7 +336,15 @@ $("#end-demo").on("submit", event => {
   }
   sessionStorage.removeItem("pending-claim");
 });
-$("#role").on("change",event=>api("/api/demo/role",{role:event.target.value}).then(refresh).fail(reportError));
+$("#role").on("change",function() {
+  const selector = $(this).prop("disabled",true);
+  const panels = $("#desk > section,#estimate-panel,#policy-panel");
+  panels.prop("inert",true);
+  api("/api/demo/role",{role:this.value}).then(refresh).then(()=>{
+    panels.prop("inert",false);
+    selector.prop("disabled",false);
+  }).fail(()=>location.reload());
+});
 let estimateRevision = 0;
 let expectedGeneration = null;
 function clearEstimate() {

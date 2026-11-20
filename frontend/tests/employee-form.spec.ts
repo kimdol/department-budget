@@ -1,5 +1,25 @@
 import {expect,test} from "@playwright/test";
 
+test("역할 전환의 응답을 기다리는 동안 이전 업무 버튼을 잠근다",async ({page})=>{
+  await page.goto("/");
+  await page.locator("#start").click();
+  await expect(page.locator("#available")).toHaveText("1,000,000원");
+  let release!:()=>void;
+  const gate = new Promise<void>(resolve=>{release=resolve;});
+  await page.route("**/api/demo/role",async route=>{await gate; await route.continue();});
+  await page.locator("#role").selectOption("MANAGER");
+  try {
+    await expect(page.locator("#role")).toBeDisabled();
+    await expect(page.locator("#entry")).toHaveJSProperty("inert",true);
+    await expect(page.locator("#claims").locator("..")).toHaveJSProperty("inert",true);
+  } finally {
+    release();
+  }
+  await expect(page.locator("#role")).toBeEnabled();
+  await expect(page.locator("#entry")).toBeHidden();
+  await expect(page.locator("#claims").locator("..")).toHaveJSProperty("inert",false);
+});
+
 for (const mode of ["JSP","React"]) {
   test(mode+" 직원이 같은 신청 계약으로 교육비를 약정한다",async ({page})=>{
     await page.goto("/");
