@@ -2,7 +2,12 @@ package kr.budget.policy;
 
 import java.math.BigDecimal;
 
-public record PolicyVersion(long generation, String formula,String evaluatorVersion) {
+public record PolicyVersion(long generation, String formula,String evaluatorVersion,String attendanceRule) {
+    @org.apache.ibatis.annotations.AutomapConstructor
+    public PolicyVersion {}
+    public PolicyVersion(long generation, String formula, String evaluatorVersion) {
+        this(generation, formula, evaluatorVersion, kr.budget.claims.AttendanceRule.DEFAULT);
+    }
     public static final String DECIMAL_V1 = "decimal-v1";
     public static final String DECIMAL_V2 = "decimal-v2";
     public static PolicyVersion initial(String category) {

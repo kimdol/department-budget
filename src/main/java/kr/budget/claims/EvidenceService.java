@@ -64,7 +64,7 @@ public class EvidenceService {
                 .map(EvidenceMapper.Document::receiptAmount).findFirst().orElse(null);
         boolean attendance = documents.stream().anyMatch(d -> d.evidenceType().equals("ATTENDANCE"));
         return EvidencePolicy.evaluate(new EvidencePolicy.Inputs(budgets.organization(workspace),claim.category(),
-                claim.actual(),receipt,attendance));
+                claim.actual(),receipt,attendance),AttendanceRule.parse(claim.attendanceRule()));
     }
 
     public List<EvidenceMapper.Document> list(String workspace, String id) {

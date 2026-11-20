@@ -23,12 +23,12 @@ public interface BudgetMapper {
     Balance lockBalance(String workspace);
 
     @Insert("""
-        insert into expense_claim (claim_id, workspace_id, title, category, status, estimated, days, formula, policy_generation,evaluator_version,approval_route,inbox_order)
-        values (#{id}, #{workspace}, #{title}, #{category}, 'SUBMITTED', #{estimated}, #{days}, #{formula}, #{generation},#{version},#{route},claim_inbox_seq.NEXTVAL)
+        insert into expense_claim (claim_id, workspace_id, title, category, status, estimated, days, formula, policy_generation,evaluator_version,approval_route,inbox_order,attendance_rule)
+        values (#{id}, #{workspace}, #{title}, #{category}, 'SUBMITTED', #{estimated}, #{days}, #{formula}, #{generation},#{version},#{route},claim_inbox_seq.NEXTVAL,#{attendanceRule})
         """)
-    void submit(String id, String workspace, String title, String category, long estimated, int days, String formula, long generation,String version,ApprovalRoute route);
+    void submit(String id, String workspace, String title, String category, long estimated, int days, String formula, long generation,String version,ApprovalRoute route,String attendanceRule);
 
-    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note,evaluator_version,approval_route,inbox_order";
+    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note,evaluator_version,approval_route,inbox_order,attendance_rule";
 
     @Update("update expense_claim set status='FINANCE_PENDING' where workspace_id=#{workspace} and claim_id=#{id}")
     void forwardToFinance(String workspace,String id);

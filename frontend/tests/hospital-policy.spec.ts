@@ -31,10 +31,12 @@ test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구�
   await page.locator("#role").selectOption("MANAGER");
   await editor.getByLabel("비교할 실비(원)").fill("10000");
   await expect(editor).toContainText("검토 요청 시 실비 180,000원 · 1일 · 지원액 144,000원 → 162,000원");
+  await expect(editor).toContainText("참석 조건 · ALL(OUTSIDE_HOSPITAL,ATTACHED)");
   await editor.getByRole("button", { name: "발행", exact: true }).click();
   await expect(editor).toContainText("적용 버전 1");
   await page.locator("#role").selectOption("FINANCE");
   await editor.getByRole("button", { name: "복구 후보로 선택" }).click();
+  await expect(attendance.getByLabel("비교할 참석 조건")).toHaveValue("ANY(OUTSIDE_HOSPITAL,OTHER_CATEGORY,ATTACHED)");
   await editor.getByLabel("비교할 실비(원)").fill("180000");
   await expect(editor).toContainText(/162,000.*144,000/);
   await editor.getByRole("button", { name: "검토 요청" }).click();

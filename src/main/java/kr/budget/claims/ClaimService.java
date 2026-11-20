@@ -78,7 +78,7 @@ public class ClaimService {
         if (expectedGeneration != null && expectedGeneration != policy.generation())
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         var route = ApprovalRoute.forSupport(policy.calculate(estimated, days));
-        mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation(),policy.evaluatorVersion(),route);
+        mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation(),policy.evaluatorVersion(),route,policy.attendanceRule());
         mapper.rememberSubmission(workspace, key, id);
         return id;
     }

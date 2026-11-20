@@ -103,6 +103,36 @@ abstract class PostingContract {
     }
 
     @Test
+    void attendancePolicyChangesAndRestorationPreserveEachSubmissionsEvidenceRequirements() {
+        String workspace = service.open(OrganizationType.HOSPITAL);
+        String category = "EDUCATION";
+        var initial = policies.history(workspace, category).getFirst();
+        String original = service.submit(workspace, UUID.randomUUID(), "기존 교육", category, 300000, 1);
+        policies.publish(workspace, policies.draft(workspace, category, 0, initial.formula(),
+                300000, 1, null, "ATTACHED"));
+        String strict = service.submit(workspace, UUID.randomUUID(), "참석 필수 교육", category, 300000, 1);
+        policies.publish(workspace, policies.draft(workspace, category, 1, initial.formula(),
+                300000, 1, 0L, initial.attendanceRule()));
+        String restored = service.submit(workspace, UUID.randomUUID(), "복구 이후 교육", category, 300000, 1);
+        for (String id : List.of(original, strict, restored)) {
+            service.approve(workspace, id);
+            evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 225000);
+            service.review(workspace, id, 225000);
+        }
+        service.settle(workspace, original);
+        service.settle(workspace, restored);
+        assertEquals(422, assertThrows(ResponseStatusException.class,
+                () -> service.settle(workspace, strict)).getStatusCode().value());
+        assertEquals(360000, mapper.balance(workspace).spent());
+        service.returnReview(workspace, strict, 1, "참석 확인서를 제출하세요.", false);
+        evidence.attach(workspace, strict, EvidenceService.Type.ATTENDANCE, 225000);
+        service.review(workspace, strict, 225000, 1);
+        service.settle(workspace, strict, 2);
+        assertEquals(540000, mapper.balance(workspace).spent());
+        assertEquals(460000, mapper.balance(workspace).getAvailable());
+    }
+
+    @Test
     void cancellationReleasesOnlyAnExistingCommitmentOnce() {
         String workspace = service.open();
         for (boolean approved : List.of(false, true)) {

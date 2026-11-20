@@ -286,8 +286,8 @@ public class DemoPortal {
     @ResponseBody
     public PolicyService.Preview preview(HttpSession session, @RequestParam String category,
             @RequestParam String formula, @RequestParam long cost, @RequestParam int days,
-            @RequestParam(required=false) Long restoreGeneration) {
-        return policies.preview(workspace(session), category, formula, cost, days, restoreGeneration);
+            @RequestParam(required=false) Long restoreGeneration, @RequestParam(required=false) String attendanceRule) {
+        return policies.preview(workspace(session), category, formula, cost, days, restoreGeneration, attendanceRule);
     }
 
     @PostMapping("/api/policies/drafts")
@@ -295,8 +295,8 @@ public class DemoPortal {
     public Map<String, String> draft(HttpSession session, @RequestParam String category,
             @RequestParam long generation, @RequestParam String formula,
             @RequestParam(defaultValue="180000") long cost, @RequestParam(defaultValue="1") int days,
-            @RequestParam(required=false) Long restoreGeneration) {
-        return Map.of("draftId", policies.draft(authorized(session, Role.FINANCE), category, generation, formula, cost, days, restoreGeneration));
+            @RequestParam(required=false) Long restoreGeneration, @RequestParam(required=false) String attendanceRule) {
+        return Map.of("draftId", policies.draft(authorized(session, Role.FINANCE), category, generation, formula, cost, days, restoreGeneration, attendanceRule));
     }
 
     @PostMapping("/api/policies/drafts/{id}/publish")

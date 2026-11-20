@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import kr.budget.claims.ApprovalRoute;
+import kr.budget.claims.AttendanceRule;
 import kr.budget.claims.BudgetMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,13 +36,13 @@ public class PolicyService {
     }
 
     public Preview preview(String workspace, String category, String formula, long cost, int days) {
-        return preview(workspace, category, formula, cost, days, null);
+        return preview(workspace, category, formula, cost, days, null, null);
     }
 
-    public Preview preview(String workspace, String category, String formula, long cost, int days, Long restoreGeneration) {
+    public Preview preview(String workspace, String category, String formula, long cost, int days, Long restoreGeneration, String attendanceRule) {
         PolicyVersion active = active(workspace, category);
         long original = active.calculate(cost, days);
-        long candidate = candidate(workspace, category, formula, restoreGeneration).calculate(cost, days);
+        long candidate = candidate(workspace, category, formula, restoreGeneration, attendanceRule, active).calculate(cost, days);
         return new Preview(active.generation(), original, candidate,
                 ApprovalRoute.forSupport(original), ApprovalRoute.forSupport(candidate));
     }
@@ -53,21 +54,31 @@ public class PolicyService {
 
     @Transactional
     public String draft(String workspace, String category, long expected, String formula, long cost, int days, Long restoreGeneration) {
+        return draft(workspace, category, expected, formula, cost, days, restoreGeneration, null);
+    }
+
+    @Transactional
+    public String draft(String workspace, String category, long expected, String formula, long cost, int days, Long restoreGeneration, String attendanceRule) {
         budgets.lockBalance(workspace);
         PolicyVersion current = active(workspace, category);
         checkGeneration(expected, current);
-        var candidate = candidate(workspace, category, formula, restoreGeneration);
+        var candidate = candidate(workspace, category, formula, restoreGeneration, attendanceRule, current);
         for (long referenceCost : new long[]{0, 180000, 225000, 300000}) candidate.calculate(referenceCost, 1);
         String id = UUID.randomUUID().toString();
         policies.draft(workspace, id, category, expected, formula, candidate.evaluatorVersion(),
-                cost, days, current.calculate(cost, days), candidate.calculate(cost, days));
+                cost, days, current.calculate(cost, days), candidate.calculate(cost, days), candidate.attendanceRule());
         return id;
     }
 
-    private PolicyVersion candidate(String workspace, String category, String formula, Long restoreGeneration) {
-        if (restoreGeneration == null) return new PolicyVersion(0, formula, PolicyVersion.DECIMAL_V2);
+    private PolicyVersion candidate(String workspace, String category, String formula, Long restoreGeneration, String attendanceRule, PolicyVersion active) {
+        if (restoreGeneration == null) {
+            String rule = attendanceRule == null ? active.attendanceRule() : attendanceRule;
+            AttendanceRule.parse(rule);
+            return new PolicyVersion(0, formula, PolicyVersion.DECIMAL_V2, rule);
+        }
         return history(workspace, category).stream()
                 .filter(version -> version.generation() == restoreGeneration && version.formula().equals(formula))
+                .filter(version -> attendanceRule == null || version.attendanceRule().equals(attendanceRule))
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("복구할 규정의 버전과 수식을 확인하세요."));
     }
 
@@ -79,7 +90,7 @@ public class PolicyService {
         PolicyVersion current = active(workspace, draft.category());
         checkGeneration(draft.baseGeneration(), current);
         long next = current.generation() + 1;
-        policies.publish(workspace, draft.category(), next, draft.formula(),draft.evaluatorVersion());
+        policies.publish(workspace, draft.category(), next, draft.formula(),draft.evaluatorVersion(),draft.attendanceRule());
         return next;
     }
 
