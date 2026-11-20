@@ -98,7 +98,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 
 | 구분 | 업무 | 확인된 범위 · 남은 검증 |
 | --- | --- | --- |
-| 필수 | 신청·약정·정산·정정 | 실제 Oracle에서 원장 계약 21건 통과. 커밋 직전 승인 실패, 정산 재전송, 다음 달 환입, PL/SQL 집행액 차이 검출 포함. [시험 결과](measurements/oracle-contracts-44788169907.txt) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44788169907) |
+| 필수 | 신청·약정·정산·정정 | 실제 Oracle에서 원장 계약 23건 통과. 은행 본부 예산의 동시 배정·재시도, 커밋 직전 승인 실패, 정산 재전송, 다음 달 환입, PL/SQL 집행액 차이 검출 포함. [시험 결과](measurements/oracle-contracts-44790716638.txt) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44790716638) |
 | 필수 | 규정 발행·복구·계산 재현 | 수식 시험 14건·조건 트리 2건 통과. 이전·새 평가기의 과거 결정 재현과 복구를 실제 Oracle과 Chrome에서 확인 |
 | 필수 | 세션·증빙·웹 응답 | 세션 ID 교체, 두 방문자와 두 부서의 업무·증빙 격리, no-store, 해시 자산의 재사용을 로컬 HTTPS에서 확인. 외부 공개 도메인의 역할 시연 대기 |
 | 필수 | 월마감·포털 | 실패한 배치 재시작과 원본 기간 보존을 H2·Oracle 원장 계약에서 확인. 실제 PHP·MySQL 수신 구간 검증. 외부 송신 경로 대기 |
