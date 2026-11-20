@@ -68,6 +68,16 @@ jobs:
           name: war-rollback
           path: target/war-rollback/*.txt
           if-no-files-found: error
+      - name: Upgrade a populated Oracle schema between WAR releases
+        run: bash ops/ci_oracle_upgrade.sh
+        env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+          BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oracle-release-upgrade
+          path: target/oracle-upgrade/result.txt
+          if-no-files-found: error
       - name: Measure deep inbox queries in Oracle
         run: python3 ops/measure_oracle_inbox.py
         env:

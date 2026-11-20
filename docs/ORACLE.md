@@ -29,6 +29,15 @@ Oracle Free의 같은 PDB 내 별도 스키마에 복원한 CI 실행에서 Data
 
 ## 기존 버전에서 올리기
 
+현재 생성기로 설치한 스키마에서는 배포 중인 WAR와 새 WAR를 모두 보관한다. 요청과 배치 쓰기를 중지하고 백업한 후 다음 명령으로 차이 SQL을 생성한다.
+
+```sh
+python ops/oracle_install.py target/new.war target/upgrade.sql --upgrade-from target/previous.war
+sqlplus -L BUDGET_APP@BUDGET_PDB @target/upgrade.sql
+```
+
+생성기는 이전 업무 SQL 전체와 Spring Batch Oracle 정의가 새 WAR와 일치하는지 확인한다. 실행 시 `budget_schema_release`의 마지막 버전·정의 해시·READY 상태가 이전 WAR와 모두 일치해야 새 V파일을 적용한다. 동시 실행이나 이미 적용한 스크립트의 재실행은 첫 DDL 전에 거절한다. DDL 실패 시 상태는 UPGRADING이며 `last_version`은 마지막으로 끝난 파일을 가리킨다. 실패한 파일 안의 일부 DDL도 커밋됐을 수 있으므로 실행 로그와 DB를 대조하거나 검증된 백업을 복원한다. 메타데이터가 없는 기존 설치는 아래 수동 절차를 따른다.
+
 현재 배포 리비전과 적용한 마지막 V번호를 확인하고 아래 절차로 백업한다. 요청 및 배치 실행을 중지한 뒤 새 WAR에 추가된 V번호만 순서대로 SQL*Plus에서 실행한다. 적용 파일명, 체크섬과 결과를 배포 기록에 보관한다. Spring Batch 라이브러리 버전도 변경됐다면 해당 버전의 Oracle 메타데이터 마이그레이션을 함께 검토한다. Oracle DDL은 암묵적 커밋을 수행하므로 중간 실패 시 마지막 성공 문장과 실제 제약·열 상태를 대조한다. 최초 설치 스크립트는 기존 객체가 하나라도 있으면 작업을 중단한다.
 
 ## 백업과 별도 스키마 복원
