@@ -77,6 +77,7 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await claim.getByRole("button", { name: "정산 확정" }).click();
     await expect(page.locator("#available")).toHaveText("820,000원");
     await expect(page.locator("#spent")).toHaveText("180,000원");
+    await expect(claim).toContainText("제출한 실비 225,000원 · 정산 당시 본인 부담 45,000원 · 예산으로 돌아간 약정 차액 20,000원");
     if (process.env.TEST_PHP_ADDRESS) {
       await expect(async () => {
         await claim.getByRole("button",{name:"사내 포털 수신 결과"}).click();

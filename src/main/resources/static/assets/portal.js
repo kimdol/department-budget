@@ -89,6 +89,12 @@ function render(state) {
     if (pendingAction[claim.status]) $("<p>").text("다음 담당자 · " + pendingAction[claim.status]).appendTo(row);
     if (claim.reviewNote) $("<p>").text("보완 사유 · " + claim.reviewNote).appendTo(row);
     $("<p>").text("예정 " + money(claim.estimated) + " / 승인 " + money(claim.approved) + " / 정산 " + money(claim.settled)).appendTo(row);
+    if (claim.actual !== null) {
+      let detail = "제출한 실비 " + money(claim.actual);
+      if (claim.status === "SETTLED") detail += " · 정산 당시 본인 부담 " + money(claim.actual-claim.settled) +
+        " · 예산으로 돌아간 약정 차액 " + money(claim.approved-claim.settled);
+      $("<p>").text(detail).appendTo(row);
+    }
     const actions = $("<div>").addClass("actions").appendTo(row);
     const path = "/api/claims/" + encodeURIComponent(claim.claimId);
     if (state.role === "FINANCE") {
