@@ -77,6 +77,15 @@ jobs:
         with:
           name: oracle-inbox-plans
           path: target/oracle-inbox/
+      - name: Measure monthly settlement reports in Oracle
+        run: python3 ops/measure_oracle_month.py
+        env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: oracle-month-plans
+          path: target/oracle-month/
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
