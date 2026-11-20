@@ -1,5 +1,7 @@
 # 인수 현황
 
+Oracle Free에서 현재 WAR(c7f477c)로 200,000원을 약정하고 실비 225,000원에 대해 180,000원을 정산한 뒤, 다음 달에 30,000원을 환입했다. 같은 스키마를 사용하는 이전 WAR(d45c847)로 복귀하고 새 Chrome 세션에서 출장비 300,000원을 승인했다. 원래 교육비 신청에는 전표 3건, 약정 잔액 0원, 환입 후 순집행 150,000원이 남았고 귀속 월까지 복귀 전후가 일치했다. 이 검증은 두 WAR가 같은 V017 스키마를 사용하는 Linux CI에서 수행했다. [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44783938530) · [두 WAR 해시와 Oracle 대사 원자료](measurements/war-rollback-44783938530.zip) · [역할별 API 안내](API.md)
+
 결재함에서 사용하지 않는 수식·증빙 조건 등 다섯 열을 목록 매퍼에서 제외했다. 50개 행을 반환하는 부서장 목록 본문이 22,454바이트에서 12,904바이트로 줄었다. 계산 근거 조회와 커서 이동 후 승인까지 로컬 HTTPS에서 확인했다. [전후 측정](measurements/README.md) · [목록 매퍼](../src/main/java/kr/budget/claims/BudgetMapper.java)
 
 체험 시작 전후의 JSESSIONID를 Chrome에서 비교하는 시험이 실패했다. 시작 처리가 익명 세션에 업무 공간과 역할을 추가하면서 식별자를 그대로 사용했다. 최초 업무 공간을 할당할 때 서블릿 컨테이너가 식별자를 갱신하도록 바꿨다. 변경 후 Secure·HttpOnly·SameSite=Lax를 유지하며 값이 달라졌다. 체험 종료 직후 이전 영수증 URL은 401, 새 체험 시작 뒤에는 404였고 다른 방문자의 신청은 그대로였다. 로컬 Java 41건, HTTPS 브라우저 7건 통과. [세션 회귀 시험](../frontend/tests/https.spec.ts) · [이전 영수증 접근 시험](../frontend/tests/claims.spec.ts)
