@@ -1,0 +1,18 @@
+{
+  "name": "department-budget-ui",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit && esbuild src/policy.tsx --bundle --minify --outfile=../src/main/resources/static/assets/policy-editor.js"
+  },
+  "dependencies": {
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "esbuild": "0.25.12",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3"
+  }
+}

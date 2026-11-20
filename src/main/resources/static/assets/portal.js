@@ -8,6 +8,7 @@ function render(state) {
   $("#desk").prop("hidden", false);
   for (const key of ["allocation","committed","spent","available"]) $("#" + key).text(money(state.balance[key]));
   $("#role").val(state.role);
+  document.dispatchEvent(new Event("budget-session"));
   $("#entry").prop("hidden", state.role !== "EMPLOYEE");
   const list = $("#claims").empty();
   if (!state.claims.length) list.text("아직 신청한 비용이 없습니다.");
@@ -46,3 +47,12 @@ $("#submit").on("submit",event=>{
   }).fail(reportError).always(()=>button.prop("disabled",false));
 });
 $.getJSON("/api/workspace").done(render);
+document.getElementById("policy-panel").addEventListener("toggle", function() {
+  if (this.open && !document.getElementById("policy-module")) {
+    const script = document.createElement("script");
+    script.id = "policy-module";
+    script.src = "/assets/policy-editor.js";
+    script.onerror = () => {script.remove(); notice("규정 편집기를 불러오지 못했습니다.");};
+    document.head.append(script);
+  }
+});

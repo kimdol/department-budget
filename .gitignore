@@ -4,3 +4,4 @@ node_modules/
 *.log
 .idea/
 *.iml
+src/main/resources/static/assets/policy-editor.js

@@ -23,6 +23,11 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci && npm run build
+        working-directory: frontend
       - run: mvn -B -ntp verify
         env:
           BUDGET_TEST_EMPTY_SCHEMA: 'yes'
