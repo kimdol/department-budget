@@ -40,7 +40,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: oracle-contract-results
-          path: target/surefire-reports/kr.budget.claims.OraclePostingTest.txt
+          path: |
+            target/surefire-reports/kr.budget.claims.OraclePostingTest.txt
+            target/surefire-reports/oracle-cases.json
           if-no-files-found: error
       - name: Restore and reconcile Oracle ledger
         run: bash ops/ci_oracle_restore.sh

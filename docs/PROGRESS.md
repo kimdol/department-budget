@@ -1,5 +1,7 @@
 # 인수 현황
 
+Oracle 원장 검증은 로컬과 Oracle에서 같은 이름의 시험들이 전부 실행됐는지 대조한다. 통과 시 개별 시험명·실행 시간을 `oracle-contract-results/oracle-cases.json`에 기록한다. 여기서 `oneThousandPolicyPreviewsLeaveCommittedBudgetAndPostingRowsUntouched`를 찾으면 교육비 1,000개 입력의 기존·후보 계산값과 전후 약정액·전표·발행 세대 수를 검사한 시험을 식별할 수 있다. 로컬에서 Oracle 전용 시험을 건너뛴 보고서는 검사기가 거절했다. [시험 소스](../src/test/java/kr/budget/claims/PostingContract.java) · [결과 생성기](../ops/check_oracle_contract.py)
+
 결재함에 상태 필터를 추가했다. 로컬 HTTPS Chrome에서 51건 중 두 번째 페이지의 신청을 승인한 뒤 약정 완료로 필터링하자 해당 신청 1건이 나타났다. 키보드로 결재 이력을 열고 닫아 선택한 상태와 포커스가 유지되는 것을 확인했다. 다른 상태 조회에 503을 반환하는 시험에서는 직전 필터·목록을 복원했고, 재시도하면 해당 상태의 빈 결과가 표시됐다. [조회 API](API.md) · [회귀 시험](../frontend/tests/inbox-pages.spec.ts)
 
 메인 브랜치에서 통합 시험을 마치면 사용한 WAR와 Oracle 설치 SQL을 배포 아티팩트로 묶도록 구성했다. 로컬 패키징 회귀 시험은 커밋 불일치, WAR 해시 불일치, SQL 불일치를 각각 거절했고 정상 묶음의 파일별 해시 일치를 확인했다. [패키징 시험](../ops/test_package_release.py) · [다운로드 및 검증](HTTPS.md#검증한-war-받기)
