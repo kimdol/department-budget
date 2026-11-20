@@ -292,9 +292,10 @@ $("#submit").on("submit",event=>{
 $.getJSON("/api/workspace").done(render);
 document.getElementById("policy-panel").addEventListener("toggle", function() {
   if (this.open && !document.getElementById("policy-module")) {
+    if (!this.dataset.module) {notice("규정 편집기 파일이 설치되지 않았습니다."); return;}
     const script = document.createElement("script");
     script.id = "policy-module";
-    script.src = "/assets/policy-editor.js";
+    script.src = this.dataset.module;
     script.onerror = () => {script.remove(); notice("규정 편집기를 불러오지 못했습니다.");};
     document.head.append(script);
   }

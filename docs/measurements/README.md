@@ -8,6 +8,8 @@
 
 ## 정적 자산 재사용
 
+자체 CSS·JS를 SHA-256 주소로 제공한 뒤 같은 세션에서 결재함을 다시 열었다. 루프백 HTTPS에서 매번 새 Chrome 컨텍스트로 5회씩 비교했다. CSS·JS·jQuery의 전송량 합계는 첫 방문 109,867B → 109,968B, 재방문 22,034B → 0B였다. HTML과 업무 데이터는 이 합계에서 제외한다. 규정 편집기 번들은 패널을 열 때 로드한다. 서버는 패키지 내 세 파일의 내용을 메모리에 유지한다. 해시와 바이트가 맞지 않는 주소는 404로 응답한다. 기준선은 eeffcdf에 측정기만 추가한 136236e이고 사후 파일의 revision은 수정 중인 작업 트리의 부모를 나타낸다. 재현하려면 각 버전에서 `MEASURE_DESK`를 `assets-before` 또는 `assets-after`로 설정한 뒤 `python ops/test_https.py`를 실행한다. [기준 표본](assets-before.json) · [개선 후 표본](assets-after.json) · [HTTPS 검증](../../frontend/tests/https.spec.ts)
+
 로컬 Chrome에서 새 방문자가 결재함을 열고 빈 탭으로 이동한 뒤 같은 주소를 다시 열었다. 첫 방문에 필요한 세 정적 자산 중 jQuery 하나가 87,833바이트를 차지했다. 버전이 URL에 들어 있는 해당 라이브러리에 1년 공개 캐시를 적용했다. JSP, 업무 API와 같은 이름으로 갱신하는 자체 스크립트에는 no-store를 유지했다.
 
 | Chrome Resource Timing 합계 | 첫 방문 | 같은 세션 재방문 |

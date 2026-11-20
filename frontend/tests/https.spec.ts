@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { get } from "node:https";
 import type { TLSSocket } from "node:tls";
 import { writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 
 test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, baseURL }) => {
@@ -18,6 +19,18 @@ test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, ba
   const landing = await page.goto("/");
   expect(await landing!.headerValue("strict-transport-security")).toMatch(/max-age=[1-9]/);
   expect(await landing!.headerValue("cache-control")).toContain("no-store");
+  const styles = await page.locator('link[rel="stylesheet"]').getAttribute("href");
+  const portal = await page.locator('script[src$="/portal.js"]').getAttribute("src");
+  const editor = await page.locator("#policy-panel").getAttribute("data-module");
+  for (const url of [styles!,portal!,editor!]) {
+    const asset = await page.request.get(url);
+    expect(asset.status()).toBe(200);
+    const digest = createHash("sha256").update(await asset.body()).digest("hex");
+    expect(url.split("/")[2]).toBe(digest);
+    expect(asset.headers()["cache-control"]).toContain("immutable");
+    expect((await page.request.get(url.replace(digest,"0".repeat(64)))).status()).toBe(404);
+  }
+  expect(await page.evaluate(url => performance.getEntriesByName(new URL(url,location.href).href).length,editor!)).toBe(0);
   const cookie = (await page.context().cookies()).find(value => value.name === "JSESSIONID");
   expect(cookie).toMatchObject({ secure:true, httpOnly:true, sameSite:"Lax" });
   await page.getByRole("button",{name:"개인 데모 시작"}).click();

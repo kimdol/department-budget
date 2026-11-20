@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import kr.budget.policy.PolicyService;
 import kr.budget.policy.PolicyMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -60,12 +59,6 @@ public class DemoPortal {
         this.periods = periods;
         this.closing = closing;
         this.statements = statements;
-    }
-
-    @GetMapping("/")
-    public String home(CsrfToken token) {
-        token.getToken();
-        return "portal";
     }
 
     @PostMapping("/api/demo")

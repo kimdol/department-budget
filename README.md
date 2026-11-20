@@ -12,7 +12,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 | --- | --- |
 | Java·Oracle 조회 최적화 | 합성 신청 100만 건을 100개 부서에 나눠 넣었다. 한 부서의 결재함에서 앞선 9,000건 이후 같은 51건을 조회할 때 Oracle 논리 읽기는 OFFSET 307회, 키셋 13회였다. 실행 순서를 교대한 4회 모두 같은 결과였다. [실행 계획 원자료](docs/measurements/oracle-inbox-44781386053.zip) |
 | 금융·경영지원 SI/SM | 본부 예산 행을 잠근 상태에서 지점 교육비 200,000원을 승인하고 본부 약정 0원을 유지했다. 실제 Oracle 원장 계약 15건을 통과했고, Data Pump로 같은 PDB의 별도 스키마에 복원한 뒤 부서 관계·전표·잔액을 대조했다. [시험 실행](https://github.com/kimdol/department-budget/actions/runs/44777958172) · [원본과 복원 결과](docs/measurements/oracle-departments-44777958172.zip) |
-| 웹 화면 성능 | 버전이 고정된 jQuery에 브라우저 캐시 정책을 적용해 로컬 Chrome 결재함 재방문 시 정적 자산 3개의 전송량 중앙값을 97,383B에서 9,550B로 줄였다. 첫 방문 전송량은 같았다. [전후 5회 측정](docs/measurements/README.md) |
+| 웹 화면 성능 | 자체 JS·CSS의 내용 해시를 URL에 반영했다. 로컬 Chrome 결재함 재방문 때 정적 자산 3개의 전송량은 22,034B에서 0B로 줄었고, 첫 방문 전송량은 101B 증가했다. [전후 5회 측정](docs/measurements/README.md) |
 | 병원 행정·규정 관리 | 학회비 지원율을 80%에서 90%로 바꾼 뒤에도 이전 신청의 인정액 144,000원을 재현했다. 같은 실비 180,000원의 신규 신청은 162,000원, 이전 규정 복구 후 접수한 신청은 144,000원이었다. [발행·복구 계약 시험](src/test/java/kr/budget/claims/PostingContract.java) |
 
 ![재무 담당자의 교육비 정산 결과와 월 결산표](docs/images/settlement.png)

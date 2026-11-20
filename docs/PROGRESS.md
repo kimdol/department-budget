@@ -1,5 +1,7 @@
 # 인수 현황
 
+최종 승인 이력 쓰기가 실패한 경우의 전체 롤백을 포함한 실제 Oracle 원장 계약 19건이 모두 통과했다. 로컬 HTTPS에서는 자체 CSS·JS·규정 편집기의 URL과 응답 바이트 해시를 대조했다. 결재함 재방문 시 정적 자산 3개의 전송량이 5회 모두 0B였고 민감 응답은 no-store였다. [Oracle 실행](https://github.com/kimdol/department-budget/actions/runs/44785908320) · [Chrome 측정 원자료](measurements/assets-after.json)
+
 승인 업무의 마지막 SQL이 실패하는 상황을 원장 계약에 추가했다. 시험 전용 신청에 동일 차수의 승인 이력을 먼저 넣어 고유키 충돌을 유발했다. H2에서 예외 후 상태는 결재 대기, 가용액은 100만 원, 전표와 송신 대기는 모두 0건이었고 기존 이력은 보존됐다. 충돌용 행을 제거한 뒤 같은 승인을 두 번 호출해 가용액 80만 원, 약정 전표 1건, 송신 대기 1건을 확인했다. 로컬 Java 시험 43건 통과. [업무 트랜잭션 시험](../src/test/java/kr/budget/claims/PostingContract.java)
 
 발행 API가 부서장의 검토 화면에 전달한 초안 해시를 요구한다. 검토 후 사례 일수만 달라진 경우 409, 기존 활성 세대 0을 확인했다. 변경된 사례로 다시 검토한 뒤에는 세대 1과 그때의 초안 번호·SHA-256이 함께 저장됐다. V018은 이전 발행 기록을 보존한다. 로컬 Java 시험 42건, HTTPS 브라우저 시험 7건 통과. [실습 SQL](ORACLE-WALKTHROUGH.md) · [발행 계약](../src/test/java/kr/budget/claims/PostingContract.java)
