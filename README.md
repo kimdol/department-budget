@@ -37,6 +37,8 @@ frontend 디렉터리에서 npm ci와 npm run build를 실행한다. 저장소 �
 
 ## 소스 따라가기
 
+[아키텍처·ERD와 업무별 소스 안내](docs/ARCHITECTURE.md)에서 신청 한 건의 전표와 병원 학회비 규칙 변경을 파일·메서드별로 따라갈 수 있다.
+
 1. [결재함](src/main/webapp/WEB-INF/views/portal.jsp)에서 제출하면 [화면 요청 코드](src/main/resources/static/assets/portal.js)가 요청 키를 보존한다.
 2. [DemoPortal](src/main/java/kr/budget/web/DemoPortal.java)은 세션에서 방문자 공간과 역할을 결정한다.
 3. [ClaimService](src/main/java/kr/budget/claims/ClaimService.java)는 신청 재전송을 판별하고 승인·정산 단계에서 잠금, 상태 변경, 전표, 잔액을 한 트랜잭션으로 처리한다.
