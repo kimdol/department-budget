@@ -20,10 +20,11 @@ Autonomous Database를 사용할 때는 배포 VM에서 접근 가능한 네트�
 ```sh
 driver_dir=$(mktemp -d)
 unzip -j target/department-budget-0.1.0.war 'WEB-INF/lib/ojdbc*.jar' -d "$driver_dir"
-java -cp "$driver_dir/*" ops/CheckRuntimeDatabase.java TCPS
+release_id=$(python3 ops/oracle_install.py target/department-budget-0.1.0.war --release-id)
+java -cp "$driver_dir/*" ops/CheckRuntimeDatabase.java TCPS "$release_id"
 ```
 
-CI의 Oracle Free 시험은 같은 도구로 루프백 TCP 연결을 확인하고 같은 연결을 TCPS로 검증하면 실패해야 통과한다. 실제 OCI 세션의 TCPS 통과와 원격 VM에서의 애플리케이션 업무 실행은 계정과 자원 할당 후 확인할 항목이다. [접속 검사](../ops/CheckRuntimeDatabase.java) · [배포 WAR 시험](../ops/ci_oracle_release.sh)
+검사기는 배포할 WAR에서 계산한 버전 번호와 정의 해시를 설치된 스키마의 값과 비교한다. 설치가 끝나 READY 상태이고 두 값이 일치해야 업무 테이블 검사를 진행한다. CI는 정상 연결, 다른 버전 번호 거절, TCP 세션에서 TCPS 요구 거절을 각각 검사한다. 실제 OCI 세션의 TCPS 통과와 원격 VM에서의 업무 실행은 자원 할당 후 확인한다. [접속 검사](../ops/CheckRuntimeDatabase.java) · [배포 WAR 시험](../ops/ci_oracle_release.sh)
 
 Oracle Free의 같은 PDB 내 별도 스키마에 복원한 CI 실행에서 Data Pump 내보내기는 51초, 가져오기는 33초였다. 원본·복원 대사 파일은 각각 169행이며 내용이 일치했다. 대사 단계의 초 단위 계측값은 0초였다. 이 수치는 합성 계약 시험 데이터에 대한 1회 관측이며 VM 재구축, 외부 전송, 업무 재개 시간은 포함하지 않는다. [시간 원자료](measurements/oracle-restore-time-44784441705.txt) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44784441705)
 

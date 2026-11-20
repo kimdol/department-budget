@@ -5,14 +5,20 @@ import java.util.Set;
 
 public class CheckRuntimeDatabase {
     public static void main(String[] args) {
-        if (args.length != 1 || !Set.of("TCP", "TCPS").contains(args[0])) {
-            throw new IllegalArgumentException("Expected database transport TCP or TCPS");
+        if (args.length != 2 || !Set.of("TCP", "TCPS").contains(args[0]) || !args[1].matches("[1-9][0-9]*:[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("Expected transport and WAR schema release ID");
         }
         try (var db = DriverManager.getConnection(setting("BUDGET_DB_URL"), setting("BUDGET_DB_USER"),
                     setting("BUDGET_DB_PASSWORD")); var query = db.createStatement()) {
             try (var result = query.executeQuery("select sys_context('USERENV','NETWORK_PROTOCOL') from dual")) {
                 if (!result.next() || !args[0].equalsIgnoreCase(result.getString(1))) {
                     throw new IllegalStateException("Unexpected database transport");
+                }
+            }
+            try (var result = query.executeQuery("select last_version, fingerprint, phase from budget_schema_release where slot=1")) {
+                if (!result.next() || !"READY".equals(result.getString("phase"))
+                        || !args[1].equals(result.getInt("last_version") + ":" + result.getString("fingerprint"))) {
+                    throw new IllegalStateException("Unexpected database schema release");
                 }
             }
             String[] probes = {

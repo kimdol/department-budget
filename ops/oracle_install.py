@@ -64,9 +64,18 @@ def installation_sql(war_path, upgrade_from=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("war", type=Path)
-    parser.add_argument("output", type=Path)
+    parser.add_argument("output", type=Path, nargs="?")
     parser.add_argument("--upgrade-from", type=Path)
+    parser.add_argument("--release-id", action="store_true")
     args = parser.parse_args()
+    if args.release_id:
+        if args.output or args.upgrade_from:
+            parser.error("--release-id accepts only a WAR")
+        migrations, batch_sql = schema_files(args.war)
+        print(f"{len(migrations)}:{fingerprint(migrations, batch_sql)}")
+        return
+    if args.output is None:
+        parser.error("installation SQL output path required")
     script = installation_sql(args.war,args.upgrade_from)
     with args.output.open("x", encoding="utf-8", newline="\n") as output:
         output.write(script)
