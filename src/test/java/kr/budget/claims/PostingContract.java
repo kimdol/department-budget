@@ -182,9 +182,13 @@ abstract class PostingContract {
         publishReviewed(workspace, policies.draft(workspace, category, 0, initial.formula(),
                 300000, 1, null, "ATTACHED"));
         String strict = service.submit(workspace, UUID.randomUUID(), "참석 필수 교육", category, 300000, 1);
+        assertEquals(List.of("지출 영수증이 필요합니다.","참석 확인서가 필요합니다."),
+                service.estimate(workspace,category,300000,1).evidenceRequirements());
         publishReviewed(workspace, policies.draft(workspace, category, 1, initial.formula(),
                 300000, 1, 0L, initial.attendanceRule()));
         String restored = service.submit(workspace, UUID.randomUUID(), "복구 이후 교육", category, 300000, 1);
+        assertEquals(List.of("지출 영수증이 필요합니다."),
+                service.estimate(workspace,category,300000,1).evidenceRequirements());
         for (String id : List.of(original, strict, restored)) {
             service.approve(workspace, id);
             evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 225000);

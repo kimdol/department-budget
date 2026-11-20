@@ -49,7 +49,8 @@ public class ClaimService {
         return submit(workspace, requestKey, title, category, estimated, days, null);
     }
 
-    public record Estimate(long generation, long supported, long employeeShare, String formula,ApprovalRoute route) {}
+    public record Estimate(long generation, long supported, long employeeShare, String formula,
+                           ApprovalRoute route, java.util.List<String> evidenceRequirements) {}
 
     @Transactional(readOnly=true)
     public Estimate estimate(String workspace,String category,long estimated,int days) {
@@ -57,7 +58,10 @@ public class ClaimService {
         if (days < 1 || days > 365) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         var rule = policies.active(workspace, category);
         long supported = rule.calculate(estimated, days);
-        return new Estimate(rule.generation(),supported,estimated-supported,rule.formula(),ApprovalRoute.forSupport(supported));
+        var inputs = new EvidencePolicy.Inputs(mapper.organization(workspace), category, null, null, false);
+        var requirements = EvidencePolicy.evaluate(inputs, AttendanceRule.parse(rule.attendanceRule())).issues();
+        return new Estimate(rule.generation(),supported,estimated-supported,rule.formula(),
+                ApprovalRoute.forSupport(supported), requirements);
     }
 
     public String submit(String workspace, UUID requestKey, String title, String category, long estimated, int days, Long expectedGeneration) {

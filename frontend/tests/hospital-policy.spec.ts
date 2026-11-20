@@ -40,6 +40,13 @@ test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구�
   await page.getByLabel("체험 조직").selectOption("HOSPITAL");
   await page.getByRole("button", { name: "개인 데모 시작" }).click();
   await expect(page.locator("#workspace-organization")).toHaveText("병원 행정부서");
+  await page.locator('#submit [name="category"]').selectOption("CONFERENCE");
+  await page.getByRole("button",{name:"지원 예정액 확인"}).click();
+  await expect(page.locator("#estimate-result")).toContainText("정산 준비 · 지출 영수증이 필요합니다. 병원 학회비는 참석 확인서가 필요합니다.");
+  await page.locator('#submit [name="category"]').selectOption("EDUCATION");
+  await page.getByRole("button",{name:"지원 예정액 확인"}).click();
+  await expect(page.locator("#estimate-result")).toContainText("정산 준비 · 지출 영수증이 필요합니다.");
+  await expect(page.locator("#estimate-result")).not.toContainText("참석 확인서");
   await page.locator("#role").selectOption("FINANCE");
   await page.locator("#policy-panel summary").click();
   const editor = page.getByRole("region", { name: "비용 지원 규정" });

@@ -269,6 +269,7 @@ $("#estimate").on("click", () => {
     $("#estimate-result").text("지원 예정 " + money(result.supported) + " · 본인 부담 " + money(result.employeeShare) +
       " · 결재 경로 " + (result.route === "MANAGER_FINANCE" ? "부서장 → 재무" : "부서장") +
       " · 적용 규정 " + result.generation + " · " + result.formula);
+    $("<span>").text(" 정산 준비 · " + result.evidenceRequirements.join(" ")).appendTo("#estimate-result");
   }).fail(error => {if (revision === estimateRevision) reportError(error);});
 });
 $("#submit").on("submit",event=>{
