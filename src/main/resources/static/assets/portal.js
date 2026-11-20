@@ -5,6 +5,18 @@ const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
 const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
 const cursors = [null];
+let categories = {};
+let catalogRequest;
+function loadCategories() {
+  if (!catalogRequest) {
+    catalogRequest = $.getJSON("/api/catalog/expense-categories").then(labels=>{
+      categories = labels;
+      const select = document.querySelector("#submit select[name=category]");
+      select.replaceChildren(...Object.entries(labels).map(([code,label])=>new Option(label,code)));
+    }).fail(()=>{catalogRequest = null;});
+  }
+  return catalogRequest;
+}
 const department = new URLSearchParams(location.search).get("department") || "PRIMARY";
 function departmentUrl(path) {
   if (department === "PRIMARY") return path;
@@ -13,7 +25,7 @@ function departmentUrl(path) {
   return url.pathname + url.search;
 }
 $.ajaxPrefilter(options=>{
-  if (options.url.startsWith("/api/")) options.url = departmentUrl(options.url);
+  if (options.url.startsWith("/api/") && !options.url.startsWith("/api/catalog/")) options.url = departmentUrl(options.url);
 });
 $("#department").on("change",event=>location.assign("/?department="+encodeURIComponent(event.target.value)));
 let nextCursor = null;
@@ -254,7 +266,7 @@ function showStatement(report) {
   const box = $("#statement").empty();
   $("<strong>").text(report.period + " · " + ({OPEN:"마감 전",CLOSING:"마감 진행 중",CLOSED:"마감 완료"})[report.state]).appendTo(box);
   for (const line of report.lines) {
-    const label = ({EDUCATION:"교육비",TRAVEL:"출장비",CONFERENCE:"학회 참가비"})[line.category];
+    const label = categories[line.category] || line.category;
     const group = $("<details>").appendTo(box);
     $("<summary>").text(label + " · " + line.claimCount + "건 · " + money(line.spent)).appendTo(group);
     const sources = $("<div>").appendTo(group);
@@ -312,7 +324,11 @@ $("#close-period").on("click",function() {
   $(this).prop("disabled",true);
   api("/api/statement/close",{}).done(showStatement).fail(reportError).always(()=>$(this).prop("disabled",false));
 });
-$("#start").on("click",()=>api("/api/demo",{organization:$("#organization").val()}).then(render).fail(reportError));
+$("#start").on("click",function() {
+  const start = $(this).prop("disabled",true);
+  loadCategories().then(()=>api("/api/demo",{organization:$("#organization").val()})).then(render)
+    .fail(reportError).always(()=>start.prop("disabled",false));
+});
 $("#end-demo").on("submit", event => {
   if (!window.confirm("현재 체험을 종료할까요? 다음 체험은 새 예산 100만 원으로 시작합니다.")) {
     event.preventDefault();
@@ -361,7 +377,7 @@ $("#submit").on("submit",event=>{
     } else reportError(error);
   }).always(()=>button.prop("disabled",false));
 });
-$.getJSON("/api/workspace").done(render);
+$.getJSON("/api/workspace").done(state=>loadCategories().then(()=>render(state)).fail(reportError));
 document.getElementById("policy-panel").addEventListener("toggle", function() {
   if (this.open && !document.getElementById("policy-module")) {
     if (!this.dataset.module) {notice("규정 편집기 파일이 설치되지 않았습니다."); return;}

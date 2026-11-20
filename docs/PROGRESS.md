@@ -1,5 +1,7 @@
 # 인수 현황
 
+비용 신청의 비목 선택과 재무 결산표가 공개 비목 코드표를 공유한다. 로컬 HTTPS 시험에서 최초 조회는 200, 응답 본문의 SHA-256과 일치하는 ETag를 보낸 조회는 본문 없는 304, 오래된 태그를 보낸 조회는 200이었다. 같은 시험에서 방문자 예산 응답의 `no-store`도 확인했다. [코드표 원본](../src/main/resources/catalog/expense-categories.json) · [응답 검증](../frontend/tests/https.spec.ts)
+
 로컬 H2에서 서로 다른 요청번호로 본부 예산 1,000,000원에 각각 600,000원을 동시에 배정했다. 한 건은 성공하고 한 건은 가용액 초과로 거절됐으며, 이력에는 600,000원 한 건만 남았다. 본부 잔액 400,000원과 지점 잔액 1,600,000원의 합은 최초 합계와 일치했다. [동시 배정 계약 시험](../src/test/java/kr/budget/claims/PostingContract.java)
 
 본부 재무가 지점에 예산을 배정하면 한 트랜잭션에서 두 부서의 배정액과 배정 이력을 갱신한다. 로컬 원장 시험에서 약정 200,000원이 있는 본부의 800,001원 배정을 거절하고, 300,000원 배정을 재전송해도 배정 이력이 한 건임을 확인했다. HTTPS Chrome에서 본부 가용액 700,000원과 지점 가용액 1,300,000원을 확인했다. [배정 서비스](../src/main/java/kr/budget/claims/BranchAllocation.java) · [브라우저 시험](../frontend/tests/bank-allocation.spec.ts)

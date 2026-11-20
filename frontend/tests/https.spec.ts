@@ -35,6 +35,18 @@ test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, ba
   const landing = await page.goto("/");
   expect(await landing!.headerValue("strict-transport-security")).toMatch(/max-age=[1-9]/);
   expect(await landing!.headerValue("cache-control")).toContain("no-store");
+  const catalogUrl = "/api/catalog/expense-categories";
+  const catalog = await page.request.get(catalogUrl);
+  expect(catalog.status()).toBe(200);
+  expect(await catalog.json()).toEqual({EDUCATION:"교육비",CONFERENCE:"학회 참가비",TRAVEL:"출장비"});
+  expect(catalog.headers()["cache-control"]).toContain("public");
+  expect(catalog.headers()["cache-control"]).toContain("no-cache");
+  const tag = catalog.headers().etag;
+  expect(tag).toBe('"'+createHash("sha256").update(await catalog.body()).digest("hex")+'"');
+  const revalidated = await page.request.get(catalogUrl,{headers:{"If-None-Match":tag}});
+  expect(revalidated.status()).toBe(304);
+  expect((await revalidated.body()).length).toBe(0);
+  expect((await page.request.get(catalogUrl,{headers:{"If-None-Match":'"older-version"'}})).status()).toBe(200);
   const styles = await page.locator('link[rel="stylesheet"]').getAttribute("href");
   const portal = await page.locator('script[src$="/portal.js"]').getAttribute("src");
   const editor = await page.locator("#policy-panel").getAttribute("data-module");
@@ -79,7 +91,8 @@ test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, ba
     const result = { environment:proxyCI ? "proxy-ci" : deployment ? "deployment" : "loopback", origin:baseURL, transport, redirect,
       sameOriginRequests:requests.size, hsts:await landing!.headerValue("strict-transport-security"),
       cookie:{ secure:cookie!.secure,httpOnly:cookie!.httpOnly,sameSite:cookie!.sameSite },
-      workspaceCache:snapshot.headers()["cache-control"], libraryCache:library.headers()["cache-control"], reused };
+      workspaceCache:snapshot.headers()["cache-control"], libraryCache:library.headers()["cache-control"],
+      catalog:{etag:tag,revalidation:revalidated.status()}, reused };
     const file = deployment ? "deployment-https.json" : "loopback-https.json";
     const output = proxyCI ? path.resolve(__dirname,"../../target/https-proxy/transport.json") : path.resolve(__dirname,"../../docs/measurements",file);
     await writeFile(output,JSON.stringify(result,null,2)+"\n");

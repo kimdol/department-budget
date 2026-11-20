@@ -22,8 +22,12 @@ public class PortalAssets {
     private record Asset(String hash, MediaType type, byte[] content) {}
     private final Map<String,Asset> assets = new HashMap<>();
     private final Map<String,String> paths = new HashMap<>();
+    private final byte[] categories;
+    private final String categoriesTag;
 
     public PortalAssets() throws IOException, NoSuchAlgorithmException {
+        categories = new ClassPathResource("catalog/expense-categories.json").getContentAsByteArray();
+        categoriesTag = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(categories));
         for (String name : new String[]{"portal.css","portal.js","policy-editor.js"}) {
             var resource = new ClassPathResource("static/assets/" + name);
             if (!resource.exists() && name.equals("policy-editor.js")) continue;
@@ -40,6 +44,12 @@ public class PortalAssets {
         token.getToken();
         model.addAttribute("assetPaths",paths);
         return "portal";
+    }
+
+    @GetMapping("/api/catalog/expense-categories")
+    public ResponseEntity<byte[]> expenseCategories() {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+                .cacheControl(CacheControl.noCache().cachePublic()).eTag(categoriesTag).body(categories);
     }
 
     @GetMapping("/assets/{hash}/{name}")
