@@ -41,6 +41,9 @@ public interface BudgetMapper {
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id=#{id} for update")
     Claim lockClaim(String workspace, String id);
 
+    @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id=#{id}")
+    Claim findClaim(String workspace, String id);
+
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and inbox_order < #{before} order by inbox_order desc fetch first 51 rows only")
     List<Claim> inbox(String workspace,long before);
 

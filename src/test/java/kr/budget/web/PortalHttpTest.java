@@ -101,7 +101,16 @@ class PortalHttpTest {
         assertEquals(200, receipt.statusCode());
         assertTrue(receipt.body().contains("225000"));
         assertTrue(receipt.headers().firstValue("cache-control").orElse("").contains("no-store"));
-        assertEquals(404, second.request(path + "/evidence/RECEIPT", null, false).statusCode());
+        for (String role : new String[]{"EMPLOYEE", "MANAGER", "FINANCE"}) {
+            second.role(role);
+            for (String suffix : new String[]{"/evidence", "/evidence/assessment", "/evidence/RECEIPT"}) {
+                assertEquals(404, second.request(path + suffix, null, false).statusCode(), role + suffix);
+            }
+        }
+        first.role("FINANCE");
+        assertEquals(200, first.request(path + "/evidence/RECEIPT", null, false).statusCode());
+        assertEquals(403, first.post(path + "/evidence", "type=RECEIPT&amount=1").statusCode());
+        first.role("EMPLOYEE");
         assertEquals(200, first.post(path + "/review", "actual=225000").statusCode());
         first.role("FINANCE");
         assertEquals(200, first.post(path + "/settle", "").statusCode());

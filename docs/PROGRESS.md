@@ -1,5 +1,7 @@
 # 인수 현황
 
+다른 방문자가 증빙 목록을 열면 전용 SQL이 문서를 반환하지 않아 HTTP 200과 빈 목록이 내려왔다. 같은 신청의 증빙 요건과 파일은 404였다. 목록 조회도 세션 업무 공간 안에 신청이 있는지 확인하도록 변경했다. 직원·부서장·재무 역할 모두 다른 공간의 목록·요건·파일에서 404를 확인했다. 같은 공간의 재무 담당자는 Chrome으로 225,000원 영수증을 받았고 첨부 변경 요청은 403이었다. H2 HTTP 시험 2건과 루프백 HTTPS 브라우저 시험 6건 통과. [HTTP 회귀 시험](../src/test/java/kr/budget/web/PortalHttpTest.java) · [다운로드 검증](../frontend/tests/claims.spec.ts)
+
 실제 Oracle에서 10,000건 중 9,001번째부터 51건을 읽었다. OFFSET과 커서 조회는 모든 회차에서 같은 신청번호를 반환했고 문장 전체 Buffers는 각각 200과 12였다. [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44770051843) · [원자료](measurements/oracle-inbox-44770051843.zip)
 
 공개 프록시용 Tomcat 프로필에서 루프백 HTTP와 HTTPS 전달 헤더를 비교했다. 실제 응답에서 HSTS, no-store, JSESSIONID의 Secure·HttpOnly·SameSite=Lax를 확인했다. [단일 VM 배포 절차와 남은 외부 검증](HTTPS.md)

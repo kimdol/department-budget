@@ -38,16 +38,20 @@ public class EvidenceService {
         evidence.attach(workspace, id, type.name(), amount);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     public List<String> outstanding(String workspace,String id) {
         return assessment(workspace,id).issues();
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     public EvidencePolicy.Evaluation assessment(String workspace,String id) {
-        Claim claim = budgets.lockClaim(workspace,id);
+        return assessment(workspace, requireClaim(workspace,id));
+    }
+
+    private Claim requireClaim(String workspace, String id) {
+        Claim claim = budgets.findClaim(workspace,id);
         if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        return assessment(workspace,claim);
+        return claim;
     }
 
     public List<String> outstanding(String workspace,Claim claim) {
@@ -55,7 +59,7 @@ public class EvidenceService {
     }
 
     private EvidencePolicy.Evaluation assessment(String workspace,Claim claim) {
-        var documents = list(workspace,claim.claimId());
+        var documents = evidence.documents(workspace,claim.claimId());
         var receipt = documents.stream().filter(d -> d.evidenceType().equals("RECEIPT"))
                 .map(EvidenceMapper.Document::receiptAmount).findFirst().orElse(null);
         boolean attendance = documents.stream().anyMatch(d -> d.evidenceType().equals("ATTENDANCE"));
@@ -64,6 +68,7 @@ public class EvidenceService {
     }
 
     public List<EvidenceMapper.Document> list(String workspace, String id) {
+        requireClaim(workspace, id);
         return evidence.documents(workspace, id);
     }
 

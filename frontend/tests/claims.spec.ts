@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체험한다", async ({ browser, page, baseURL }) => {
@@ -34,6 +34,15 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await claim.getByRole("button", { name: "증빙 요건 확인" }).click();
     await expect(claim).toContainText("필요한 증빙을 모두 제출했습니다.");
     await page.locator("#role").selectOption("FINANCE");
+    await claim.getByRole("button", { name: "증빙 조회" }).click();
+    const receiptLink = claim.getByRole("link", { name: "지출 영수증 · 225,000원" });
+    const receiptUrl = await receiptLink.getAttribute("href");
+    expect((await other.request.get(receiptUrl!)).status()).toBe(404);
+    const downloading = page.waitForEvent("download");
+    await receiptLink.click();
+    const download = await downloading;
+    expect(download.suggestedFilename()).toBe("expense-document.txt");
+    expect(await readFile((await download.path())!, "utf8")).toContain("기재 금액 225000원");
     await claim.getByRole("button", { name: "정산 확정" }).click();
     await expect(page.locator("#available")).toHaveText("820,000원");
     await expect(page.locator("#spent")).toHaveText("180,000원");
