@@ -37,6 +37,12 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await claim.getByRole("button", { name: "정산 확정" }).click();
     await expect(page.locator("#available")).toHaveText("820,000원");
     await expect(page.locator("#spent")).toHaveText("180,000원");
+    if (process.env.TEST_PHP_ADDRESS) {
+      await expect(async () => {
+        await claim.getByRole("button",{name:"사내 포털 수신 결과"}).click();
+        await expect(claim).toContainText("포털 수신 차수 2 · 정산 확정 · 180,000원",{timeout:1000});
+      }).toPass({timeout:15000});
+    }
     await expect(page.locator("#committed")).toHaveText("0원");
     await expect(claim.locator("small")).toHaveText(number);
     await claim.getByRole("button", { name: "신청 당시 계산 근거" }).click();

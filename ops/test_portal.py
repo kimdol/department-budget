@@ -4,6 +4,7 @@ import secrets
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -119,6 +120,9 @@ def main():
         if rows != ["2", "SETTLEMENT\t180000"]:
             raise AssertionError(rows)
         print(json.dumps(dict(mysql=sql("SELECT VERSION()").stdout.strip(), http=statuses, receipts=2, settled=180000)))
+        if "--browser" in sys.argv:
+            subprocess.run([sys.executable,str(root/"ops/test_https.py")],
+                           env=dict(os.environ,TEST_PHP_ADDRESS=address,BUDGET_PORTAL_TOKEN=token), check=True)
 
 
 if __name__ == "__main__":

@@ -23,6 +23,8 @@
 
 ## 브라우저 시험
 
+원장과 실제 MySQL 포털 수신액을 한 화면에서 대조하려면 아래 HTTPS·포털 시험의 도구를 설치한 뒤 저장소 루트에서 `python ops/test_portal.py --browser`를 실행한다. 시험용 인증서를 신뢰하는 Java 송신기가 PHP로 정산을 전달하고 Chrome이 포털의 2차 수신액 180,000원을 읽는다. 이 로컬 시연에서 Java 업무 DB는 H2다.
+
 로컬 HTTPS 재현은 프런트엔드 빌드 후 저장소 루트에서 `python ops/test_https.py`로 실행한다. Java 21·Maven·Chrome·Node.js·OpenSSL이 필요하다. 시험 도구는 하루짜리 인증서를 임시 생성하고 루프백 Tomcat에 연결한다. 쿠키 값과 비밀 키는 원자료에 저장하지 않는다. [TLS 및 캐시 실제 응답](docs/measurements/loopback-https.json)
 
 포털 수신 시험은 PHP 8.1 이상과 PDO MySQL 확장, MySQL 8.4의 mysql·mysqld를 PATH에 둔 뒤 저장소 루트에서 `python ops/test_portal.py`로 실행한다. 별도 임시 데이터 디렉터리와 루프백 포트를 사용하며 시험 종료 시 서버를 닫는다. 승인과 정산을 각각 두 번 보내 실제 수신 이력 2건과 정산액 180,000원을 확인했다. [수신 시험 원자료](docs/measurements/portal-receipts.json)

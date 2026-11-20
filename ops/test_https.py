@@ -5,12 +5,14 @@ from pathlib import Path
 import secrets
 import subprocess
 import tempfile
+from contextlib import ExitStack
+from portal_tls import portal_tls
 
 
 def main():
     root = Path(__file__).resolve().parents[1]
     openssl = os.environ.get("OPENSSL", "openssl")
-    with tempfile.TemporaryDirectory() as directory:
+    with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
         work = Path(directory)
         password = secrets.token_hex(24)
         env = dict(os.environ, SERVER_SSL_KEY_STORE_PASSWORD=password)
@@ -30,6 +32,13 @@ def main():
                    SERVER_SSL_KEY_STORE=(work / "server.p12").as_uri(), SERVER_SSL_KEY_STORE_TYPE="PKCS12",
                    NODE_EXTRA_CA_CERTS=str(work / "cert.pem"), TEST_REUSE_LOCAL_SERVER="0")
         cli = root / "frontend/node_modules/@playwright/test/cli.js"
+        if "TEST_PHP_ADDRESS" in env:
+            keytool = Path(env["JAVA_HOME"]) / "bin" / ("keytool.exe" if os.name == "nt" else "keytool")
+            trust = work / "trust.p12"
+            subprocess.run([str(keytool),"-importcert","-noprompt","-alias","portal","-file",str(work/"cert.pem"),
+                            "-keystore",str(trust),"-storepass","changeit"],check=True,capture_output=True)
+            env.update(BUDGET_PORTAL_URL=stack.enter_context(portal_tls(env["TEST_PHP_ADDRESS"],work)),
+                       BUDGET_PORTAL_DELAY_MS="300", JAVA_TOOL_OPTIONS=f'-Djavax.net.ssl.trustStore="{trust}" -Djavax.net.ssl.trustStorePassword=changeit')
         subprocess.run(["node", str(cli), "test", "--reporter=list"], cwd=root / "frontend", env=env, check=True)
 
 
