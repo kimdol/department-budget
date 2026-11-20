@@ -3,6 +3,7 @@ package kr.budget.policy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import kr.budget.claims.ApprovalRoute;
 import kr.budget.claims.BudgetMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PolicyService {
-    public record Preview(long generation, long original, long candidate) {}
+    public record Preview(long generation, long original, long candidate,
+                          ApprovalRoute originalRoute, ApprovalRoute candidateRoute) {}
     private final PolicyMapper policies;
     private final BudgetMapper budgets;
 
@@ -34,8 +36,10 @@ public class PolicyService {
 
     public Preview preview(String workspace, String category, String formula, long cost, int days) {
         PolicyVersion active = active(workspace, category);
-        return new Preview(active.generation(), active.calculate(cost, days),
-                new PolicyVersion(active.generation(), formula, active.evaluatorVersion()).calculate(cost, days));
+        long original = active.calculate(cost, days);
+        long candidate = new PolicyVersion(active.generation(), formula, active.evaluatorVersion()).calculate(cost, days);
+        return new Preview(active.generation(), original, candidate,
+                ApprovalRoute.forSupport(original), ApprovalRoute.forSupport(candidate));
     }
 
     @Transactional

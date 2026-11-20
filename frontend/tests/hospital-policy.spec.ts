@@ -11,6 +11,12 @@ test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구�
   await editor.getByLabel("인정액 수식").fill("min(eligible_cost, days)");
   await expect(editor).toContainText("20번째 문자: 단위가 일치하지 않습니다.");
   await expect(editor.getByRole("button", { name: "검토 요청" })).toBeDisabled();
+  await editor.getByLabel("비교할 실비(원)").fill("300000");
+  await editor.getByLabel("인정액 수식").fill("eligible_cost");
+  await expect(editor).toContainText("승인 경로 기존 부서장 / 후보 부서장 → 재무");
+  await editor.getByLabel("비교할 실비(원)").fill("299999");
+  await expect(editor.getByText("승인 경로 기존 부서장 / 후보 부서장", {exact:true})).toBeVisible();
+  await editor.getByLabel("비교할 실비(원)").fill("180000");
   await editor.getByLabel("인정액 수식").fill("min(eligible_cost * 0.90, event_cap)");
   await expect(editor).toContainText(/144,000.*162,000/);
   await expect(editor).toContainText("직원 부담액 기존 36,000원 / 후보 18,000원");

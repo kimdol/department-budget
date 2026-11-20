@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client";
 
 type Version = {generation:number; formula:string};
 type Draft = {draftId:string; baseGeneration:number; formula:string};
-type Preview = {generation:number; original:number; candidate:number};
+const routes = {MANAGER:"부서장", MANAGER_FINANCE:"부서장 → 재무"};
+type Preview = {generation:number; original:number; candidate:number; originalRoute:keyof typeof routes; candidateRoute:keyof typeof routes};
 type History = {versions:Version[]; drafts:Draft[]};
 
 const won = (n:number) => n.toLocaleString("ko-KR") + "원";
@@ -82,6 +83,7 @@ function PolicyEditor() {
     <label>일수<input type="number" value={days} onChange={e=>setDays(e.target.value)}/></label></div>
     <p role="status">{diagnostic || (preview ? "기존 "+won(preview.original)+" / 후보 "+won(preview.candidate)+" / 차이 "+won(preview.candidate-preview.original) : "계산 중")}</p>
     {preview && <p>직원 부담액 기존 {won(Number(cost)-preview.original)} / 후보 {won(Number(cost)-preview.candidate)}</p>}
+    {preview && <p>승인 경로 기존 {routes[preview.originalRoute]} / 후보 {routes[preview.candidateRoute]}</p>}
     {role==="FINANCE" && <button disabled={!preview || busy} onClick={()=>change("/api/policies/drafts",{category,formula,generation:String(current.generation)},"부서장 검토를 요청했습니다.")}>검토 요청</button>}
     <h3>검토 대기</h3>
     {history!.drafts.filter(d=>d.baseGeneration===current.generation).map(d=><div key={d.draftId}><code>{d.formula}</code> {role==="MANAGER" && <button disabled={busy} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{},"새 규정을 발행했습니다.")}>발행</button>}</div>)}

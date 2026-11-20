@@ -1,5 +1,7 @@
 # 인수 현황
 
+규정 미리보기에서 기존·후보 인정액에 대해 신청 제출과 같은 [승인 경로 판정](../src/main/java/kr/budget/claims/ApprovalRoute.java)을 호출한다. 병원 학회비 전액 지원 후보를 입력하고 지원 예정액 299,999원에서는 부서장, 300,000원에서는 부서장 → 재무로 바뀜을 Chrome에서 확인했다. 루프백 HTTPS 시험 6건 통과. [경계값 시험](../frontend/tests/hospital-policy.spec.ts) · [재무 최종 사전승인 시 약정 시험](../frontend/tests/travel-approval.spec.ts)
+
 병원 규정 작업실에서 학회비 180,000원에 대한 지원율을 80%에서 90%로 바꾸면 지원 예정액과 함께 직원 부담액 36,000원 → 18,000원을 비교할 수 있다. Chrome에서 잘못된 단위의 위치 표시, 검토 요청 비활성화, 수정 후 미리보기·검토·발행·복구까지 확인했다. 루프백 HTTPS 시험 6건 통과. [브라우저 시험](../frontend/tests/hospital-policy.spec.ts)
 
 수식 편집에서 원화와 일수를 더하거나 `min`으로 비교하면 단위 오류만 반환돼 담당자가 수정할 위치를 알 수 없었다. `eligible_cost + days`와 `min(eligible_cost, days)`에서 두 번째 항의 시작 위치인 17·20번째 문자를 기대한 회귀 시험 2건이 이 사유로 실패했다. 파서가 두 번째 항을 읽기 전에 공백을 건너뛴 위치를 보관하고 단위 검사에 전달하도록 변경한 뒤 수식 시험 13건이 모두 통과했다. [수식 파서](../src/main/java/kr/budget/policy/ExpenseFormula.java) · [회귀 시험](../src/test/java/kr/budget/policy/ExpenseFormulaTest.java)
