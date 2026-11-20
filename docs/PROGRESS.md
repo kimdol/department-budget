@@ -1,5 +1,7 @@
 # 인수 현황
 
+Oracle Free에서 신청 당시 규정, 증빙 보완, 1,000회 미리보기의 전표 보존을 포함한 원장 계약 17건을 실행했다. 실패·오류·건너뜀은 모두 0건이다. 합성 신청 100만 건에서 같은 부서의 깊은 페이지를 조회한 실행 계획은 OFFSET 307회, 키셋 13회의 논리 읽기를 기록했다. [Oracle 시험 결과](measurements/oracle-contracts-44781612255.txt) · [100만 건 실행 계획](measurements/oracle-inbox-44781386053.zip)
+
 20만 원 약정 전표가 있는 부서에서 한도 25만 원의 후보 규정을 서로 다른 실비로 1,000번 미리 봤다. H2에서 매회 기존·후보 인정액이 기대값과 일치했고, 미리보기 전후 약정·집행·가용액과 전표 내역·규정 세대가 유지됐다. 로컬 Java 시험 41건 통과, Oracle 계약 17건은 CI에서 별도로 실행한다. [회계 계약 시험](../src/test/java/kr/budget/claims/PostingContract.java)
 
 Oracle 복원 대사에 발행 규정, 접수 시점 수식·참석 조건, 증빙 유형·금액을 추가했다. 결재함 측정 데이터는 100개 부서 합계 100만 건으로 확장했으며 비교 대상은 한 부서의 동일 신청 51건이다. 측정값과 실행 계획은 해당 실행의 결과물을 확인한다. [대사 실행](https://github.com/kimdol/department-budget/actions/runs/44781206084) · [100만 건 측정 실행](https://github.com/kimdol/department-budget/actions/runs/44781386053)
