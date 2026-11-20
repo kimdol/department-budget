@@ -5,6 +5,10 @@ const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
 const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
 function render(state) {
+  const nextSteps = {EMPLOYEE:"교육비를 신청한 뒤 시연 역할을 부서장으로 바꾸세요. 약정 완료 후에는 실제 지출액으로 정산을 신청할 수 있습니다.",
+    MANAGER:"신청을 사전승인하면 약정액이 반영됩니다. 직원 역할에서 실제 지출을 제출하세요.",
+    FINANCE:"정산을 확정한 뒤 전표와 월 결산표에서 집행액을 확인하세요."};
+  notice(nextSteps[state.role]);
   $("#month-end").prop("hidden", state.role !== "FINANCE");
   $("#statement").empty();
   $("#close-period").prop("hidden",true);
@@ -88,6 +92,13 @@ $("#close-period").on("click",function() {
   api("/api/statement/close",{}).done(showStatement).fail(reportError).always(()=>$(this).prop("disabled",false));
 });
 $("#start").on("click",()=>api("/api/demo").then(render).fail(reportError));
+$("#end-demo").on("submit", event => {
+  if (!window.confirm("현재 체험을 종료할까요? 다음 체험은 새 예산 100만 원으로 시작합니다.")) {
+    event.preventDefault();
+    return;
+  }
+  sessionStorage.removeItem("pending-claim");
+});
 $("#role").on("change",event=>api("/api/demo/role",{role:event.target.value}).then(refresh).fail(reportError));
 $("#submit").on("submit",event=>{
   event.preventDefault();
