@@ -5,6 +5,10 @@ import java.util.UUID;
 import jakarta.servlet.http.HttpSession;
 import kr.budget.claims.BudgetMapper;
 import kr.budget.claims.ClaimService;
+import kr.budget.claims.EvidenceService;
+import kr.budget.claims.EvidenceMapper;
+import java.util.List;
+import org.springframework.http.ResponseEntity;
 import kr.budget.policy.PolicyService;
 import kr.budget.policy.PolicyMapper;
 import org.springframework.http.HttpStatus;
@@ -20,12 +24,14 @@ public class DemoPortal {
     private final BudgetMapper mapper;
     private final PolicyService policies;
     private final PolicyMapper policyMapper;
+    private final EvidenceService evidence;
 
-    public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper) {
+    public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper, EvidenceService evidence) {
         this.service = service;
         this.mapper = mapper;
         this.policies = policies;
         this.policyMapper = policyMapper;
+        this.evidence = evidence;
     }
 
     @GetMapping("/")
@@ -98,6 +104,25 @@ public class DemoPortal {
     @ResponseBody
     public void settle(HttpSession session, @PathVariable String id, @RequestParam(defaultValue="1") int round) {
         service.settle(authorized(session, Role.FINANCE), id, round);
+    }
+
+    @PostMapping("/api/claims/{id}/evidence")
+    @ResponseBody
+    public void attach(HttpSession session, @PathVariable String id, @RequestParam EvidenceService.Type type, @RequestParam long amount) {
+        evidence.attach(authorized(session, Role.EMPLOYEE), id, type, amount);
+    }
+
+    @GetMapping("/api/claims/{id}/evidence")
+    @ResponseBody
+    public List<EvidenceMapper.Document> evidenceList(HttpSession session, @PathVariable String id) {
+        return evidence.list(workspace(session), id);
+    }
+
+    @GetMapping(value="/api/claims/{id}/evidence/{type}", produces="text/plain;charset=UTF-8")
+    @ResponseBody
+    public ResponseEntity<String> download(HttpSession session, @PathVariable String id, @PathVariable EvidenceService.Type type) {
+        return ResponseEntity.ok().header("Content-Disposition", "attachment; filename=expense-document.txt")
+                .header("Cache-Control","no-store").body(evidence.download(workspace(session), id, type));
     }
 
     @GetMapping("/api/policies")

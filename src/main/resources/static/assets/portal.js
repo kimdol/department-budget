@@ -21,6 +21,17 @@ function render(state) {
     $("<p>").text("예정 " + money(claim.estimated) + " / 승인 " + money(claim.approved) + " / 정산 " + money(claim.settled)).appendTo(row);
     const actions = $("<div>").addClass("actions").appendTo(row);
     const path = "/api/claims/" + encodeURIComponent(claim.claimId);
+    const documents = $("<div>").appendTo(row);
+    $("<button>").text("증빙 조회").on("click", () => {
+      $.getJSON(path + "/evidence").done(items => {
+        documents.empty();
+        if (!items.length) documents.text("제출한 증빙이 없습니다.");
+        for (const item of items) {
+          $("<a>").attr("href",path+"/evidence/"+encodeURIComponent(item.evidenceType))
+            .text((item.evidenceType==="RECEIPT" ? "지출 영수증" : "참석 확인서")+" · "+money(item.receiptAmount)).appendTo(documents);
+        }
+      }).fail(reportError);
+    }).appendTo(actions);
     const action = (label, route, data) => $("<button>").text(label).on("click", function() {
       $(this).prop("disabled", true);
       api(path + route, data()).then(refresh).fail(error => {reportError(error); $(this).prop("disabled",false);});
@@ -28,6 +39,10 @@ function render(state) {
     if (state.role === "MANAGER" && claim.status === "SUBMITTED") action("사전승인","/approve",()=>({}));
     if (state.role === "EMPLOYEE" && ["APPROVED","NEEDS_RECEIPT"].includes(claim.status)) {
       const amount = $("<input>").attr({type:"number",min:1,"aria-label":"실제 지출액(원)"}).val(225000).appendTo(actions);
+      const type = $("<select>").attr("aria-label","증빙 종류").appendTo(actions);
+      $("<option>").val("RECEIPT").text("지출 영수증").appendTo(type);
+      $("<option>").val("ATTENDANCE").text("참석 확인서").appendTo(type);
+      action("합성 증빙 첨부","/evidence",()=>({type:type.val(),amount:amount.val()}));
       action("정산 신청","/review",()=>({actual:amount.val(),round:claim.reviewRound}));
     }
     const managerReview = state.role === "MANAGER" && claim.status === "INCREASE_REQUESTED";

@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={
         "spring.datasource.url=jdbc:h2:mem:portal;MODE=Oracle","spring.datasource.username=sa",
         "spring.datasource.password=","spring.sql.init.mode=always",
-        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql,classpath:db/V003__policy_versions.sql,classpath:db/V004__claim_review.sql",
+        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql,classpath:db/V003__policy_versions.sql,classpath:db/V004__claim_review.sql,classpath:db/V005__claim_evidence.sql",
         "server.address=127.0.0.1","server.servlet.session.cookie.secure=false"})
 class PortalHttpTest {
     @LocalServerPort int port;
@@ -80,6 +80,12 @@ class PortalHttpTest {
         assertEquals(200, first.post(path + "/approve", "").statusCode());
         assertEquals(200000, first.state().at("/balance/committed").longValue());
         first.role("EMPLOYEE");
+        assertEquals(200, first.post(path + "/evidence", "type=RECEIPT&amount=225000").statusCode());
+        var receipt = first.request(path + "/evidence/RECEIPT", null, false);
+        assertEquals(200, receipt.statusCode());
+        assertTrue(receipt.body().contains("225000"));
+        assertTrue(receipt.headers().firstValue("cache-control").orElse("").contains("no-store"));
+        assertEquals(404, second.request(path + "/evidence/RECEIPT", null, false).statusCode());
         assertEquals(200, first.post(path + "/review", "actual=225000").statusCode());
         first.role("FINANCE");
         assertEquals(200, first.post(path + "/settle", "").statusCode());
