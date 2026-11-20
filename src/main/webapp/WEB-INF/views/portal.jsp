@@ -12,6 +12,7 @@
 <label id="department-choice" hidden>체험 부서 <select id="department"><option value="PRIMARY">제1부서</option><option value="SECONDARY">제2부서</option></select></label>
 <div id="desk" hidden><div class="metrics"><article>배정액<strong id="allocation"></strong></article><article>약정 잔액<strong id="committed"></strong></article><article>누적 집행<strong id="spent"></strong></article><article>가용 예산<strong id="available"></strong></article></div>
 <nav aria-label="체험 설정"><label for="role">시연 역할</label> <select id="role"><option value="EMPLOYEE">직원</option><option value="MANAGER">부서장</option><option value="FINANCE">재무 담당자</option></select>
+<span id="member-name"></span><button type="button" id="delegate" hidden></button>
 <form id="end-demo" method="post" action="/api/demo/end"><input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"><button>내 체험 종료</button></form></nav>
 <section id="entry"><h2>비용 신청</h2><form id="submit"><label>신청명<input name="title" maxlength="100" required value="직무 교육 참가"></label><label>비목<select name="category" required></select></label><label>예정 금액(원)<input type="number" name="estimated" min="1" required value="300000"></label><label>기간(일)<input type="number" name="days" min="1" max="365" required value="1"></label><button>신청 제출</button></form><div id="employee-root"></div><button type="button" id="employee-view" data-module="${assetPaths['employee.js']}">직원용 신청 화면으로 전환</button></section>
 <div id="estimate-panel" hidden><button type="button" id="estimate">지원 예정액 확인</button><p id="estimate-result" role="status"></p></div>

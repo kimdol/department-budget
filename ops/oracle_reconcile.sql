@@ -31,12 +31,12 @@ select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || 
        '|' || evaluator_version || '|' || rawtohex(standard_hash(formula,'SHA256')) ||
        '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) || '|' || approval_route ||
        '|' || estimated || '|' || days || '|' || approved || '|' || nvl(to_char(actual),'-') ||
-       '|' || settled || '|' || status || '|' || review_round
+       '|' || settled || '|' || status || '|' || review_round || '|' || applicant_id
 from expense_claim order by workspace_id,claim_id;
 select 'EVIDENCE|' || workspace_id || '|' || claim_id || '|' || evidence_type || '|' || receipt_amount
 from claim_evidence order by workspace_id,claim_id,evidence_type;
 select 'REVIEW|' || workspace_id || '|' || claim_id || '|' || review_round || '|' || event_type ||
        '|' || actor_role || '|' || amount || '|' || nvl(rawtohex(standard_hash(note,'SHA256')),'-') ||
-       '|' || to_char(recorded_at,'YYYY-MM-DD"T"HH24:MI:SS.FF6')
+       '|' || to_char(recorded_at,'YYYY-MM-DD"T"HH24:MI:SS.FF6') || '|' || nvl(actor_member_id,'-')
 from claim_review_event order by workspace_id,claim_id,review_round,event_type;
 exit success

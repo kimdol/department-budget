@@ -30,7 +30,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 public class DemoPortal {
-    public enum Role { EMPLOYEE, MANAGER, FINANCE }
+    public enum Role {
+        EMPLOYEE("STAFF_01"), MANAGER("HEAD_01"), FINANCE("FIN_01"), ACTING_MANAGER("STAFF_01");
+        final String memberId;
+        Role(String memberId) { this.memberId = memberId; }
+        Role effective() { return this == ACTING_MANAGER ? MANAGER : this; }
+    }
     private final ClaimService service;
     private final HttpServletRequest request;
     private final BranchAllocation allocations;
@@ -91,8 +96,10 @@ public class DemoPortal {
     public Map<String, Object> snapshot(HttpSession session,@RequestParam(required=false) Long before) {
         String workspace = workspace(session);
         var rows = mapper.inbox(workspace,before == null ? Long.MAX_VALUE : before);
+        Role member = role(session);
         return Map.of("balance", mapper.balance(workspace), "claims", rows.stream().limit(50).toList(), "hasMore",rows.size() > 50,
-                "role", role(session), "organization",mapper.organization(workspace),"portalEnabled",receipts.getIfAvailable()!=null);
+                "role", member.effective(),"persona",member,"memberId",member.memberId,
+                "organization",mapper.organization(workspace),"portalEnabled",receipts.getIfAvailable()!=null);
     }
 
     @GetMapping("/api/claims/estimate")
@@ -113,7 +120,7 @@ public class DemoPortal {
     @PostMapping("/api/claims/{id}/approve")
     @ResponseBody
     public void approve(HttpSession session, @PathVariable String id) {
-        service.approve(authorized(session, Role.MANAGER), id);
+        service.approve(workspace(session),id,reviewer(session,Role.MANAGER).memberId);
     }
 
     @PostMapping("/api/claims/{id}/replace-category")
@@ -252,14 +259,17 @@ public class DemoPortal {
     @PostMapping("/api/claims/{id}/increase")
     @ResponseBody
     public void increase(HttpSession session, @PathVariable String id, @RequestParam int round) {
-        service.increase(authorized(session, Role.MANAGER), id, round);
+        service.increase(workspace(session),id,round,reviewer(session,Role.MANAGER).memberId);
     }
 
     @PostMapping("/api/claims/{id}/return")
     @ResponseBody
     public void returnReview(HttpSession session, @PathVariable String id, @RequestParam int round, @RequestParam String reason) {
-        boolean manager = role(session) == Role.MANAGER;
-        service.returnReview(authorized(session, manager ? Role.MANAGER : Role.FINANCE), id, round, reason, manager);
+        String workspace = workspace(session);
+        Role member = role(session);
+        boolean manager = member.effective() == Role.MANAGER;
+        if (!manager && member != Role.FINANCE) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        service.returnReview(workspace,id,round,reason,manager,member.memberId);
     }
 
     @PostMapping("/api/claims/{id}/settle")
@@ -395,5 +405,11 @@ public class DemoPortal {
 
     private Role role(HttpSession session) {
         return (Role)session.getAttribute("role-" + department());
+    }
+
+    private Role reviewer(HttpSession session, Role required) {
+        Role member = role(session);
+        if (member == null || member.effective() != required) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        return member;
     }
 }

@@ -65,3 +65,22 @@ for (const mode of ["JSP","React"]) {
     await expect(page.locator("#available")).toHaveText("800,000원");
   });
 }
+test("부서장 대행도 본인의 신청을 승인할 수 없다",async ({page})=>{
+  await page.goto("/");
+  await page.locator("#start").click();
+  await page.getByRole("button",{name:"신청 제출"}).click();
+  await expect(page.locator(".claim")).toContainText("결재 대기");
+  await page.locator("#role").selectOption("MANAGER");
+  await page.getByRole("button",{name:"신청 직원의 부서장 대행 체험"}).click();
+  await expect(page.locator("#member-name")).toContainText("STAFF_01 · 본인 신청 결재 제한");
+  const attempt = page.waitForResponse(r=>r.url().endsWith("/approve"));
+  await page.getByRole("button",{name:"사전승인"}).click();
+  expect((await attempt).status()).toBe(403);
+  await expect(page.locator("#committed")).toHaveText("0원");
+  await page.getByRole("button",{name:"부서장으로 복귀"}).click();
+  await expect(page.locator("#member-name")).toContainText("HEAD_01");
+  await page.getByRole("button",{name:"사전승인"}).click();
+  await expect(page.locator("#committed")).toHaveText("200,000원");
+  await page.getByRole("button",{name:"결재 이력"}).click();
+  await expect(page.locator(".claim")).toContainText("부서장 · 최종 사전승인 · 200,000원 · HEAD_01");
+});

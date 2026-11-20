@@ -23,6 +23,24 @@ abstract class PostingContract {
     @Autowired kr.budget.portal.PortalOutbox outbox;
 
     @Test
+    void delegatedApplicantCannotApproveOrIncreaseTheirOwnClaim() {
+        String workspace = service.open();
+        String id = service.submit(workspace,UUID.randomUUID(),"부서장 대행 교육","EDUCATION",100000,1);
+        var applicant = mapper.findClaim(workspace,id).applicantId();
+        assertEquals("STAFF_01",applicant);
+        assertEquals(403,assertThrows(ResponseStatusException.class,()->service.approve(workspace,id,applicant)).getStatusCode().value());
+        assertEquals("SUBMITTED",mapper.findClaim(workspace,id).status());
+        assertEquals(0,mapper.balance(workspace).committed());
+        assertEquals(0,jdbc.queryForObject("select count(*) from budget_posting where claim_id=?",Integer.class,id));
+        service.approve(workspace,id);
+        assertEquals(List.of("STAFF_01","HEAD_01"),mapper.history(workspace,id).stream().map(BudgetMapper.ReviewEvent::actorMemberId).toList());
+        service.review(workspace,id,200000);
+        assertEquals(403,assertThrows(ResponseStatusException.class,()->service.increase(workspace,id,1,applicant)).getStatusCode().value());
+        assertEquals("INCREASE_REQUESTED",mapper.findClaim(workspace,id).status());
+        assertEquals(80000,mapper.balance(workspace).committed());
+    }
+
+    @Test
     void categoryReplacementReleasesTheOriginalCommitmentAndStartsFreshApproval() {
         String workspace = service.open();
         String original = service.submit(workspace,UUID.randomUUID(),"학회 교육","EDUCATION",300000,1);

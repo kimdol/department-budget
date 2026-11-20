@@ -56,6 +56,12 @@ function render(state) {
   $("#desk").prop("hidden", false);
   for (const key of ["allocation","committed","spent","available"]) $("#" + key).text(money(state.balance[key]));
   $("#role").val(state.role);
+  const delegated = state.persona === "ACTING_MANAGER";
+  $("#member-name").text("시연 구성원 "+state.memberId+(delegated ? " · 본인 신청 결재 제한" : ""));
+  $("#delegate").prop("hidden",state.role !== "MANAGER").data("next",delegated ? "MANAGER" : "ACTING_MANAGER")
+    .text(delegated ? "부서장으로 복귀" : "신청 직원의 부서장 대행 체험");
+  $("#policy-panel").prop("hidden",delegated);
+  if (delegated) $("#policy-panel").prop("open",false);
   document.dispatchEvent(new Event("budget-session"));
   $("#entry").prop("hidden", state.role !== "EMPLOYEE");
   const list = $("#claims").empty();
@@ -113,7 +119,7 @@ function render(state) {
         for (const event of events) {
           const phase = event.reviewRound ? "정산 "+event.reviewRound+"차" : "사전 결재";
           $("<p>").text([event.recordedAt.replace("T"," "),phase,roles[event.actorRole],
-            names[event.eventType] || event.eventType,money(event.amount),event.note].filter(Boolean).join(" · ")).appendTo(documents);
+            names[event.eventType] || event.eventType,money(event.amount),event.note,event.actorMemberId].filter(Boolean).join(" · ")).appendTo(documents);
         }
       }).fail(reportError)).appendTo(actions);
     if (state.role === "FINANCE" && state.portalEnabled) $("<button>").text("사내 포털 수신 결과").on("click",() =>
@@ -374,15 +380,17 @@ $("#end-demo").on("submit", event => {
   }
   sessionStorage.removeItem("pending-claim");
 });
-$("#role").on("change",function() {
-  const selector = $(this).prop("disabled",true);
+function changeRole(role) {
+  const selector = $("#role,#delegate").prop("disabled",true);
   const panels = $("#desk > section,#estimate-panel,#policy-panel");
   panels.prop("inert",true);
-  api("/api/demo/role",{role:this.value}).then(refresh).then(()=>{
+  api("/api/demo/role",{role}).then(refresh).then(()=>{
     panels.prop("inert",false);
     selector.prop("disabled",false);
   }).fail(()=>location.reload());
-});
+}
+$("#role").on("change",function(){changeRole(this.value);});
+$("#delegate").on("click",function(){changeRole($(this).data("next"));});
 let estimateRevision = 0;
 let expectedGeneration = null;
 function clearEstimate() {

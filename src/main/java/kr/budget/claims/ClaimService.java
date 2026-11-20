@@ -130,24 +130,28 @@ public class ClaimService {
     }
 
     public void approve(String workspace, String id) {
+        approve(workspace,id,"HEAD_01");
+    }
+
+    public void approve(String workspace,String id,String memberId) {
         Balance balance = mapper.lockBalance(workspace);
-        Claim claim = locked(workspace, id);
+        Claim claim = forIndependentReview(workspace,id,memberId);
         if (claim.status().equals("CANCELLED")) throw new ResponseStatusException(HttpStatus.CONFLICT);
         if (!claim.status().equals("SUBMITTED")) return;
         requireOpen(workspace);
         long amount = amount(claim, claim.estimated());
         if (claim.approvalRoute() == ApprovalRoute.MANAGER_FINANCE) {
             mapper.forwardToFinance(workspace,id);
-            mapper.event(workspace,id,0,"FORWARD_FINANCE","MANAGER",amount,null);
+            mapper.recordEvent(workspace,id,0,"FORWARD_FINANCE","MANAGER",amount,null,memberId);
             return;
         }
         commitApproval(workspace,id,balance,amount);
-        mapper.event(workspace,id,0,"FINAL_APPROVAL","MANAGER",amount,null);
+        mapper.recordEvent(workspace,id,0,"FINAL_APPROVAL","MANAGER",amount,null,memberId);
     }
 
     public void financeApproval(String workspace,String id) {
         Balance balance = mapper.lockBalance(workspace);
-        Claim claim = locked(workspace,id);
+        Claim claim = forIndependentReview(workspace,id,"FIN_01");
         if (claim.approvalRoute() != ApprovalRoute.MANAGER_FINANCE) throw new ResponseStatusException(HttpStatus.CONFLICT);
         if (claim.status().equals("APPROVED")) return;
         require(claim,"FINANCE_PENDING");
@@ -180,8 +184,12 @@ public class ClaimService {
     }
 
     public void increase(String workspace, String id, int round) {
+        increase(workspace,id,round,"HEAD_01");
+    }
+
+    public void increase(String workspace,String id,int round,String memberId) {
         Balance balance = mapper.lockBalance(workspace);
-        Claim claim = locked(workspace, id);
+        Claim claim = forIndependentReview(workspace,id,memberId);
         requireRound(claim, round);
         if (claim.status().equals("IN_REVIEW") && claim.approved() == amount(claim, claim.actual())) return;
         require(claim, "INCREASE_REQUESTED");
@@ -190,18 +198,22 @@ public class ClaimService {
         if (extra > balance.getAvailable()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         mapper.increase(workspace, id, adjusted);
         post(workspace, id, "INCREASE_" + round, extra, 0);
-        mapper.event(workspace, id, round, "APPROVE_INCREASE", "MANAGER", extra, null);
+        mapper.recordEvent(workspace,id,round,"APPROVE_INCREASE","MANAGER",extra,null,memberId);
     }
 
     public void returnReview(String workspace, String id, int round, String reason, boolean manager) {
+        returnReview(workspace,id,round,reason,manager,manager ? "HEAD_01" : "FIN_01");
+    }
+
+    public void returnReview(String workspace,String id,int round,String reason,boolean manager,String memberId) {
         if (reason == null || reason.isBlank() || reason.length() > 240)
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
-        Claim claim = locked(workspace, id);
+        Claim claim = forIndependentReview(workspace,id,memberId);
         requireRound(claim, round);
         if (claim.status().equals("NEEDS_RECEIPT") && reason.equals(claim.reviewNote())) return;
         require(claim, manager ? "INCREASE_REQUESTED" : "IN_REVIEW");
         mapper.returnReview(workspace, id, reason);
-        mapper.event(workspace, id, round, "RETURN", manager ? "MANAGER" : "FINANCE", claim.actual(), reason);
+        mapper.recordEvent(workspace,id,round,"RETURN",manager ? "MANAGER" : "FINANCE",claim.actual(),reason,memberId);
     }
 
     private void requireRound(Claim claim, int round) {
@@ -214,7 +226,7 @@ public class ClaimService {
 
     public void settle(String workspace, String id, int round) {
         mapper.lockBalance(workspace);
-        Claim claim = locked(workspace, id);
+        Claim claim = forIndependentReview(workspace,id,"FIN_01");
         requireRound(claim, round);
         if (claim.status().equals("SETTLED")) return;
         require(claim, "IN_REVIEW");
@@ -224,6 +236,12 @@ public class ClaimService {
         post(workspace, id, "SETTLEMENT", -claim.approved(), amount);
         mapper.event(workspace, id, round, "SETTLE", "FINANCE", amount, null);
         outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(),workspace,id,2,"SETTLEMENT",amount));
+    }
+
+    private Claim forIndependentReview(String workspace,String id,String memberId) {
+        Claim claim = locked(workspace,id);
+        if (claim.applicantId().equals(memberId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN,"본인 신청은 결재할 수 없습니다.");
+        return claim;
     }
 
     private Claim locked(String workspace, String id) {

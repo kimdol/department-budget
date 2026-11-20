@@ -28,7 +28,7 @@ public interface BudgetMapper {
         """)
     void submit(String id, String workspace, String title, String category, long estimated, int days, String formula, long generation,String version,ApprovalRoute route,String attendanceRule);
 
-    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note,evaluator_version,approval_route,inbox_order,attendance_rule";
+    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note,evaluator_version,approval_route,inbox_order,attendance_rule,applicant_id";
 
     @Update("update expense_claim set status='FINANCE_PENDING' where workspace_id=#{workspace} and claim_id=#{id}")
     void forwardToFinance(String workspace,String id);
@@ -81,16 +81,26 @@ public interface BudgetMapper {
     void returnReview(String workspace, String id, String reason);
 
     @Insert("""
-        insert into claim_review_event (workspace_id,claim_id,review_round,event_type,actor_role,amount,note)
-        values (#{workspace},#{id},#{round},#{type},#{actor},#{amount},#{note,jdbcType=VARCHAR})
+        insert into claim_review_event (workspace_id,claim_id,review_round,event_type,actor_role,amount,note,actor_member_id)
+        values (#{workspace},#{id},#{round},#{type},#{actor},#{amount},#{note,jdbcType=VARCHAR},#{member})
         """)
-    void event(String workspace, String id, int round, String type, String actor, long amount, String note);
+    void recordEvent(String workspace,String id,int round,String type,String actor,long amount,String note,String member);
+
+    default void event(String workspace,String id,int round,String type,String actor,long amount,String note) {
+        String member = switch (actor) {
+            case "EMPLOYEE" -> "STAFF_01";
+            case "MANAGER" -> "HEAD_01";
+            case "FINANCE" -> "FIN_01";
+            default -> throw new IllegalArgumentException("알 수 없는 시연 역할입니다.");
+        };
+        recordEvent(workspace,id,round,type,actor,amount,note,member);
+    }
 
     record ReviewEvent(int reviewRound, String eventType, String actorRole, Long amount,
-                       String note, java.time.LocalDateTime recordedAt) {}
+                       String note, java.time.LocalDateTime recordedAt,String actorMemberId) {}
 
     @Select("""
-        select review_round,event_type,actor_role,amount,note,recorded_at from claim_review_event
+        select review_round,event_type,actor_role,amount,note,recorded_at,actor_member_id from claim_review_event
         where workspace_id=#{workspace} and claim_id=#{id}
         order by review_round, recorded_at, case event_type when 'SUBMIT' then 0 when 'FORWARD_FINANCE' then 1
             when 'FINAL_APPROVAL' then 2 when 'SUBMIT_ACTUAL' then 3 when 'APPROVE_INCREASE' then 4 else 5 end

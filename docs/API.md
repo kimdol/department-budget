@@ -32,3 +32,6 @@
 ## 보완 중 비목 변경
 
 직원은 `POST /api/claims/{id}/replace-category`에 보완 차수 `round`, 새 비목 `category`, 예정 금액 `estimated`, 일수 `days`, 요청 식별자 `requestKey`를 보낸다. 성공 응답의 `claimId`는 새 신청번호다. 두 신청의 결재 이력에 상대 신청번호가 남는다. 같은 내용과 식별자로 재전송하면 같은 결과를 받는다. 같은 원신청에서 서로 다른 대체 신청을 만들려 하면 409가 반환된다. [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java)
+## 신청자가 결재 대행을 맡은 경우
+
+조직 데모의 구성원 식별자는 방문자·부서별 업무 공간 안에서 해석한다. 직원은 `STAFF_01`, 부서장은 `HEAD_01`, 재무 담당자는 `FIN_01`이다. 부서장 화면에서 **신청 직원의 부서장 대행 체험**을 누르면 서버가 시연 세션에 직원 신원과 대행 권한을 함께 설정한다. 사전승인·증액·보완 판단은 잠근 신청 행의 신청자와 결재자의 식별자가 같으면 403을 반환한다. 결재 요청 본문으로 처리자 신원을 지정할 수 없다. 결재 이력의 `actorMemberId`는 해당 사건의 실제 시연 구성원이다. V024 이전 이력에는 역할만 보존된다. [서비스의 결재 검증](../src/main/java/kr/budget/claims/ClaimService.java) · [대행 체험 시험](../frontend/tests/employee-form.spec.ts)
