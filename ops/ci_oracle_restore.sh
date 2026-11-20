@@ -34,11 +34,18 @@ pump() {
     printf 'userid=%s/%s@//localhost:1521/FREEPDB1\n' "$schema" "$BUDGET_DB_PASSWORD" |
         "${database[@]}" bash -c 'umask 077; file=$(mktemp); trap '\''rm -f "$file"'\'' EXIT; cat > "$file"; "$1" parfile="$file" "${@:2}"' bash "$program" "$@"
 }
+SECONDS=0
 pump expdp budget schemas=BUDGET directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=export.log
+export_seconds=$SECONDS
+SECONDS=0
 pump impdp budget_restore remap_schema=BUDGET:BUDGET_RESTORE directory=BUDGET_CI_EXPORT dumpfile=budget.dmp logfile=import.log
+import_seconds=$SECONDS
+SECONDS=0
 read_ledger budget_restore "$work/restored.txt"
 for kind in WORKSPACE DEPARTMENT POSTING BALANCE LINE POLICY CLAIM EVIDENCE; do
     grep -q "^${kind}|" "$work/source.txt"
 done
 diff -u "$work/source.txt" "$work/restored.txt"
 sha256sum "$work/source.txt" "$work/restored.txt" > "$work/checksums.txt"
+printf 'export_seconds=%d\nimport_seconds=%d\nreconciliation_seconds=%d\n' \
+    "$export_seconds" "$import_seconds" "$SECONDS" > "$work/durations.txt"
