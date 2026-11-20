@@ -100,6 +100,20 @@ def main():
                     send(dict(settlement, amount=179999))]
         if statuses != [409, 204, 204, 204, 204, 409]:
             raise AssertionError(statuses)
+        def read_status(workspace, credential):
+            request = Request(f"http://{address}/status.php?workspace={workspace}&claim={approval['claimId']}",
+                              headers={"Authorization": "Bearer " + credential})
+            try:
+                with urlopen(request, timeout=3) as response:
+                    if response.headers.get("Cache-Control") != "no-store":
+                        raise AssertionError("포털 조회 캐시 정책")
+                    return response.status, json.load(response)
+            except HTTPError as error:
+                return error.code, None
+        if read_status(approval["workspaceId"],token) != (200,dict(sequence=2,event="SETTLEMENT",amount=180000)):
+            raise AssertionError("포털 수신 금액")
+        if read_status(uuid.uuid4(),token)[0] != 404 or read_status(approval["workspaceId"],"")[0] != 403:
+            raise AssertionError("포털 조회 범위")
         rows = sql("USE budget; SELECT COUNT(*) FROM budget_event_receipt; "
                    "SELECT event_type,amount FROM budget_claim_summary;").stdout.splitlines()
         if rows != ["2", "SETTLEMENT\t180000"]:

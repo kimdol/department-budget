@@ -68,6 +68,12 @@ function render(state) {
       }).appendTo(actions);
     }
     const documents = $("<div>").appendTo(row);
+    if (state.role === "FINANCE" && state.portalEnabled) $("<button>").text("사내 포털 수신 결과").on("click",() =>
+      $.getJSON(path+"/portal-receipt").done(receipt => {
+        if (!receipt) {documents.text("아직 포털에 도착한 결과가 없습니다."); return;}
+        const kind = ({APPROVAL:"사전승인",SETTLEMENT:"정산 확정",CANCELLATION:"취소"})[receipt.event];
+        documents.text("포털 수신 차수 " + receipt.sequence + " · " + kind + " · " + money(receipt.amount));
+      }).fail(()=>documents.text("포털에서 결과를 조회할 수 없습니다. 잠시 후 다시 조회하세요."))).appendTo(actions);
     $("<button>").text("신청 당시 계산 근거").on("click",() =>
       $.getJSON(path+"/calculation").done(calc => {
         documents.empty();

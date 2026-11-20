@@ -2,6 +2,8 @@ package kr.budget.web;
 
 import java.util.Map;
 import java.util.UUID;
+import kr.budget.portal.PortalReceipts;
+import org.springframework.beans.factory.ObjectProvider;
 import jakarta.servlet.http.HttpSession;
 import kr.budget.claims.BudgetMapper;
 import kr.budget.claims.ClaimService;
@@ -31,9 +33,12 @@ public class DemoPortal {
     private final PeriodClosing periods;
     private final ClosingService closing;
     private final ClosingMapper statements;
+    private final ObjectProvider<PortalReceipts> receipts;
 
     public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper,
-            EvidenceService evidence, PeriodClosing periods, ClosingService closing, ClosingMapper statements) {
+            EvidenceService evidence, PeriodClosing periods, ClosingService closing, ClosingMapper statements,
+            ObjectProvider<PortalReceipts> receipts) {
+        this.receipts = receipts;
         this.service = service;
         this.mapper = mapper;
         this.policies = policies;
@@ -76,7 +81,7 @@ public class DemoPortal {
         String workspace = workspace(session);
         var rows = mapper.inbox(workspace,before == null ? Long.MAX_VALUE : before);
         return Map.of("balance", mapper.balance(workspace), "claims", rows.stream().limit(50).toList(), "hasMore",rows.size() > 50,
-                "role", session.getAttribute("role"), "organization",mapper.organization(workspace));
+                "role", session.getAttribute("role"), "organization",mapper.organization(workspace),"portalEnabled",receipts.getIfAvailable()!=null);
     }
 
     @GetMapping("/api/claims/estimate")
@@ -122,6 +127,16 @@ public class DemoPortal {
     @ResponseBody
     public ClaimService.Calculation calculation(HttpSession session,@PathVariable String id) {
         return service.replay(workspace(session),id);
+    }
+
+    @GetMapping("/api/claims/{id}/portal-receipt")
+    @ResponseBody
+    public ResponseEntity<PortalReceipts.Receipt> portalReceipt(HttpSession session,@PathVariable UUID id) {
+        var workspace = UUID.fromString(authorized(session,Role.FINANCE));
+        var client = receipts.getIfAvailable();
+        if (client == null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        var receipt = client.find(workspace,id);
+        return receipt == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(receipt);
     }
 
     @GetMapping("/api/claims/{id}/postings")
