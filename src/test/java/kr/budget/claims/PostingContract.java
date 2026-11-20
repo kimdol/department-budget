@@ -23,6 +23,31 @@ abstract class PostingContract {
     @Autowired kr.budget.portal.PortalOutbox outbox;
 
     @Test
+    void categoryReplacementReleasesTheOriginalCommitmentAndStartsFreshApproval() {
+        String workspace = service.open();
+        String original = service.submit(workspace,UUID.randomUUID(),"학회 교육","EDUCATION",300000,1);
+        service.approve(workspace,original);
+        service.review(workspace,original,225000);
+        service.returnReview(workspace,original,1,"비목과 기간 확인",false);
+        UUID key = UUID.randomUUID();
+        assertThrows(ResponseStatusException.class,()->service.replaceCategory(workspace,original,1,key,"TRAVEL",-1,3));
+        assertEquals(200000,mapper.balance(workspace).committed());
+        assertEquals("NEEDS_RECEIPT",mapper.findClaim(workspace,original).status());
+        String next = service.replaceCategory(workspace,original,1,key,"TRAVEL",225000,3);
+        assertEquals(next,service.replaceCategory(workspace,original,1,key,"TRAVEL",225000,3));
+        assertThrows(ResponseStatusException.class,()->service.replaceCategory(workspace,original,1,key,"TRAVEL",224999,3));
+        assertEquals("CANCELLED",mapper.findClaim(workspace,original).status());
+        assertEquals("SUBMITTED",mapper.findClaim(workspace,next).status());
+        assertEquals(next,mapper.replacement(workspace,original));
+        assertEquals(0,mapper.balance(workspace).committed());
+        assertEquals(200000,service.replay(workspace,original).initialSupport());
+        assertEquals(150000,service.replay(workspace,next).initialSupport());
+        assertEquals(2,jdbc.queryForObject("select count(*) from budget_posting where claim_id=?",Integer.class,original));
+        service.approve(workspace,next);
+        assertEquals(850000,mapper.balance(workspace).getAvailable());
+    }
+
+    @Test
     void scheduledRuleActivatesOnceWhenTheNextAccountingPeriodOpens() {
         String workspace = service.open();
         String category = "CONFERENCE";

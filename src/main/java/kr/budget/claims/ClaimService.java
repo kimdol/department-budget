@@ -95,12 +95,38 @@ public class ClaimService {
         requireOpen(workspace);
         if (releaseApproval || !claim.status().equals("FINANCE_PENDING")) require(claim, releaseApproval ? "APPROVED" : "SUBMITTED");
         if (releaseApproval) {
-            post(workspace, id, "CANCELLATION", -claim.approved(), 0);
-            outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(), workspace, id, 2, "CANCELLATION", 0));
+            releaseCommitment(workspace,claim);
         }
         mapper.cancel(workspace, id);
         mapper.event(workspace, id, claim.reviewRound(), releaseApproval ? "CANCEL_APPROVAL" : "WITHDRAW",
                 "EMPLOYEE", claim.approved(), null);
+    }
+
+    private void releaseCommitment(String workspace, Claim claim) {
+        post(workspace,claim.claimId(),"CANCELLATION",-claim.approved(),0);
+        outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(),workspace,claim.claimId(),2,"CANCELLATION",0));
+    }
+
+    public String replaceCategory(String workspace,String originalId,int round,UUID key,String category,long estimated,int days) {
+        mapper.lockBalance(workspace);
+        Claim original = locked(workspace,originalId);
+        if (original.reviewRound() != round) throw new ResponseStatusException(HttpStatus.CONFLICT);
+        String replacement = mapper.replacement(workspace,originalId);
+        Claim previous = mapper.previousSubmission(workspace,key.toString());
+        if (previous != null || replacement != null) {
+            if (previous != null && previous.claimId().equals(replacement) && previous.category().equals(category)
+                    && previous.estimated() == estimated && previous.days() == days) return replacement;
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+        require(original,"NEEDS_RECEIPT");
+        if (original.category().equals(category)) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        String id = submit(workspace,key,original.title(),category,estimated,days);
+        releaseCommitment(workspace,original);
+        mapper.cancel(workspace,originalId);
+        mapper.linkReplacement(workspace,originalId,id);
+        mapper.event(workspace,originalId,round,"REPLACED","EMPLOYEE",original.approved(),"새 신청 "+id);
+        mapper.event(workspace,id,0,"REPLACES","EMPLOYEE",estimated,"원신청 "+originalId);
+        return id;
     }
 
     public void approve(String workspace, String id) {

@@ -40,6 +40,12 @@ public interface BudgetMapper {
     @Insert("insert into submission_receipt (workspace_id,request_key,claim_id) values (#{workspace},#{key},#{id})")
     void rememberSubmission(String workspace, String key, String id);
 
+    @Select("select replacement_id from claim_replacement where workspace_id=#{workspace} and original_id=#{id}")
+    String replacement(String workspace,String id);
+
+    @Insert("insert into claim_replacement(workspace_id,original_id,replacement_id) values(#{workspace},#{id},#{replacement})")
+    void linkReplacement(String workspace,String id,String replacement);
+
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id=#{id} for update")
     Claim lockClaim(String workspace, String id);
 

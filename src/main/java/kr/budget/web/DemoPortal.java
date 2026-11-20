@@ -116,6 +116,13 @@ public class DemoPortal {
         service.approve(authorized(session, Role.MANAGER), id);
     }
 
+    @PostMapping("/api/claims/{id}/replace-category")
+    @ResponseBody
+    public Map<String,String> replaceCategory(HttpSession session,@PathVariable String id,@RequestParam int round,
+            @RequestParam UUID requestKey,@RequestParam String category,@RequestParam long estimated,@RequestParam int days) {
+        return Map.of("claimId",service.replaceCategory(authorized(session,Role.EMPLOYEE),id,round,requestKey,category,estimated,days));
+    }
+
     @PostMapping("/api/claims/{id}/cancel")
     @ResponseBody
     public void cancel(HttpSession session, @PathVariable String id, @RequestParam boolean releaseApproval) {

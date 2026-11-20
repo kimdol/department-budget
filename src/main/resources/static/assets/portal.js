@@ -106,7 +106,7 @@ function render(state) {
       $.getJSON(path+"/history").done(events => {
         const names = {SUBMIT:"신청 접수",FORWARD_FINANCE:"재무로 결재 요청",FINAL_APPROVAL:"최종 사전승인",
           SUBMIT_ACTUAL:"실제 지출 제출",APPROVE_INCREASE:"증액 승인",RETURN:"보완 요청",SETTLE:"정산 확정",
-          WITHDRAW:"신청 철회",CANCEL_APPROVAL:"약정 취소"};
+          WITHDRAW:"신청 철회",CANCEL_APPROVAL:"약정 취소",REPLACED:"비목 변경으로 철회",REPLACES:"비목 변경 재신청"};
         const roles = {EMPLOYEE:"직원",MANAGER:"부서장",FINANCE:"재무"};
         documents.empty();
         if (!events.length) documents.text("저장된 결재 이력이 없습니다.");
@@ -177,6 +177,36 @@ function render(state) {
       action("정산 신청","/review",()=>({actual:amount.val(),round:claim.reviewRound}));
     }
     const managerReview = state.role === "MANAGER" && claim.status === "INCREASE_REQUESTED";
+    if (state.role === "EMPLOYEE" && claim.status === "NEEDS_RECEIPT") {
+      const details = $("<details>").appendTo(row);
+      $("<summary>").text("비목을 변경해 다시 신청").appendTo(details);
+      $("<p>").text("원신청의 약정을 해제하고 새 비목의 규정으로 사전승인을 다시 요청합니다.").appendTo(details);
+      const form = $("<form>").appendTo(details);
+      const category = $("<select>").appendTo($("<label>").text("변경 비목").appendTo(form));
+      for (const [code,label] of Object.entries(categories)) {
+        if (code !== claim.category) category.append(new Option(label,code));
+      }
+      const estimated = $("<input>").attr({type:"number",min:1,required:true}).val(claim.estimated)
+        .appendTo($("<label>").text("변경 예정 금액(원)").appendTo(form));
+      const days = $("<input>").attr({type:"number",min:1,max:365,required:true})
+        .appendTo($("<label>").text("변경 기간(일)").appendTo(form));
+      const button = $("<button>").text("원신청 철회 후 재신청").appendTo(form);
+      form.on("submit",event=>{
+        event.preventDefault();
+        const data = {round:claim.reviewRound,category:category.val(),estimated:estimated.val(),days:days.val()};
+        const storageKey = "replace-"+claim.claimId;
+        const fields = JSON.stringify(data);
+        const previous = JSON.parse(sessionStorage.getItem(storageKey) || "null");
+        const key = previous?.fields === fields ? previous.key : crypto.randomUUID();
+        sessionStorage.setItem(storageKey,JSON.stringify({fields,key}));
+        button.prop("disabled",true);
+        api(path+"/replace-category",{...data,requestKey:key}).then(result=>{
+          sessionStorage.removeItem(storageKey);
+          cursors.splice(0,cursors.length,null);
+          return refresh().then(()=>document.getElementById("claim-title-"+result.claimId)?.focus());
+        }).fail(error=>{reportError(error); button.prop("disabled",false);});
+      });
+    }
     const financeReview = state.role === "FINANCE" && claim.status === "IN_REVIEW";
     if (managerReview) action("증액 승인","/increase",()=>({round:claim.reviewRound}));
     if (financeReview) $("<button>").text("정산 확정").on("click",function() {

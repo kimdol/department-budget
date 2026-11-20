@@ -25,6 +25,8 @@ select 'POLICY|' || workspace_id || '|' || category || '|' || generation || '|' 
 from policy_publication order by workspace_id,category,generation;
 select 'SCHEDULED|' || workspace_id || '|' || category || '|' || source_period || '|' || target_period || '|' || draft_id || '|' || review_hash
 from scheduled_policy order by workspace_id,category;
+select 'REPLACEMENT|' || workspace_id || '|' || original_id || '|' || replacement_id
+from claim_replacement order by workspace_id,original_id;
 select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || policy_generation ||
        '|' || evaluator_version || '|' || rawtohex(standard_hash(formula,'SHA256')) ||
        '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) || '|' || approval_route ||
