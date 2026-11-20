@@ -30,6 +30,21 @@ public class ClaimService {
     }
 
     public String submit(String workspace, UUID requestKey, String title, String category, long estimated, int days) {
+        return submit(workspace, requestKey, title, category, estimated, days, null);
+    }
+
+    public record Estimate(long generation, long supported, long employeeShare, String formula) {}
+
+    @Transactional(readOnly=true)
+    public Estimate estimate(String workspace,String category,long estimated,int days) {
+        checkAmount(estimated);
+        if (days < 1 || days > 365) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        var rule = policies.active(workspace, category);
+        long supported = rule.calculate(estimated, days);
+        return new Estimate(rule.generation(),supported,estimated-supported,rule.formula());
+    }
+
+    public String submit(String workspace, UUID requestKey, String title, String category, long estimated, int days, Long expectedGeneration) {
         checkAmount(estimated);
         if (title == null || title.isBlank() || title.length() > 100 || days < 1 || days > 365)
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -44,6 +59,8 @@ public class ClaimService {
         requireOpen(workspace);
         String id = UUID.randomUUID().toString();
         PolicyVersion policy = policies.active(workspace, category);
+        if (expectedGeneration != null && expectedGeneration != policy.generation())
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         policy.calculate(estimated, days);
         mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation());
         mapper.rememberSubmission(workspace, key, id);

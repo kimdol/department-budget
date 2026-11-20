@@ -5,6 +5,8 @@ const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
 const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
 function render(state) {
+  clearEstimate();
+  $("#estimate-panel").prop("hidden",state.role !== "EMPLOYEE");
   const nextSteps = {EMPLOYEE:"교육비를 신청한 뒤 시연 역할을 부서장으로 바꾸세요. 약정 완료 후에는 실제 지출액으로 정산을 신청할 수 있습니다.",
     MANAGER:"신청을 사전승인하면 약정액이 반영됩니다. 직원 역할에서 실제 지출을 제출하세요.",
     FINANCE:"정산을 확정한 뒤 전표와 월 결산표에서 집행액을 확인하세요."};
@@ -126,6 +128,26 @@ $("#end-demo").on("submit", event => {
   sessionStorage.removeItem("pending-claim");
 });
 $("#role").on("change",event=>api("/api/demo/role",{role:event.target.value}).then(refresh).fail(reportError));
+let estimateRevision = 0;
+let expectedGeneration = null;
+function clearEstimate() {
+  estimateRevision++;
+  expectedGeneration = null;
+  $("#estimate-result").empty();
+}
+$("#submit").on("input change",clearEstimate);
+$("#estimate").on("click", () => {
+  if (!document.querySelector("#submit").reportValidity()) return;
+  clearEstimate();
+  const revision = estimateRevision;
+  const data = $("#submit").find('[name="category"],[name="estimated"],[name="days"]').serialize();
+  $.getJSON("/api/claims/estimate",data).done(result => {
+    if (revision !== estimateRevision) return;
+    expectedGeneration = result.generation;
+    $("#estimate-result").text("지원 예정 " + money(result.supported) + " · 본인 부담 " + money(result.employeeShare) +
+      " · 적용 규정 " + result.generation + " · " + result.formula);
+  }).fail(error => {if (revision === estimateRevision) reportError(error);});
+});
 $("#submit").on("submit",event=>{
   event.preventDefault();
   const button = $(event.target).find("button").prop("disabled",true);
@@ -133,10 +155,15 @@ $("#submit").on("submit",event=>{
   const previous = JSON.parse(sessionStorage.getItem("pending-claim") || "null");
   const key = previous?.fields === fields ? previous.key : crypto.randomUUID();
   sessionStorage.setItem("pending-claim", JSON.stringify({fields, key}));
-  api("/api/claims", fields + "&requestKey=" + encodeURIComponent(key)).then(() => {
+  const generation = expectedGeneration === null ? "" : "&expectedGeneration=" + expectedGeneration;
+  api("/api/claims", fields + generation + "&requestKey=" + encodeURIComponent(key)).then(() => {
     sessionStorage.removeItem("pending-claim");
     return refresh();
-  }).fail(reportError).always(()=>button.prop("disabled",false));
+  }).fail(error => {
+    if (error.status === 409 && generation) {
+      notice("지원 규정이 변경되었습니다. 지원 예정액을 다시 확인하세요.");
+    } else reportError(error);
+  }).always(()=>button.prop("disabled",false));
 });
 $.getJSON("/api/workspace").done(render);
 document.getElementById("policy-panel").addEventListener("toggle", function() {

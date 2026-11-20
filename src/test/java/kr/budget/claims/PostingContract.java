@@ -39,6 +39,23 @@ abstract class PostingContract {
     }
 
     @Test
+    void displayedEstimateDetectsPublicationBeforeSubmissionAndPreservesCommittedRetry() {
+        String workspace = service.open();
+        var estimate = service.estimate(workspace,"EDUCATION",300000,1);
+        assertEquals(200000,estimate.supported());
+        assertEquals(100000,estimate.employeeShare());
+        UUID request = UUID.randomUUID();
+        String id = service.submit(workspace,request,"교육","EDUCATION",300000,1,estimate.generation());
+        policies.publish(workspace,policies.draft(workspace,"EDUCATION",0,"floor(eligible_cost * 0.5)"));
+        assertEquals(id,service.submit(workspace,request,"교육","EDUCATION",300000,1,estimate.generation()));
+        assertEquals(409,assertThrows(ResponseStatusException.class, () ->
+                service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1,estimate.generation())).getStatusCode().value());
+        assertEquals(150000,service.estimate(workspace,"EDUCATION",300000,1).supported());
+        service.approve(workspace,id);
+        assertEquals(200000,mapper.balance(workspace).committed());
+    }
+
+    @Test
     void cancellationReleasesOnlyAnExistingCommitmentOnce() {
         String workspace = service.open();
         for (boolean approved : List.of(false, true)) {

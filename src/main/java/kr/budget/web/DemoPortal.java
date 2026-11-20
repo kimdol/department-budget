@@ -77,11 +77,19 @@ public class DemoPortal {
                 "role", session.getAttribute("role"));
     }
 
+    @GetMapping("/api/claims/estimate")
+    @ResponseBody
+    public ClaimService.Estimate estimate(HttpSession session,@RequestParam String category,@RequestParam long estimated,
+            @RequestParam int days) {
+        return service.estimate(authorized(session,Role.EMPLOYEE),category,estimated,days);
+    }
+
     @PostMapping("/api/claims")
     @ResponseBody
     public Map<String, String> submit(HttpSession session, @RequestParam UUID requestKey, @RequestParam String title,
-            @RequestParam String category, @RequestParam long estimated, @RequestParam(defaultValue="1") int days) {
-        return Map.of("claimId", service.submit(authorized(session, Role.EMPLOYEE), requestKey, title, category, estimated, days));
+            @RequestParam String category, @RequestParam long estimated, @RequestParam(defaultValue="1") int days,
+            @RequestParam(required=false) Long expectedGeneration) {
+        return Map.of("claimId", service.submit(authorized(session, Role.EMPLOYEE), requestKey, title, category, estimated, days, expectedGeneration));
     }
 
     @PostMapping("/api/claims/{id}/approve")

@@ -11,6 +11,8 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
       await visit.getByRole("button", { name: "개인 데모 시작" }).click();
       await expect(visit.locator("#available")).toHaveText("1,000,000원");
     }
+    await page.getByRole("button", { name: "지원 예정액 확인" }).click();
+    await expect(page.locator("#estimate-result")).toContainText("지원 예정 200,000원 · 본인 부담 100,000원");
     await page.getByRole("button", { name: "신청 제출" }).click();
     const claim = page.locator(".claim");
     await expect(claim).toContainText("결재 대기");
