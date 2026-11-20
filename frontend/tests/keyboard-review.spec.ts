@@ -31,6 +31,10 @@ test("키보드로 결재하고 보완 사유 입력 후 같은 신청에서 재
   await expect(heading).toBeFocused();
   await expect(heading).toContainText("약정 완료");
   await role("Home","EMPLOYEE");
+  const actual = claim.getByRole("spinbutton",{name:"실제 지출액(원)"});
+  await tabTo(page,actual);
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("125000");
   await pressButton("정산 신청");
   await expect(heading).toContainText("정산 검토");
   await role("End","FINANCE");
@@ -47,14 +51,19 @@ test("키보드로 결재하고 보완 사유 입력 후 같은 신청에서 재
   await expect(heading).toBeFocused();
   await expect(claim).toContainText("보완 사유 · 교육비 영수증을 첨부하세요.");
   await role("Home","EMPLOYEE");
+  await expect(actual).toHaveValue("125000");
+  await tabTo(page,actual);
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("150000");
   await pressButton("합성 증빙 첨부");
   await expect(heading).toBeFocused();
+  await expect(actual).toHaveValue("150000");
   await pressButton("정산 신청");
   await expect(heading).toContainText("정산 검토");
   await role("End","FINANCE");
   await pressButton("정산 확정");
   await expect(heading).toBeFocused();
-  await expect(page.locator("#available")).toHaveText("820,000원");
+  await expect(page.locator("#available")).toHaveText("880,000원");
 });
 for (const revise of [false,true]) test(revise ? "같은 비목의 변경 전후 금액과 기간을 최초 번호로 조회한다" : "보완 요청에서 비목을 바꾸면 두 신청의 이력이 서로 연결된다",async ({page})=>{
   await page.goto("/");

@@ -69,7 +69,12 @@ function render(state) {
   if (delegated) $("#policy-panel").prop("open",false);
   document.dispatchEvent(new Event("budget-session"));
   $("#entry").prop("hidden", state.role !== "EMPLOYEE");
-  const list = $("#claims").empty();
+  const list = $("#claims");
+  const editingAmounts = new Map();
+  for (const input of list[0].querySelectorAll("input[data-expense-round]")) {
+    editingAmounts.set(input.dataset.expenseRound,input.value);
+  }
+  list.empty();
   if (!state.claims.length) list.text("아직 신청한 비용이 없습니다.");
   for (const claim of state.claims) {
     const row = $("<article>").addClass("claim").appendTo(list);
@@ -189,7 +194,9 @@ function render(state) {
       action(approved ? "약정 취소" : "신청 철회", "/cancel", () => ({releaseApproval:approved}));
     }
     if (state.role === "EMPLOYEE" && ["APPROVED","NEEDS_RECEIPT"].includes(claim.status)) {
-      const amount = $("<input>").attr({type:"number",min:1,"aria-label":"실제 지출액(원)"}).val(225000).appendTo(actions);
+      const roundKey = claim.claimId + "/" + claim.reviewRound;
+      const amount = $("<input>").attr({type:"number",min:1,"aria-label":"실제 지출액(원)","data-expense-round":roundKey})
+        .val(editingAmounts.get(roundKey) ?? claim.actual ?? 225000).appendTo(actions);
       const type = $("<select>").attr("aria-label","증빙 종류").appendTo(actions);
       $("<option>").val("RECEIPT").text("지출 영수증").appendTo(type);
       $("<option>").val("ATTENDANCE").text("참석 확인서").appendTo(type);
