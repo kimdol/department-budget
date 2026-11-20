@@ -196,6 +196,17 @@ public class DemoPortal {
         return periods.archive(authorized(session, Role.FINANCE), period);
     }
 
+    public record StatementSources(List<ClosingMapper.SourceClaim> claims, Long nextCursor) {}
+
+    @GetMapping("/api/statements/{period}/claims")
+    @ResponseBody
+    public StatementSources statementSources(HttpSession session,@PathVariable String period,@RequestParam String category,
+                                            @RequestParam(required=false) Long before) {
+        String workspace = authorized(session,Role.FINANCE);
+        var rows = statements.sourceClaims(workspace,period,category,before == null ? Long.MAX_VALUE : before);
+        return new StatementSources(rows.stream().limit(50).toList(),rows.size() > 50 ? rows.get(49).inboxOrder() : null);
+    }
+
     @PostMapping("/api/statement/close")
     @ResponseBody
     public PeriodClosing.Statement close(HttpSession session) {

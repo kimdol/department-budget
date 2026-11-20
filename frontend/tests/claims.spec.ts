@@ -89,6 +89,11 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(claim).toContainText("실제 지출 225,000원 → 인정 180,000원");
     await page.getByRole("button", { name: "결산표 조회" }).click();
     await expect(page.locator("#statement")).toContainText("교육비 · 1건 · 180,000원");
+    await page.locator("#statement").getByText("교육비 · 1건 · 180,000원",{exact:true}).click();
+    const source = page.locator("#statement summary").filter({hasText:number.trim()});
+    await expect(source).toContainText("당월 순집행 180,000원");
+    await source.click();
+    await expect(page.locator("#statement")).toContainText("SETTLEMENT · 집행 증감 180,000원");
     await claim.getByRole("button", { name: "전표 조회" }).click();
     await expect(claim).toContainText("집행 증감 180,000원");
     if (process.env.CAPTURE_DEMO === "1") {
@@ -115,6 +120,9 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     page.once("dialog", dialog => dialog.accept());
     await claim.getByRole("button", { name: "정정 전표 발행" }).click();
     await expect(page.locator("#available")).toHaveText("850,000원");
+    await page.getByRole("button",{name:"결산표 조회"}).click();
+    await page.locator("#statement").getByText("교육비 · 1건 · -30,000원",{exact:true}).click();
+    await expect(source).toContainText("당월 순집행 -30,000원");
     await claim.getByRole("button", { name: "전표 조회" }).click();
     await claim.getByRole("button", { name: "원래 기간 결산표" }).click();
     await expect(claim).toContainText("마감 당시 가용 예산 820,000원");

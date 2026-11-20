@@ -202,13 +202,36 @@ function changePage(older) {
 }
 $("#older").on("click",()=>changePage(true));
 $("#newer").on("click",()=>changePage(false));
+function statementSources(box, period, category, before) {
+  const params = before == null ? {category} : {category,before};
+  $.getJSON("/api/statements/"+encodeURIComponent(period)+"/claims",params).done(result=>{
+    box.empty();
+    for (const claim of result.claims) {
+      const detail = $("<details>").appendTo(box);
+      $("<summary>").text(claim.title+" · "+claim.claimId+" · 당월 순집행 "+money(claim.spent)).appendTo(detail);
+      const entries = $("<div>").appendTo(detail);
+      detail.on("toggle",()=>{
+        if (!detail.prop("open")) return;
+        $.getJSON("/api/claims/"+encodeURIComponent(claim.claimId)+"/postings").done(rows=>{
+          entries.empty();
+          for (const row of rows) $("<p>").text(row.periodKey+" · "+row.kind+" · 집행 증감 "+money(row.spentDelta)).appendTo(entries);
+        }).fail(reportError);
+      });
+    }
+    if (!result.claims.length) box.text("조회된 원신청이 없습니다.");
+    if (result.nextCursor!=null) $("<button>").text("다음 원신청 목록").on("click",()=>statementSources(box,period,category,result.nextCursor)).appendTo(box);
+  }).fail(reportError);
+}
 function showStatement(report) {
   if ($("#role").val() !== "FINANCE") return;
   const box = $("#statement").empty();
   $("<strong>").text(report.period + " · " + ({OPEN:"마감 전",CLOSING:"마감 진행 중",CLOSED:"마감 완료"})[report.state]).appendTo(box);
   for (const line of report.lines) {
     const label = ({EDUCATION:"교육비",TRAVEL:"출장비",CONFERENCE:"학회 참가비"})[line.category];
-    $("<p>").text(label + " · " + line.claimCount + "건 · " + money(line.spent)).appendTo(box);
+    const group = $("<details>").appendTo(box);
+    $("<summary>").text(label + " · " + line.claimCount + "건 · " + money(line.spent)).appendTo(group);
+    const sources = $("<div>").appendTo(group);
+    group.on("toggle",()=>{if (group.prop("open")) statementSources(sources,report.period,line.category,null);});
   }
   $("<p>").text("누적 집행 " + money(report.balance.spent) + " / 가용 예산 " + money(report.balance.available)).appendTo(box);
   if (report.pending.length) $("<p>").text("진행 중인 신청 " + report.pending.join(", ")).appendTo(box);

@@ -76,4 +76,15 @@ public interface ClosingMapper {
         where c.workspace_id=#{workspace} and p.period_key=#{period} and (p.kind='SETTLEMENT' or p.original_kind='SETTLEMENT') group by c.category order by c.category
         """)
     List<Line> currentLines(String workspace,String period);
+
+    record SourceClaim(String claimId,String title,long inboxOrder,long spent) {}
+
+    @Select("""
+        select c.claim_id,c.title,c.inbox_order,sum(p.spent_delta) spent
+        from expense_claim c join budget_posting p on p.workspace_id=c.workspace_id and p.claim_id=c.claim_id
+        where c.workspace_id=#{workspace} and c.category=#{category} and p.period_key=#{period}
+          and (p.kind='SETTLEMENT' or p.original_kind='SETTLEMENT') and c.inbox_order < #{before}
+        group by c.claim_id,c.title,c.inbox_order order by c.inbox_order desc fetch first 51 rows only
+        """)
+    List<SourceClaim> sourceClaims(String workspace,String period,String category,long before);
 }
