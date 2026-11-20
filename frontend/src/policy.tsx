@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 type Version = {attendanceRule:string; generation:number; formula:string; evaluatorVersion:string};
-type Draft = {attendanceRule:string; draftId:string; baseGeneration:number; formula:string; sampleCost:number|null;
+type Draft = {reviewHash:string; attendanceRule:string; draftId:string; baseGeneration:number; formula:string; sampleCost:number|null;
   sampleDays:number|null; originalSupport:number|null; candidateSupport:number|null};
 const routes = {MANAGER:"부서장", MANAGER_FINANCE:"부서장 → 재무"};
 type Preview = {generation:number; original:number; candidate:number; originalRoute:keyof typeof routes; candidateRoute:keyof typeof routes};
@@ -22,7 +22,7 @@ async function request<T>(url:string, data?:Record<string,string>, signal?:Abort
     headers:data ? {"X-CSRF-TOKEN":token} : undefined,
     body:data ? new URLSearchParams(data) : undefined
   });
-  if (response.status === 409) throw new PolicyConflict("다른 규정이 먼저 발행됐습니다. 최신 규정과 비교한 후 검토를 요청하세요.");
+  if (response.status === 409) throw new PolicyConflict("검토한 초안이나 적용 규정이 바뀌었습니다. 최신 내용을 다시 확인하세요.");
   if (!response.ok) {
     const problem = await response.json().catch(()=>({}));
     throw new Error(problem.message || "권한과 입력값을 확인하세요.");
@@ -145,7 +145,7 @@ function PolicyEditor() {
     {history!.drafts.filter(d=>d.baseGeneration===current.generation).map(d=><div key={d.draftId}><code>{d.formula}</code><p>참석 조건 · <code>{d.attendanceRule}</code></p>
       {d.sampleCost!=null && d.originalSupport!=null && d.candidateSupport!=null &&
         <p>검토 요청 시 실비 {won(d.sampleCost)} · {d.sampleDays}일 · 지원액 {won(d.originalSupport)} → {won(d.candidateSupport)}</p>}
-      {role==="MANAGER" && <button disabled={busy || conflict} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{},"새 규정을 발행했습니다.")}>발행</button>}</div>)}
+      {role==="MANAGER" && <button disabled={busy || conflict} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{reviewHash:d.reviewHash},"새 규정을 발행했습니다.")}>발행</button>}</div>)}
     <h3>발행 이력</h3>
     {history!.versions.map(v=><p key={v.generation}>버전 {v.generation} · 평가기 {v.evaluatorVersion} · <code>{v.formula}</code> {role==="FINANCE" && v.generation!==current.generation && <button onClick={()=>{setRestoreGeneration(v.generation);setFormula(v.formula);setAttendanceRule(v.attendanceRule);}}>복구 후보로 선택</button>}</p>)}</>}
     <p role="status">{notice}</p></section>;

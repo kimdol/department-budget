@@ -1,12 +1,32 @@
 package kr.budget.policy;
 
 import java.util.List;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface PolicyMapper {
     record Draft(String draftId, String category, long baseGeneration, String formula, String evaluatorVersion,
-                 Long sampleCost, Integer sampleDays, Long originalSupport, Long candidateSupport, String attendanceRule) {}
+                 Long sampleCost, Integer sampleDays, Long originalSupport, Long candidateSupport, String attendanceRule) {
+        public String getReviewHash() {
+            try {
+                var digest = MessageDigest.getInstance("SHA-256");
+                for (Object field : new Object[]{"policy-review-v1", draftId, category, baseGeneration, formula,
+                        evaluatorVersion, attendanceRule, sampleCost, sampleDays, originalSupport, candidateSupport}) {
+                    byte[] bytes = field == null ? new byte[0] : field.toString().getBytes(StandardCharsets.UTF_8);
+                    digest.update(ByteBuffer.allocate(4).putInt(field == null ? -1 : bytes.length).array());
+                    digest.update(bytes);
+                }
+                return HexFormat.of().formatHex(digest.digest());
+            } catch (NoSuchAlgorithmException error) {
+                throw new IllegalStateException(error);
+            }
+        }
+    }
 
     @Select("""
         select generation, formula,evaluator_version,attendance_rule from policy_publication where workspace_id=#{workspace} and category=#{category}
@@ -34,6 +54,9 @@ public interface PolicyMapper {
     @Select("select " + DRAFT_COLUMNS + " from policy_draft where workspace_id=#{workspace} and category=#{category} order by draft_id")
     List<Draft> drafts(String workspace, String category);
 
-    @Insert("insert into policy_publication (workspace_id,category,generation,formula,evaluator_version,attendance_rule) values (#{workspace},#{category},#{generation},#{formula},#{version},#{attendanceRule})")
-    void publish(String workspace, String category, long generation, String formula,String version,String attendanceRule);
+    @Insert("""
+        insert into policy_publication (workspace_id,category,generation,formula,evaluator_version,attendance_rule,reviewed_draft_id,review_hash)
+        values (#{workspace},#{draft.category},#{generation},#{draft.formula},#{draft.evaluatorVersion},#{draft.attendanceRule},#{draft.draftId},#{reviewHash})
+        """)
+    void publish(String workspace, long generation, Draft draft, String reviewHash);
 }

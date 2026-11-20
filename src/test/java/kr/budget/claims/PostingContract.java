@@ -16,9 +16,31 @@ abstract class PostingContract {
     @Autowired EvidenceService evidence;
     @Autowired JdbcTemplate jdbc;
     @Autowired kr.budget.policy.PolicyService policies;
+    @Autowired kr.budget.policy.PolicyMapper policyMapper;
     @Autowired kr.budget.closing.PeriodClosing periods;
     @Autowired kr.budget.closing.ClosingService closing;
     @Autowired kr.budget.portal.PortalOutbox outbox;
+
+    @Test
+    void publishingBindsTheExactComparisonReviewedByTheManager() {
+        String workspace = service.open();
+        String id = policies.draft(workspace,"EDUCATION",0,"eligible_cost",100000,1,null);
+        String firstHash = policyMapper.findDraft(workspace,id).getReviewHash();
+        jdbc.update("update policy_draft set sample_days=2 where workspace_id=? and draft_id=?",workspace,id);
+        assertEquals(409,assertThrows(ResponseStatusException.class,
+                () -> policies.publish(workspace,id,firstHash)).getStatusCode().value());
+        assertEquals(0,policies.active(workspace,"EDUCATION").generation());
+        String updatedHash = policyMapper.findDraft(workspace,id).getReviewHash();
+        assertNotEquals(firstHash,updatedHash);
+        assertEquals(1,policies.publish(workspace,id,updatedHash));
+        assertEquals(updatedHash,jdbc.queryForObject(
+                "select review_hash from policy_publication where workspace_id=? and reviewed_draft_id=?",
+                String.class,workspace,id));
+    }
+
+    private long publishReviewed(String workspace, String id) {
+        return policies.publish(workspace,id,policyMapper.findDraft(workspace,id).getReviewHash());
+    }
 
     @Test
     void branchCanCommitWhileHeadOfficeBudgetIsLocked() throws Exception {
@@ -95,7 +117,7 @@ abstract class PostingContract {
         assertEquals(100000,estimate.employeeShare());
         UUID request = UUID.randomUUID();
         String id = service.submit(workspace,request,"교육","EDUCATION",300000,1,estimate.generation());
-        policies.publish(workspace,policies.draft(workspace,"EDUCATION",0,"floor(eligible_cost * 0.5)"));
+        publishReviewed(workspace,policies.draft(workspace,"EDUCATION",0,"floor(eligible_cost * 0.5)"));
         assertEquals(id,service.submit(workspace,request,"교육","EDUCATION",300000,1,estimate.generation()));
         assertEquals(409,assertThrows(ResponseStatusException.class, () ->
                 service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1,estimate.generation())).getStatusCode().value());
@@ -130,10 +152,10 @@ abstract class PostingContract {
         String category = "EDUCATION";
         var initial = policies.history(workspace, category).getFirst();
         String original = service.submit(workspace, UUID.randomUUID(), "기존 교육", category, 300000, 1);
-        policies.publish(workspace, policies.draft(workspace, category, 0, initial.formula(),
+        publishReviewed(workspace, policies.draft(workspace, category, 0, initial.formula(),
                 300000, 1, null, "ATTACHED"));
         String strict = service.submit(workspace, UUID.randomUUID(), "참석 필수 교육", category, 300000, 1);
-        policies.publish(workspace, policies.draft(workspace, category, 1, initial.formula(),
+        publishReviewed(workspace, policies.draft(workspace, category, 1, initial.formula(),
                 300000, 1, 0L, initial.attendanceRule()));
         String restored = service.submit(workspace, UUID.randomUUID(), "복구 이후 교육", category, 300000, 1);
         for (String id : List.of(original, strict, restored)) {
@@ -294,9 +316,9 @@ abstract class PostingContract {
         assertEquals(144000, preview.original());
         assertEquals(162000, preview.candidate());
         String draft = policies.draft(workspace, "CONFERENCE", 0, expression);
-        assertEquals(1, policies.publish(workspace, draft));
+        assertEquals(1, publishReviewed(workspace, draft));
         assertEquals(409, assertThrows(ResponseStatusException.class,
-                () -> policies.publish(workspace, draft)).getStatusCode().value());
+                () -> publishReviewed(workspace, draft)).getStatusCode().value());
         String preferred = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
         for (String other : List.of(bank,company)) {
             String application = service.submit(other, UUID.randomUUID(), "외부 학회", "CONFERENCE", 180000, 1);
@@ -305,7 +327,7 @@ abstract class PostingContract {
         }
         String regular = service.submit(workspace, UUID.randomUUID(), "일반", "EDUCATION", 180000, 1);
         String restore = policies.draft(workspace, "CONFERENCE", 1, policies.history(workspace, "CONFERENCE").getLast().formula(), 180000, 1, 0L);
-        policies.publish(workspace, restore);
+        publishReviewed(workspace, restore);
         String restored = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
         for (String id : List.of(original, regular, preferred, restored)) service.approve(workspace, id);
         assertEquals(144000, mapper.lockClaim(workspace, original).approved());

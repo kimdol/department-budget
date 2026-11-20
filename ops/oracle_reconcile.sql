@@ -18,7 +18,8 @@ from budget_statement_balance order by workspace_id,period_key;
 select 'LINE|' || workspace_id || '|' || period_key || '|' || category || '|' || claim_count || '|' || spent
 from budget_statement_line order by workspace_id,period_key,category;
 select 'POLICY|' || workspace_id || '|' || category || '|' || generation || '|' || evaluator_version ||
-       '|' || rawtohex(standard_hash(formula,'SHA256')) || '|' || rawtohex(standard_hash(attendance_rule,'SHA256'))
+       '|' || rawtohex(standard_hash(formula,'SHA256')) || '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) ||
+       '|' || nvl(reviewed_draft_id,'-') || '|' || nvl(review_hash,'-')
 from policy_publication order by workspace_id,category,generation;
 select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || policy_generation ||
        '|' || evaluator_version || '|' || rawtohex(standard_hash(formula,'SHA256')) ||

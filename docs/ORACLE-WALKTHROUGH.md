@@ -54,3 +54,16 @@ order by d.base_generation, d.draft_id
 화면은 최대 50행을 표시하고 51번째 행으로 다음 페이지 유무를 판정한다. 다음 페이지 요청은 마지막으로 표시한 행의 순서를 커서로 전달한다. 실습은 업무 공간 한 곳에 신청 10,000건을 추가한 임시 CI 데이터베이스에서 실행한다. 같은 공간과 인덱스에서 OFFSET으로 먼저 9,000건을 건너뛰는 쿼리와 직전 커서 1001을 바인딩하는 쿼리를 비교한다. 두 쿼리 모두 1000번부터 950번까지 같은 51건을 반환해야 한다. 임의 페이지로 바로 이동하는 화면이라면 직전 커서를 얻는 비용도 고려해야 한다.
 
 [Oracle 측정 스크립트](../ops/measure_oracle_inbox.py)는 각 쿼리를 네 번 실행하면서 순서를 교대하고 실제 실행 직후 DBMS_XPLAN의 ALLSTATS LAST를 수집한다. 실행 계획에서 최상위 행의 Buffers가 문장 전체의 논리 읽기다. 하위 연산의 값을 다시 합산하면 중복 집계된다. A-Rows를 함께 보면 인덱스에서 읽은 행과 화면에 반환한 행을 구분할 수 있다. HTTP 응답 시간이나 DB 동시 접속 처리량은 이 실습에서 측정하지 않는다.
+## 발행 시 검토한 비교 사례 확인
+
+새로 발행한 규정은 V018부터 검토한 초안 번호와 SHA-256을 보관한다. 부서장이 목록에서 받은 해시는 비목·기준 세대·수식·평가기·참석 조건·사례 금액과 일수·기존 및 후보 인정액을 포함한다. 서버는 발행 트랜잭션에서 같은 초안의 해시를 다시 계산한다. 다르면 409를 반환하고 기존 세대를 유지한다. 이전 버전에서 발행한 규정의 검토 정보는 NULL이다.
+
+```sql
+select p.generation, p.reviewed_draft_id, p.review_hash, d.sample_cost,
+       d.sample_days, d.original_support, d.candidate_support
+from policy_publication p
+left join policy_draft d
+  on d.workspace_id = p.workspace_id and d.draft_id = p.reviewed_draft_id
+where p.workspace_id = :workspace_id and p.category = :category
+order by p.generation;
+```

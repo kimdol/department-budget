@@ -310,8 +310,8 @@ public class DemoPortal {
 
     @PostMapping("/api/policies/drafts/{id}/publish")
     @ResponseBody
-    public Map<String, Long> publish(HttpSession session, @PathVariable String id) {
-        return Map.of("generation", policies.publish(authorized(session, Role.MANAGER), id));
+    public Map<String, Long> publish(HttpSession session, @PathVariable String id, @RequestParam String reviewHash) {
+        return Map.of("generation", policies.publish(authorized(session, Role.MANAGER), id, reviewHash));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

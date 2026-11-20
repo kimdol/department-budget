@@ -83,14 +83,16 @@ public class PolicyService {
     }
 
     @Transactional
-    public long publish(String workspace, String draftId) {
+    public long publish(String workspace, String draftId, String expectedHash) {
         budgets.lockBalance(workspace);
         var draft = policies.findDraft(workspace, draftId);
         if (draft == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        String reviewed = draft.getReviewHash();
+        if (!reviewed.equals(expectedHash)) throw new ResponseStatusException(HttpStatus.CONFLICT);
         PolicyVersion current = active(workspace, draft.category());
         checkGeneration(draft.baseGeneration(), current);
         long next = current.generation() + 1;
-        policies.publish(workspace, draft.category(), next, draft.formula(),draft.evaluatorVersion(),draft.attendanceRule());
+        policies.publish(workspace, next, draft, reviewed);
         return next;
     }
 

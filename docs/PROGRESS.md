@@ -1,5 +1,7 @@
 # 인수 현황
 
+발행 API가 부서장의 검토 화면에 전달한 초안 해시를 요구한다. 검토 후 사례 일수만 달라진 경우 409, 기존 활성 세대 0을 확인했다. 변경된 사례로 다시 검토한 뒤에는 세대 1과 그때의 초안 번호·SHA-256이 함께 저장됐다. V018은 이전 발행 기록을 보존한다. 로컬 Java 시험 42건, HTTPS 브라우저 시험 7건 통과. [실습 SQL](ORACLE-WALKTHROUGH.md) · [발행 계약](../src/test/java/kr/budget/claims/PostingContract.java)
+
 결재 이력 화면과 API에서 직원 접수 → 부서장 승인 → 실비 제출 → 재무 정산을 역할·차수·금액과 함께 조회한다. 이전에는 일반 교육비의 접수·단일 승인·정산 확정이 검토 이벤트에 남지 않았다. 세 업무 트랜잭션에 각각 이력 쓰기를 추가했다. 재요청 후에도 대표 신청의 이벤트는 4건이며 별도 방문자가 같은 이력을 요청하면 404다. 로컬 Java 41건 및 HTTPS 브라우저 7건 통과. [HTTP 계약](API.md) · [중복 처리 계약](../src/test/java/kr/budget/claims/PostingContract.java)
 
 Oracle Free에서 현재 WAR(c7f477c)로 200,000원을 약정하고 실비 225,000원에 대해 180,000원을 정산한 뒤, 다음 달에 30,000원을 환입했다. 같은 스키마를 사용하는 이전 WAR(d45c847)로 복귀하고 새 Chrome 세션에서 출장비 300,000원을 승인했다. 원래 교육비 신청에는 전표 3건, 약정 잔액 0원, 환입 후 순집행 150,000원이 남았고 귀속 월까지 복귀 전후가 일치했다. 이 검증은 두 WAR가 같은 V017 스키마를 사용하는 Linux CI에서 수행했다. [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44783938530) · [두 WAR 해시와 Oracle 대사 원자료](measurements/war-rollback-44783938530.zip) · [역할별 API 안내](API.md)
