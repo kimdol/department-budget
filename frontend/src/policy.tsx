@@ -10,6 +10,8 @@ type History = {versions:Version[]; drafts:Draft[]};
 
 const won = (n:number) => n.toLocaleString("ko-KR") + "원";
 
+class PolicyConflict extends Error {}
+
 async function request<T>(url:string, data?:Record<string,string>, signal?:AbortSignal):Promise<T> {
   const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')!.content;
   const endpoint = new URL(url,location.origin);
@@ -20,7 +22,7 @@ async function request<T>(url:string, data?:Record<string,string>, signal?:Abort
     headers:data ? {"X-CSRF-TOKEN":token} : undefined,
     body:data ? new URLSearchParams(data) : undefined
   });
-  if (response.status === 409) throw new Error("다른 규정이 먼저 발행됐습니다. 최신 버전을 다시 확인하세요.");
+  if (response.status === 409) throw new PolicyConflict("다른 규정이 먼저 발행됐습니다. 최신 규정과 비교한 후 검토를 요청하세요.");
   if (!response.ok) {
     const problem = await response.json().catch(()=>({}));
     throw new Error(problem.message || "권한과 입력값을 확인하세요.");
@@ -73,6 +75,7 @@ function PolicyEditor() {
   const [diagnostic,setDiagnostic] = useState("");
   const [notice,setNotice] = useState("");
   const [busy,setBusy] = useState(false);
+  const [conflict,setConflict] = useState(false);
   const [role,setRole] = useState(document.querySelector<HTMLSelectElement>("#role")!.value);
   useEffect(()=>{
     const sync = () => setRole(document.querySelector<HTMLSelectElement>("#role")!.value);
@@ -106,12 +109,25 @@ function PolicyEditor() {
       setNotice(message);
       reload(value=>value+1);
     } catch (error) {
+      if (error instanceof PolicyConflict) setConflict(true);
       setNotice(error instanceof Error ? error.message : "요청을 확인하세요.");
+    } finally {setBusy(false);}
+  }
+  async function compareLatest() {
+    setBusy(true);
+    try {
+      const latest = await request<History>("/api/policies?category="+category);
+      setPreview(undefined);
+      setHistory(latest);
+      setConflict(false);
+      setNotice("최신 규정을 불러왔습니다. 비교 결과를 확인하세요.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "최신 규정을 불러올 수 없습니다.");
     } finally {setBusy(false);}
   }
   const current = history?.versions[0];
   return <section aria-label="비용 지원 규정"><h2>지원 규정 작업실</h2>
-    <label>비목<select value={category} onChange={e=>{setCategory(e.target.value);setNotice("");}}>
+    <label>비목<select value={category} disabled={busy} onChange={e=>{setCategory(e.target.value);setNotice("");setConflict(false);}}>
       <option value="CONFERENCE">학회 참가비</option><option value="EDUCATION">일반 교육비</option><option value="TRAVEL">출장비</option>
     </select></label>
     {current && <><p>적용 버전 {current.generation}</p>
@@ -122,13 +138,14 @@ function PolicyEditor() {
     <p role="status">{diagnostic || (preview ? "기존 "+won(preview.original)+" / 후보 "+won(preview.candidate)+" / 차이 "+won(preview.candidate-preview.original) : "계산 중")}</p>
     {preview && <p>직원 부담액 기존 {won(Number(cost)-preview.original)} / 후보 {won(Number(cost)-preview.candidate)}</p>}
     {preview && <p>승인 경로 기존 {routes[preview.originalRoute]} / 후보 {routes[preview.candidateRoute]}</p>}
-    {role==="FINANCE" && <button disabled={!preview || busy} onClick={()=>change("/api/policies/drafts",{category,formula,cost,days,attendanceRule,...restoration,generation:String(current.generation)},"부서장 검토를 요청했습니다.")}>검토 요청</button>}
+    {conflict && <button disabled={busy} onClick={compareLatest}>최신 규정과 다시 비교</button>}
+    {role==="FINANCE" && <button disabled={!preview || busy || conflict} onClick={()=>change("/api/policies/drafts",{category,formula,cost,days,attendanceRule,...restoration,generation:String(current.generation)},"부서장 검토를 요청했습니다.")}>검토 요청</button>}
     {role==="FINANCE" && <AttendancePreview category={category} expression={attendanceRule} setExpression={value=>{setRestoreGeneration(undefined);setAttendanceRule(value);}}/>}
     <h3>검토 대기</h3>
     {history!.drafts.filter(d=>d.baseGeneration===current.generation).map(d=><div key={d.draftId}><code>{d.formula}</code><p>참석 조건 · <code>{d.attendanceRule}</code></p>
       {d.sampleCost!=null && d.originalSupport!=null && d.candidateSupport!=null &&
         <p>검토 요청 시 실비 {won(d.sampleCost)} · {d.sampleDays}일 · 지원액 {won(d.originalSupport)} → {won(d.candidateSupport)}</p>}
-      {role==="MANAGER" && <button disabled={busy} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{},"새 규정을 발행했습니다.")}>발행</button>}</div>)}
+      {role==="MANAGER" && <button disabled={busy || conflict} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{},"새 규정을 발행했습니다.")}>발행</button>}</div>)}
     <h3>발행 이력</h3>
     {history!.versions.map(v=><p key={v.generation}>버전 {v.generation} · 평가기 {v.evaluatorVersion} · <code>{v.formula}</code> {role==="FINANCE" && v.generation!==current.generation && <button onClick={()=>{setRestoreGeneration(v.generation);setFormula(v.formula);setAttendanceRule(v.attendanceRule);}}>복구 후보로 선택</button>}</p>)}</>}
     <p role="status">{notice}</p></section>;

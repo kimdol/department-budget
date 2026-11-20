@@ -1,5 +1,40 @@
 import { expect, test } from "@playwright/test";
 
+test("다른 탭에서 규정을 먼저 발행해도 편집 중인 후보로 다시 비교한다", async ({page,context}) => {
+  await page.goto("/");
+  await page.getByRole("button", {name:"개인 데모 시작"}).click();
+  await page.locator("#role").selectOption("FINANCE");
+  await page.locator("#policy-panel summary").click();
+  const editor = page.getByRole("region", {name:"비용 지원 규정"});
+  const formula = editor.getByLabel("인정액 수식");
+  await formula.fill("min(eligible_cost * 0.9, event_cap)");
+  await expect(editor).toContainText(/144,000.*162,000/);
+  await editor.getByRole("button",{name:"검토 요청"}).click();
+  await expect(editor).toContainText("검토 요청 시 실비");
+  const candidate = "min(eligible_cost * support_rate, event_cap * 1.25)";
+  await formula.fill(candidate);
+  await editor.getByLabel("비교할 실비(원)").fill("300000");
+  await expect(editor).toContainText("차이 40,000원");
+
+  const other = await context.newPage();
+  await other.goto(page.url());
+  await other.locator("#role").selectOption("MANAGER");
+  await other.locator("#policy-panel summary").click();
+  await other.getByRole("button",{name:"발행",exact:true}).click();
+  await expect(other.getByText("적용 버전 1",{exact:true})).toBeVisible();
+  await other.locator("#role").selectOption("FINANCE");
+  await expect(other.getByRole("button",{name:"검토 요청"})).toBeVisible();
+
+  await editor.getByRole("button",{name:"검토 요청"}).click();
+  await expect(editor.getByRole("button",{name:"검토 요청"})).toBeDisabled();
+  await editor.getByRole("button",{name:"최신 규정과 다시 비교"}).click();
+  await expect(editor).toContainText("적용 버전 1");
+  await expect(formula).toHaveValue(candidate);
+  await expect(editor).toContainText("기존 200,000원 / 후보 240,000원 / 차이 40,000원");
+  await editor.getByRole("button",{name:"검토 요청"}).click();
+  await expect(editor).toContainText("검토 요청 시 실비 300,000원 · 1일 · 지원액 200,000원 → 240,000원");
+});
+
 test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구한다", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("체험 조직").selectOption("HOSPITAL");
