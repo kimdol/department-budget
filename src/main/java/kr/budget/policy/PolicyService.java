@@ -44,13 +44,19 @@ public class PolicyService {
 
     @Transactional
     public String draft(String workspace, String category, long expected, String formula) {
+        return draft(workspace, category, expected, formula, 180000, 1);
+    }
+
+    @Transactional
+    public String draft(String workspace, String category, long expected, String formula, long cost, int days) {
         budgets.lockBalance(workspace);
         PolicyVersion current = active(workspace, category);
         checkGeneration(expected, current);
         var candidate = new PolicyVersion(expected, formula,current.evaluatorVersion());
-        for (long cost : new long[]{0, 180000, 225000, 300000}) candidate.calculate(cost, 1);
+        for (long referenceCost : new long[]{0, 180000, 225000, 300000}) candidate.calculate(referenceCost, 1);
         String id = UUID.randomUUID().toString();
-        policies.draft(workspace, id, category, expected, formula,candidate.evaluatorVersion());
+        policies.draft(workspace, id, category, expected, formula, candidate.evaluatorVersion(),
+                cost, days, current.calculate(cost, days), candidate.calculate(cost, days));
         return id;
     }
 

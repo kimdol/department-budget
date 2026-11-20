@@ -5,7 +5,8 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface PolicyMapper {
-    record Draft(String draftId, String category, long baseGeneration, String formula,String evaluatorVersion) {}
+    record Draft(String draftId, String category, long baseGeneration, String formula, String evaluatorVersion,
+                 Long sampleCost, Integer sampleDays, Long originalSupport, Long candidateSupport) {}
 
     @Select("""
         select generation, formula,evaluator_version from policy_publication where workspace_id=#{workspace} and category=#{category}
@@ -16,13 +17,21 @@ public interface PolicyMapper {
     @Select("select generation, formula,evaluator_version from policy_publication where workspace_id=#{workspace} and category=#{category} order by generation desc")
     List<PolicyVersion> history(String workspace, String category);
 
-    @Insert("insert into policy_draft (workspace_id,draft_id,category,base_generation,formula,evaluator_version) values (#{workspace},#{id},#{category},#{generation},#{formula},#{version})")
-    void draft(String workspace, String id, String category, long generation, String formula,String version);
+    @Insert("""
+        insert into policy_draft (workspace_id,draft_id,category,base_generation,formula,evaluator_version,
+            sample_cost,sample_days,original_support,candidate_support)
+        values (#{workspace},#{id},#{category},#{generation},#{formula},#{version},
+            #{cost},#{days},#{original},#{candidate})
+        """)
+    void draft(String workspace, String id, String category, long generation, String formula, String version,
+               long cost, int days, long original, long candidate);
 
-    @Select("select draft_id,category,base_generation,formula,evaluator_version from policy_draft where workspace_id=#{workspace} and draft_id=#{id}")
+    String DRAFT_COLUMNS = "draft_id,category,base_generation,formula,evaluator_version,sample_cost,sample_days,original_support,candidate_support";
+
+    @Select("select " + DRAFT_COLUMNS + " from policy_draft where workspace_id=#{workspace} and draft_id=#{id}")
     Draft findDraft(String workspace, String id);
 
-    @Select("select draft_id,category,base_generation,formula,evaluator_version from policy_draft where workspace_id=#{workspace} and category=#{category} order by draft_id")
+    @Select("select " + DRAFT_COLUMNS + " from policy_draft where workspace_id=#{workspace} and category=#{category} order by draft_id")
     List<Draft> drafts(String workspace, String category);
 
     @Insert("insert into policy_publication (workspace_id,category,generation,formula,evaluator_version) values (#{workspace},#{category},#{generation},#{formula},#{version})")

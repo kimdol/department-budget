@@ -244,8 +244,9 @@ public class DemoPortal {
     @PostMapping("/api/policies/drafts")
     @ResponseBody
     public Map<String, String> draft(HttpSession session, @RequestParam String category,
-            @RequestParam long generation, @RequestParam String formula) {
-        return Map.of("draftId", policies.draft(authorized(session, Role.FINANCE), category, generation, formula));
+            @RequestParam long generation, @RequestParam String formula,
+            @RequestParam(defaultValue="180000") long cost, @RequestParam(defaultValue="1") int days) {
+        return Map.of("draftId", policies.draft(authorized(session, Role.FINANCE), category, generation, formula, cost, days));
     }
 
     @PostMapping("/api/policies/drafts/{id}/publish")
