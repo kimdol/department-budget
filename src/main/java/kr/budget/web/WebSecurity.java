@@ -10,7 +10,7 @@ public class WebSecurity {
     @Bean
     SecurityFilterChain demoSecurity(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/api/**", "/webjars/**", "/assets/**", "/error").permitAll()
+                .requestMatchers("/", "/personal", "/api/**", "/webjars/**", "/assets/**", "/error").permitAll()
                 .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD).permitAll()
                 .anyRequest().denyAll())
                 .logout(logout -> logout.logoutUrl("/api/demo/end").logoutSuccessHandler((request, response, authentication) -> {

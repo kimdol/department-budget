@@ -28,7 +28,7 @@ public class PortalAssets {
     public PortalAssets() throws IOException, NoSuchAlgorithmException {
         categories = new ClassPathResource("catalog/expense-categories.json").getContentAsByteArray();
         categoriesTag = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(categories));
-        for (String name : new String[]{"portal.css","portal.js","policy-editor.js","employee.js"}) {
+        for (String name : new String[]{"portal.css","portal.js","personal.js","policy-editor.js","employee.js"}) {
             var resource = new ClassPathResource("static/assets/" + name);
             if (!resource.exists() && (name.equals("policy-editor.js") || name.equals("employee.js"))) continue;
             byte[] content = resource.getContentAsByteArray();
@@ -44,6 +44,12 @@ public class PortalAssets {
         token.getToken();
         model.addAttribute("assetPaths",paths);
         return "portal";
+    }
+
+    @GetMapping("/personal")
+    public String personal(Model model) {
+        model.addAttribute("assetPaths",paths);
+        return "personal";
     }
 
     @GetMapping("/api/catalog/expense-categories")
