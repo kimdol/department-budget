@@ -1,5 +1,7 @@
 # 인수 현황
 
+배포용 WAR에서 생성한 설치 SQL을 빈 Oracle 스키마에 적용하고 같은 SQL의 재실행이 ORA-20001로 차단됨을 확인했다. 이 스키마에 WAR를 연결해 Chrome에서 두 방문자의 교육비 처리와 월마감, 병원 학회비 규정 발행·복구, 출장 사전승인, 결재함 페이지 이동 시험 4건을 통과했다. [실행 결과](https://github.com/kimdol/department-budget/actions/runs/44765732583) CI 접속 범위는 루프백 HTTP이며 외부 HTTPS 검증은 OCI 배포 후 진행한다.
+
 75f463d에서 Oracle CI 전체 성공. 실제 Oracle 계약 14건 통과, 누락 0건. Data Pump 복원 후 두 대사 파일의 SHA-256은 A7330105D1E199A95CD1563812C9D1683582426590BCA36650E59167F077E175로 일치했다. [실행](https://github.com/kimdol/department-budget/actions/runs/44764720608) · [보관한 원자료](measurements/oracle-44764720608). 공개 앱 호스팅은 OCI 무료 계정 가입 진행 중이다.
 
 공개 커밋 d0316d9에서 Oracle 원장 계약 14건과 전체 Java 시험 43건이 누락·실패 없이 통과했다. 이어지는 Data Pump 단계는 표준 입력 비밀번호를 받지 못해 ORA-01005로 종료됐다. 컨테이너 내부 임시 파라미터 파일을 소유자만 읽게 생성하고 명령 종료 시 제거하도록 수정했다. [실제 Oracle 실행](https://github.com/kimdol/department-budget/actions/runs/44764118942)
