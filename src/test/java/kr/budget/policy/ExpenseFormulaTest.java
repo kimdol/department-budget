@@ -12,6 +12,21 @@ class ExpenseFormulaTest {
     }
 
     @Test
+    void preservesHistoricalEvaluationWhenNewTreeLimitsRejectLongExpressions() {
+        String atLimit = "eligible_cost" + "*1".repeat(31);
+        assertEquals(225000, new PolicyVersion(1, atLimit, "decimal-v2").calculate(225000, 1));
+        String beyondLimit = atLimit + "*1";
+        assertEquals(225000, new PolicyVersion(0, beyondLimit, "decimal-v1").calculate(225000, 1));
+        assertThrows(IllegalArgumentException.class,
+                () -> new PolicyVersion(1, beyondLimit, "decimal-v2").calculate(225000, 1));
+        String zeros = "0";
+        for (int level = 0; level < 7; level++) zeros = "(" + zeros + "+" + zeros + ")";
+        String wide = "eligible_cost*" + zeros;
+        assertThrows(IllegalArgumentException.class,
+                () -> new PolicyVersion(1, wide, "decimal-v2").calculate(225000, 1));
+    }
+
+    @Test
     void calculatesEducationCommitmentAndSettlement() {
         assertEquals(200000, ExpenseFormula.calculate(ExpenseFormula.EDUCATION, inputs(300000)));
         assertEquals(180000, ExpenseFormula.calculate(ExpenseFormula.EDUCATION, inputs(225000)));

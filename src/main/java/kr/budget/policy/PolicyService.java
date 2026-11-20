@@ -35,29 +35,40 @@ public class PolicyService {
     }
 
     public Preview preview(String workspace, String category, String formula, long cost, int days) {
+        return preview(workspace, category, formula, cost, days, null);
+    }
+
+    public Preview preview(String workspace, String category, String formula, long cost, int days, Long restoreGeneration) {
         PolicyVersion active = active(workspace, category);
         long original = active.calculate(cost, days);
-        long candidate = new PolicyVersion(active.generation(), formula, active.evaluatorVersion()).calculate(cost, days);
+        long candidate = candidate(workspace, category, formula, restoreGeneration).calculate(cost, days);
         return new Preview(active.generation(), original, candidate,
                 ApprovalRoute.forSupport(original), ApprovalRoute.forSupport(candidate));
     }
 
     @Transactional
     public String draft(String workspace, String category, long expected, String formula) {
-        return draft(workspace, category, expected, formula, 180000, 1);
+        return draft(workspace, category, expected, formula, 180000, 1, null);
     }
 
     @Transactional
-    public String draft(String workspace, String category, long expected, String formula, long cost, int days) {
+    public String draft(String workspace, String category, long expected, String formula, long cost, int days, Long restoreGeneration) {
         budgets.lockBalance(workspace);
         PolicyVersion current = active(workspace, category);
         checkGeneration(expected, current);
-        var candidate = new PolicyVersion(expected, formula,current.evaluatorVersion());
+        var candidate = candidate(workspace, category, formula, restoreGeneration);
         for (long referenceCost : new long[]{0, 180000, 225000, 300000}) candidate.calculate(referenceCost, 1);
         String id = UUID.randomUUID().toString();
         policies.draft(workspace, id, category, expected, formula, candidate.evaluatorVersion(),
                 cost, days, current.calculate(cost, days), candidate.calculate(cost, days));
         return id;
+    }
+
+    private PolicyVersion candidate(String workspace, String category, String formula, Long restoreGeneration) {
+        if (restoreGeneration == null) return new PolicyVersion(0, formula, PolicyVersion.DECIMAL_V2);
+        return history(workspace, category).stream()
+                .filter(version -> version.generation() == restoreGeneration && version.formula().equals(formula))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("복구할 규정의 버전과 수식을 확인하세요."));
     }
 
     @Transactional

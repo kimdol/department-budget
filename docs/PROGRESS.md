@@ -1,5 +1,7 @@
 # 인수 현황
 
+기존 수식 평가기는 피연산자와 괄호 중첩을 세어 왼쪽 결합 연산이 긴 식의 트리 깊이를 제한하지 못했다. 같은 입력에 1을 32번 곱하면 이전 평가기는 225,000원을 계산한다. 신규 초안의 decimal-v2는 연산·함수·값의 노드와 높이를 세어 깊이 32, 노드 256 상한을 적용한다. 저장된 decimal-v1 신청은 이전 계약으로 재현한다. 복구 요청은 업무 공간·비목의 과거 세대와 수식을 대조하고 당시 평가기를 다시 발행한다. 로컬 Java 시험 33건과 루프백 Chrome 시험 6건 통과. [수식 경계값](../src/test/java/kr/budget/policy/ExpenseFormulaTest.java) · [결정 재현](../src/test/java/kr/budget/claims/PostingContract.java) · [복구 화면](../frontend/tests/hospital-policy.spec.ts)
+
 다른 방문자가 증빙 목록을 열면 전용 SQL이 문서를 반환하지 않아 HTTP 200과 빈 목록이 내려왔다. 같은 신청의 증빙 요건과 파일은 404였다. 목록 조회도 세션 업무 공간 안에 신청이 있는지 확인하도록 변경했다. 직원·부서장·재무 역할 모두 다른 공간의 목록·요건·파일에서 404를 확인했다. 같은 공간의 재무 담당자는 Chrome으로 225,000원 영수증을 받았고 첨부 변경 요청은 403이었다. H2 HTTP 시험 2건과 루프백 HTTPS 브라우저 시험 6건 통과. [HTTP 회귀 시험](../src/test/java/kr/budget/web/PortalHttpTest.java) · [다운로드 검증](../frontend/tests/claims.spec.ts)
 
 실제 Oracle에서 10,000건 중 9,001번째부터 51건을 읽었다. OFFSET과 커서 조회는 모든 회차에서 같은 신청번호를 반환했고 문장 전체 Buffers는 각각 200과 12였다. [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44770051843) · [원자료](measurements/oracle-inbox-44770051843.zip)

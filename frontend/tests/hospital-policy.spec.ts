@@ -34,5 +34,7 @@ test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구�
   await page.locator("#role").selectOption("MANAGER");
   await editor.getByRole("button", { name: "발행", exact: true }).click();
   await expect(editor).toContainText("적용 버전 2");
+  await expect(editor).toContainText("버전 1 · 평가기 decimal-v2");
+  await expect(editor).toContainText("버전 2 · 평가기 decimal-v1");
   await expect(editor).toContainText(/144,000.*144,000/);
 });

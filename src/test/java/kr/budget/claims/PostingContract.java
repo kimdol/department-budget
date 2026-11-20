@@ -220,7 +220,7 @@ abstract class PostingContract {
             assertEquals(144000,mapper.lockClaim(other,application).approved());
         }
         String regular = service.submit(workspace, UUID.randomUUID(), "일반", "EDUCATION", 180000, 1);
-        String restore = policies.draft(workspace, "CONFERENCE", 1, policies.history(workspace, "CONFERENCE").getLast().formula());
+        String restore = policies.draft(workspace, "CONFERENCE", 1, policies.history(workspace, "CONFERENCE").getLast().formula(), 180000, 1, 0L);
         policies.publish(workspace, restore);
         String restored = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
         for (String id : List.of(original, regular, preferred, restored)) service.approve(workspace, id);
@@ -235,7 +235,9 @@ abstract class PostingContract {
         service.settle(workspace, preferred);
         assertEquals(90000, mapper.balance(workspace).spent());
         var decision = service.replay(workspace,preferred);
-        assertEquals("decimal-v1",decision.evaluatorVersion());
+        assertEquals("decimal-v2",decision.evaluatorVersion());
+        assertEquals("decimal-v1", service.replay(workspace, original).evaluatorVersion());
+        assertEquals("decimal-v1", service.replay(workspace, restored).evaluatorVersion());
         assertEquals(162000,decision.initialSupport());
         assertEquals(90000L,decision.actualSupport());
         assertEquals(expression,decision.formula());

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-type Version = {generation:number; formula:string};
+type Version = {generation:number; formula:string; evaluatorVersion:string};
 type Draft = {draftId:string; baseGeneration:number; formula:string; sampleCost:number|null;
   sampleDays:number|null; originalSupport:number|null; candidateSupport:number|null};
 const routes = {MANAGER:"부서장", MANAGER_FINANCE:"부서장 → 재무"};
@@ -30,6 +30,8 @@ function PolicyEditor() {
   const [history,setHistory] = useState<History>();
   const [revision,reload] = useState(0);
   const [formula,setFormula] = useState("");
+  const [restoreGeneration,setRestoreGeneration] = useState<number>();
+  const restoration:Record<string,string> = restoreGeneration === undefined ? {} : {restoreGeneration:String(restoreGeneration)};
   const [cost,setCost] = useState("180000");
   const [days,setDays] = useState("1");
   const [preview,setPreview] = useState<Preview>();
@@ -46,7 +48,7 @@ function PolicyEditor() {
     const controller = new AbortController();
     setHistory(undefined);
     request<History>("/api/policies?category="+category,undefined,controller.signal)
-      .then(result=>{setHistory(result);setFormula(result.versions[0].formula);})
+      .then(result=>{setHistory(result);setRestoreGeneration(undefined);setFormula(result.versions[0].formula);})
       .catch(error=>{if (!controller.signal.aborted) setNotice(error.message);});
     return ()=>controller.abort();
   },[category,revision]);
@@ -56,12 +58,12 @@ function PolicyEditor() {
     setDiagnostic("");
     if (!history) return;
     const timer = window.setTimeout(()=>{
-      request<Preview>("/api/policies/preview",{category,formula,cost,days},controller.signal)
+      request<Preview>("/api/policies/preview",{category,formula,cost,days,...restoration},controller.signal)
         .then(result=>{if (!controller.signal.aborted) setPreview(result);})
         .catch(error=>{if (!controller.signal.aborted) setDiagnostic(error.message);});
     },150);
     return ()=>{window.clearTimeout(timer);controller.abort();};
-  },[category,formula,cost,days,history]);
+  },[category,formula,cost,days,history,restoreGeneration]);
   async function change(url:string,data:Record<string,string>,message:string) {
     setBusy(true);
     try {
@@ -78,21 +80,21 @@ function PolicyEditor() {
       <option value="CONFERENCE">학회 참가비</option><option value="EDUCATION">일반 교육비</option><option value="TRAVEL">출장비</option>
     </select></label>
     {current && <><p>적용 버전 {current.generation}</p>
-    <label>인정액 수식<textarea value={formula} rows={2} onChange={e=>setFormula(e.target.value)}/></label>
+    <label>인정액 수식<textarea value={formula} rows={2} onChange={e=>{setRestoreGeneration(undefined);setFormula(e.target.value);}}/></label>
     <small>eligible_cost 실비 · support_rate 지원율 · event_cap 행사 한도 · days 일수 · daily_cap 일 한도</small>
     <div className="actions"><label>비교할 실비(원)<input type="number" value={cost} onChange={e=>setCost(e.target.value)}/></label>
     <label>일수<input type="number" value={days} onChange={e=>setDays(e.target.value)}/></label></div>
     <p role="status">{diagnostic || (preview ? "기존 "+won(preview.original)+" / 후보 "+won(preview.candidate)+" / 차이 "+won(preview.candidate-preview.original) : "계산 중")}</p>
     {preview && <p>직원 부담액 기존 {won(Number(cost)-preview.original)} / 후보 {won(Number(cost)-preview.candidate)}</p>}
     {preview && <p>승인 경로 기존 {routes[preview.originalRoute]} / 후보 {routes[preview.candidateRoute]}</p>}
-    {role==="FINANCE" && <button disabled={!preview || busy} onClick={()=>change("/api/policies/drafts",{category,formula,cost,days,generation:String(current.generation)},"부서장 검토를 요청했습니다.")}>검토 요청</button>}
+    {role==="FINANCE" && <button disabled={!preview || busy} onClick={()=>change("/api/policies/drafts",{category,formula,cost,days,...restoration,generation:String(current.generation)},"부서장 검토를 요청했습니다.")}>검토 요청</button>}
     <h3>검토 대기</h3>
     {history!.drafts.filter(d=>d.baseGeneration===current.generation).map(d=><div key={d.draftId}><code>{d.formula}</code>
       {d.sampleCost!=null && d.originalSupport!=null && d.candidateSupport!=null &&
         <p>검토 요청 시 실비 {won(d.sampleCost)} · {d.sampleDays}일 · 지원액 {won(d.originalSupport)} → {won(d.candidateSupport)}</p>}
       {role==="MANAGER" && <button disabled={busy} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{},"새 규정을 발행했습니다.")}>발행</button>}</div>)}
     <h3>발행 이력</h3>
-    {history!.versions.map(v=><p key={v.generation}>버전 {v.generation} · <code>{v.formula}</code> {role==="FINANCE" && v.generation!==current.generation && <button onClick={()=>setFormula(v.formula)}>복구 후보로 선택</button>}</p>)}</>}
+    {history!.versions.map(v=><p key={v.generation}>버전 {v.generation} · 평가기 {v.evaluatorVersion} · <code>{v.formula}</code> {role==="FINANCE" && v.generation!==current.generation && <button onClick={()=>{setRestoreGeneration(v.generation);setFormula(v.formula);}}>복구 후보로 선택</button>}</p>)}</>}
     <p role="status">{notice}</p></section>;
 }
 
