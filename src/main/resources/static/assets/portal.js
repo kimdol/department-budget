@@ -298,7 +298,10 @@ function showStatement(report) {
     csv.on("input",()=>result.empty());
     result.appendTo(details);
     $("<button>").text("다음 달 열기").on("click", () =>
-      api("/api/statements/"+report.period+"/advance",{}).done(showStatement).fail(reportError)).appendTo(box);
+      api("/api/statements/"+report.period+"/advance",{}).done(next=>{
+        showStatement(next);
+        document.dispatchEvent(new Event("budget-period-opened"));
+      }).fail(reportError)).appendTo(box);
   }
 }
 $("#view-statement").on("click",()=>$.getJSON("/api/statement").done(showStatement).fail(reportError));

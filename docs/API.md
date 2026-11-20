@@ -24,3 +24,8 @@
 증빙이 부족해 정산이 422로 거절되면 `GET /api/claims/{id}/evidence/assessment`에서 필요한 증빙과 평가 근거를 본다. 재무가 `POST /api/claims/{id}/return`에 현재 차수와 보완 사유 `reason`을 보내면 직원이 보완할 수 있다. 재제출 뒤에는 목록의 최신 차수로 정산한다.
 
 목록에는 화면 요약을 반환한다. 접수 당시 수식·평가기와 입력별 인정액은 `GET /api/claims/{id}/calculation`에서 확인한다. [HTTP 처리 코드](../src/main/java/kr/budget/web/DemoPortal.java) · [브라우저 인수 시험](../frontend/tests/claims.spec.ts) · [재시도·보완 계약 시험](../src/test/java/kr/budget/claims/PostingContract.java) · [Oracle 원장 대조](ORACLE-WALKTHROUGH.md)
+## 다음 회계 기간의 규정 발행 예약
+
+재무가 초안을 제출하면 부서장은 `GET /api/policies?category=CONFERENCE`의 `drafts[].reviewHash`와 `nextPeriod`를 확인한다. 검토한 값으로 `POST /api/policies/drafts/{id}/schedule`에 `reviewHash`와 `targetPeriod`를 보낸다. 조회 결과의 `scheduled`에 예약이 나타나며 현재 적용 버전은 그대로다. 같은 초안·해시·기간을 재전송할 수 있다. 다른 초안을 즉시 발행하거나 예약하려면 기존 예약을 `POST /api/policies/drafts/{id}/unschedule`로 취소한다. 취소 요청에도 검토한 `targetPeriod`가 필요하다.
+
+재무가 마감을 확정한 뒤 **다음 달 열기**를 누르면 해당 기간의 예약들이 같은 트랜잭션에서 발행된다. 검토 해시가 달라지면 서버가 409를 반환하고 기존 마감 상태와 예약을 보존한다. [기간 개시](../src/main/java/kr/budget/closing/PeriodClosing.java) · [검토 해시와 발행](../src/main/java/kr/budget/policy/PolicyService.java)

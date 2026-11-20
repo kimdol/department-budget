@@ -16,10 +16,12 @@ public class PeriodClosing {
     private final ClosingMapper ledger;
 
     private final LedgerReconciliation reconciliation;
-    public PeriodClosing(BudgetMapper budgets, ClosingMapper ledger, LedgerReconciliation reconciliation) {
+    private final kr.budget.policy.PolicyService policies;
+    public PeriodClosing(BudgetMapper budgets, ClosingMapper ledger, LedgerReconciliation reconciliation, kr.budget.policy.PolicyService policies) {
         this.budgets = budgets;
         this.ledger = ledger;
         this.reconciliation = reconciliation;
+        this.policies = policies;
     }
 
     @Transactional
@@ -42,6 +44,7 @@ public class PeriodClosing {
         if (!current.periodKey().equals(closedPeriod) || !current.periodState().equals("CLOSED"))
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         ledger.advance(workspace,next);
+        policies.activateScheduled(workspace,next);
         return statement(workspace);
     }
 

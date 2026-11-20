@@ -23,6 +23,8 @@ select 'POLICY|' || workspace_id || '|' || category || '|' || generation || '|' 
        '|' || rawtohex(standard_hash(formula,'SHA256')) || '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) ||
        '|' || nvl(reviewed_draft_id,'-') || '|' || nvl(review_hash,'-')
 from policy_publication order by workspace_id,category,generation;
+select 'SCHEDULED|' || workspace_id || '|' || category || '|' || target_period || '|' || draft_id || '|' || review_hash
+from scheduled_policy order by workspace_id,category;
 select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || policy_generation ||
        '|' || evaluator_version || '|' || rawtohex(standard_hash(formula,'SHA256')) ||
        '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) || '|' || approval_route ||

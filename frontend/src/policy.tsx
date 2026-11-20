@@ -6,7 +6,7 @@ type Draft = {reviewHash:string; attendanceRule:string; draftId:string; baseGene
   sampleDays:number|null; originalSupport:number|null; candidateSupport:number|null};
 const routes = {MANAGER:"부서장", MANAGER_FINANCE:"부서장 → 재무"};
 type Preview = {generation:number; original:number; candidate:number; originalRoute:keyof typeof routes; candidateRoute:keyof typeof routes};
-type History = {versions:Version[]; drafts:Draft[]};
+type History = {versions:Version[]; drafts:Draft[]; nextPeriod:string; scheduled:{draftId:string;targetPeriod:string}[]};
 
 const won = (n:number) => n.toLocaleString("ko-KR") + "원";
 
@@ -111,8 +111,13 @@ function PolicyEditor() {
   const [role,setRole] = useState(document.querySelector<HTMLSelectElement>("#role")!.value);
   useEffect(()=>{
     const sync = () => setRole(document.querySelector<HTMLSelectElement>("#role")!.value);
+    const refreshPeriod = () => reload(value=>value+1);
     document.addEventListener("budget-session",sync);
-    return ()=>document.removeEventListener("budget-session",sync);
+    document.addEventListener("budget-period-opened",refreshPeriod);
+    return ()=>{
+      document.removeEventListener("budget-session",sync);
+      document.removeEventListener("budget-period-opened",refreshPeriod);
+    };
   },[]);
   useEffect(()=>{
     const controller = new AbortController();
@@ -179,7 +184,12 @@ function PolicyEditor() {
     {history!.drafts.filter(d=>d.baseGeneration===current.generation).map(d=><div key={d.draftId}><code>{d.formula}</code><p>참석 조건 · <code>{d.attendanceRule}</code></p>
       {d.sampleCost!=null && d.originalSupport!=null && d.candidateSupport!=null &&
         <p>검토 요청 시 실비 {won(d.sampleCost)} · {d.sampleDays}일 · 지원액 {won(d.originalSupport)} → {won(d.candidateSupport)}</p>}
-      {role==="MANAGER" && <button disabled={busy || conflict} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{reviewHash:d.reviewHash},"새 규정을 발행했습니다.")}>발행</button>}</div>)}
+      {history!.scheduled.some(s=>s.draftId===d.draftId) && <p>{history!.nextPeriod} 개시 시 적용 예정
+        {role==="MANAGER" && <button disabled={busy} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/unschedule",{targetPeriod:history!.nextPeriod},"발행 예약을 취소했습니다.")}>예약 취소</button>}</p>}
+      {role==="MANAGER" && !history!.scheduled.length && <>
+        <button disabled={busy || conflict} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/publish",{reviewHash:d.reviewHash},"새 규정을 발행했습니다.")}>발행</button>
+        <button disabled={busy || conflict} onClick={()=>change("/api/policies/drafts/"+d.draftId+"/schedule",{reviewHash:d.reviewHash,targetPeriod:history!.nextPeriod},"다음 회계 기간에 적용하도록 예약했습니다.")}>{history!.nextPeriod} 발행 예약</button>
+      </>}</div>)}
     <h3>발행 이력</h3>
     {history!.versions.map(v=><p key={v.generation}>버전 {v.generation} · 평가기 {v.evaluatorVersion} · <code>{v.formula}</code> {role==="FINANCE" && v.generation!==current.generation && <button onClick={()=>{setRestoreGeneration(v.generation);setFormula(v.formula);setAttendanceRule(v.attendanceRule);}}>복구 후보로 선택</button>}</p>)}</>}
     <p role="status">{notice}</p></section>;

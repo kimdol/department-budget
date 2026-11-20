@@ -10,6 +10,16 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface PolicyMapper {
+    record Scheduled(String category, String targetPeriod, String draftId, String reviewHash) {}
+
+    @Select("select category,target_period,draft_id,review_hash from scheduled_policy where workspace_id=#{workspace} order by category")
+    List<Scheduled> scheduled(String workspace);
+
+    @Insert("insert into scheduled_policy(workspace_id,category,target_period,draft_id,review_hash) values(#{workspace},#{item.category},#{item.targetPeriod},#{item.draftId},#{item.reviewHash})")
+    void schedule(String workspace, Scheduled item);
+
+    @Delete("delete from scheduled_policy where workspace_id=#{workspace} and draft_id=#{draftId} and target_period=#{targetPeriod}")
+    int unschedule(String workspace, String draftId, String targetPeriod);
     record ClaimSample(String claimId, String title, long estimated, int days, long policyGeneration,
                        String formula, String evaluatorVersion, kr.budget.claims.ApprovalRoute approvalRoute, long inboxOrder) {}
 

@@ -23,6 +23,38 @@ abstract class PostingContract {
     @Autowired kr.budget.portal.PortalOutbox outbox;
 
     @Test
+    void scheduledRuleActivatesOnceWhenTheNextAccountingPeriodOpens() {
+        String workspace = service.open();
+        String category = "CONFERENCE";
+        String period = periods.statement(workspace).period();
+        String next = policies.nextPeriod(workspace);
+        String id = policies.draft(workspace,category,0,"floor(eligible_cost * 0.9)");
+        String hash = policyMapper.findDraft(workspace,id).getReviewHash();
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->policies.schedule(workspace,id,hash,period)).getStatusCode().value());
+        policies.schedule(workspace,id,hash,next);
+        policies.cancelSchedule(workspace,id,next);
+        policies.schedule(workspace,id,hash,next);
+        policies.schedule(workspace,id,hash,next);
+        assertEquals(1,policyMapper.scheduled(workspace).size());
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->policies.publish(workspace,id,hash)).getStatusCode().value());
+        assertEquals(144000,policies.active(workspace,category).calculate(180000,1));
+        closing.close(workspace);
+        assertEquals(0,policies.active(workspace,category).generation());
+        jdbc.update("update policy_draft set sample_days=2 where workspace_id=? and draft_id=?",workspace,id);
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->periods.advance(workspace,period)).getStatusCode().value());
+        assertEquals(period,periods.statement(workspace).period());
+        assertEquals("CLOSED",periods.statement(workspace).state());
+        assertEquals(1,policyMapper.scheduled(workspace).size());
+        jdbc.update("update policy_draft set sample_days=1 where workspace_id=? and draft_id=?",workspace,id);
+        periods.advance(workspace,period);
+        periods.advance(workspace,period);
+        assertEquals(1,policies.active(workspace,category).generation());
+        assertEquals(162000,policies.active(workspace,category).calculate(180000,1));
+        assertEquals(2,policies.history(workspace,category).size());
+        assertTrue(policyMapper.scheduled(workspace).isEmpty());
+    }
+
+    @Test
     void publishingBindsTheExactComparisonReviewedByTheManager() {
         String workspace = service.open();
         String id = policies.draft(workspace,"EDUCATION",0,"eligible_cost",100000,1,null);

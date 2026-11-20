@@ -296,7 +296,9 @@ public class DemoPortal {
     @ResponseBody
     public Map<String, Object> policyHistory(HttpSession session, @RequestParam String category) {
         String workspace = workspace(session);
-        return Map.of("versions", policies.history(workspace, category), "drafts", policyMapper.drafts(workspace, category));
+        return Map.of("versions", policies.history(workspace, category), "drafts", policyMapper.drafts(workspace, category),
+                "nextPeriod",policies.nextPeriod(workspace),"scheduled",policyMapper.scheduled(workspace).stream()
+                        .filter(item -> item.category().equals(category)).toList());
     }
 
     @PostMapping("/api/policies/attendance-preview")
@@ -341,6 +343,21 @@ public class DemoPortal {
     @ResponseBody
     public Map<String, Long> publish(HttpSession session, @PathVariable String id, @RequestParam String reviewHash) {
         return Map.of("generation", policies.publish(authorized(session, Role.MANAGER), id, reviewHash));
+    }
+
+    @PostMapping("/api/policies/drafts/{id}/schedule")
+    @ResponseBody
+    public Map<String,String> schedule(HttpSession session, @PathVariable String id, @RequestParam String reviewHash,
+                                       @RequestParam String targetPeriod) {
+        policies.schedule(authorized(session,Role.MANAGER),id,reviewHash,targetPeriod);
+        return Map.of("targetPeriod",targetPeriod);
+    }
+
+    @PostMapping("/api/policies/drafts/{id}/unschedule")
+    @ResponseBody
+    public Map<String,String> unschedule(HttpSession session, @PathVariable String id, @RequestParam String targetPeriod) {
+        policies.cancelSchedule(authorized(session,Role.MANAGER),id,targetPeriod);
+        return Map.of("cancelled",targetPeriod);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
