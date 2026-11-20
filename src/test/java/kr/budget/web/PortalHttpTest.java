@@ -63,6 +63,22 @@ class PortalHttpTest {
     }
 
     @Test
+    void onlyVersionedLibraryCanBeReusedAcrossSessions() throws Exception {
+        Visitor guest = new Visitor();
+        var library = guest.request("/webjars/jquery/3.7.1/jquery.min.js", null, false);
+        assertEquals(200, library.statusCode());
+        var cache = library.headers().firstValue("Cache-Control").orElse("");
+        for (String directive : new String[]{"public", "max-age=31536000", "immutable"}) {
+            assertTrue(cache.contains(directive));
+        }
+        for (String path : new String[]{"/", "/api/workspace", "/assets/portal.js"}) {
+            var response = guest.request(path, null, false);
+            assertEquals(200, response.statusCode());
+            assertTrue(response.headers().firstValue("Cache-Control").orElse("").contains("no-store"));
+        }
+    }
+
+    @Test
     void twoVisitorsKeepIndependentBalancesAcrossSubmissionApprovalSettlementAndLogout() throws Exception {
         Visitor first = new Visitor();
         Visitor second = new Visitor();
