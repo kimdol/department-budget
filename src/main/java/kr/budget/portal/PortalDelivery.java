@@ -28,12 +28,12 @@ public class PortalDelivery {
                         .header("Content-Type","application/json")
                         .POST(HttpRequest.BodyPublishers.ofByteArray(json.writeValueAsBytes(event))).build();
                 var response = client.send(request, HttpResponse.BodyHandlers.discarding());
-                if (response.statusCode() != 204) throw new IllegalStateException("수신 확인 대기");
+                if (response.statusCode() != 204) throw new PortalRelay.DeliveryFailure("포털 HTTP " + response.statusCode());
             } catch (IOException e) {
-                throw new IllegalStateException("전송 오류", e);
+                throw new PortalRelay.DeliveryFailure("포털 연결 오류");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new IllegalStateException("전송 중단", e);
+                throw new PortalRelay.DeliveryFailure("전송 중단");
             }
         });
     }
@@ -41,5 +41,9 @@ public class PortalDelivery {
     @Scheduled(fixedDelayString="${budget.portal.delay-ms:15000}")
     void deliver() {
         relay.deliverPending();
+    }
+
+    public boolean retry(PortalOutbox.Event event) {
+        return relay.deliver(event);
     }
 }

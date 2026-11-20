@@ -31,7 +31,10 @@ mysql_query 'SELECT COUNT(*) FROM budget_event_receipt' >/dev/null
 export BUDGET_PORTAL_TOKEN=$(openssl rand -hex 32)
 export PORTAL_MYSQL_DSN='mysql:host=127.0.0.1;port=13306;dbname=budget'
 export PORTAL_MYSQL_USER="$MYSQL_USER" PORTAL_MYSQL_PASSWORD="$MYSQL_PASSWORD"
-php -S 127.0.0.1:18760 -t portal > "$work/php.log" 2>&1 &
+mkdir -p "$work/portal"
+cp portal/receive.php portal/status.php "$work/portal/"
+export TEST_PORTAL_RECEIVER="$PWD/$work/portal/receive.php"
+php -S 127.0.0.1:18760 -t "$work/portal" > "$work/php.log" 2>&1 &
 php_server=$!
 cp ops/Caddyfile "$work/Caddyfile"
 printf '\nlocalhost:18759 {\n reverse_proxy 127.0.0.1:18760\n}\n' >> "$work/Caddyfile"
@@ -45,7 +48,7 @@ export TEST_DEPLOYMENT_URL=https://localhost:18758 NODE_EXTRA_CA_CERTS="$PWD/$wo
 keytool -importcert -noprompt -alias portal -file "$NODE_EXTRA_CA_CERTS" -keystore "$work/trust.p12" \
     -storetype PKCS12 -storepass changeit
 export BUDGET_DB_URL=jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1 BUDGET_DB_USER=budget_release
-export BUDGET_PORTAL_URL=https://localhost:18759/receive.php BUDGET_PORTAL_DELAY_MS=300
+export BUDGET_PORTAL_URL=https://localhost:18759/receive.php BUDGET_PORTAL_DELAY_MS=3000
 java -Djavax.net.ssl.trustStore="$PWD/$work/trust.p12" -Djavax.net.ssl.trustStorePassword=changeit \
     -jar target/department-budget-0.1.0.war --spring.profiles.active=proxy > "$work/tomcat.log" 2>&1 &
 server=$!
@@ -64,7 +67,7 @@ for database in "$HOME/.pki/nssdb" "$HOME/.local/share/pki/nssdb"; do
 done
 cd frontend
 export RECORD_PORTAL_CLAIM="$PWD/../$work/claim.txt"
-TEST_PHP_ADDRESS=127.0.0.1:18760 node node_modules/@playwright/test/cli.js test https.spec.ts claims.spec.ts --reporter=list
+TEST_PHP_ADDRESS=127.0.0.1:18760 node node_modules/@playwright/test/cli.js test https.spec.ts claims.spec.ts portal-retry.spec.ts --reporter=list
 claim=$(cat "$RECORD_PORTAL_CLAIM")
 [[ "$claim" =~ ^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$ ]]
 projection=$(mysql_query "select concat(workspace_id,'|',claim_id,'|',sequence_no,'|',event_type,'|',amount)

@@ -3,6 +3,8 @@ package kr.budget.web;
 import java.util.Map;
 import java.util.UUID;
 import kr.budget.portal.PortalReceipts;
+import kr.budget.portal.PortalOutbox;
+import kr.budget.portal.PortalDelivery;
 import org.springframework.beans.factory.ObjectProvider;
 import jakarta.servlet.http.HttpSession;
 import kr.budget.claims.BudgetMapper;
@@ -35,10 +37,14 @@ public class DemoPortal {
     private final ClosingService closing;
     private final ClosingMapper statements;
     private final ObjectProvider<PortalReceipts> receipts;
+    private final PortalOutbox outbox;
+    private final ObjectProvider<PortalDelivery> delivery;
 
     public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper,
             EvidenceService evidence, PeriodClosing periods, ClosingService closing, ClosingMapper statements,
-            ObjectProvider<PortalReceipts> receipts) {
+            ObjectProvider<PortalReceipts> receipts, PortalOutbox outbox, ObjectProvider<PortalDelivery> delivery) {
+        this.outbox = outbox;
+        this.delivery = delivery;
         this.receipts = receipts;
         this.service = service;
         this.mapper = mapper;
@@ -128,6 +134,22 @@ public class DemoPortal {
     @ResponseBody
     public ClaimService.Calculation calculation(HttpSession session,@PathVariable String id) {
         return service.replay(workspace(session),id);
+    }
+
+    @GetMapping("/api/portal/failures")
+    @ResponseBody
+    public List<PortalOutbox.Failure> portalFailures(HttpSession session) {
+        return outbox.failures(authorized(session, Role.FINANCE));
+    }
+
+    @PostMapping("/api/portal/failures/{id}/retry")
+    @ResponseBody
+    public void retryPortalDelivery(HttpSession session, @PathVariable UUID id) {
+        var event = outbox.retryable(authorized(session, Role.FINANCE), id.toString());
+        if (event == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        var sender = delivery.getIfAvailable();
+        if (sender == null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        if (!sender.retry(event)) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY);
     }
 
     @GetMapping("/api/claims/{id}/portal-receipt")

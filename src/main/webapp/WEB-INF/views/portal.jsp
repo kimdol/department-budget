@@ -16,6 +16,8 @@
 <details id="policy-panel"><summary>지원 규정 비교 및 발행</summary><div id="policy-editor"></div></details>
 <section id="month-end" hidden><h2>월 결산표</h2>
 <button id="view-statement">결산표 조회</button>
+<button id="view-failures" hidden>포털 송신 실패 조회</button>
+<div id="portal-failures" aria-live="polite"></div>
 <div id="statement" aria-live="polite"></div>
 <button id="close-period" hidden>이 기간 마감 확정</button></section>
 <section><h2>신청 내역</h2><div id="claims"></div><button id="newer" hidden>이전 페이지</button><button id="older" hidden>다음 페이지</button></section></div></main></body></html>

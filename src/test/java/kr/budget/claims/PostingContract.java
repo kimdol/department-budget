@@ -114,7 +114,13 @@ abstract class PostingContract {
         });
         relay.deliverPending();
         assertEquals(180000, mapper.balance(workspace).spent());
-        relay.deliverPending();
+        var failure = outbox.failures(workspace).getFirst();
+        assertEquals(id, failure.claimId());
+        assertEquals(1, failure.attempts());
+        assertNull(outbox.retryable(service.open(), failure.eventId()));
+        assertTrue(relay.deliver(outbox.retryable(workspace, failure.eventId())));
+        assertTrue(outbox.failures(workspace).isEmpty());
+        assertNull(outbox.retryable(workspace, failure.eventId()));
         relay.deliverPending();
         relay.deliverPending();
         assertEquals(List.of(1,1,2), attempts);

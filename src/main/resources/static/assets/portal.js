@@ -20,6 +20,8 @@ function render(state) {
   notice(nextSteps[state.role]);
   $("#month-end").prop("hidden", state.role !== "FINANCE");
   $("#statement").empty();
+  $("#portal-failures").empty();
+  $("#view-failures").prop("hidden", !state.portalEnabled || state.role !== "FINANCE");
   $("#close-period").prop("hidden",true);
   $("#start").prop("hidden", true);
   $("#desk").prop("hidden", false);
@@ -188,6 +190,23 @@ function showStatement(report) {
   }
 }
 $("#view-statement").on("click",()=>$.getJSON("/api/statement").done(showStatement).fail(reportError));
+$("#view-failures").on("click",function() {
+  const box = $("#portal-failures").empty();
+  $.getJSON("/api/portal/failures").done(rows=>{
+    if ($("#role").val() !== "FINANCE") return;
+    box.text(rows.length ? "송신 실패 · 오래된 순 최대 50건" : "재처리할 송신 실패가 없습니다.");
+    for (const row of rows) {
+      const item = $("<div>").appendTo(box);
+      $("<p>").text(row.title+" · 신청번호 "+row.claimId+" · "+row.sequenceNo+"차 · "+money(row.amount)
+        +" · 시도 "+row.attempts+"회 · "+row.lastError).appendTo(item);
+      $("<button>").text("다시 보내기").on("click",function() {
+        $(this).prop("disabled",true);
+        api("/api/portal/failures/"+encodeURIComponent(row.eventId)+"/retry",{}).done(()=>notice("포털에서 수신을 확인했습니다."))
+          .fail(reportError).always(()=>$("#view-failures").trigger("click"));
+      }).appendTo(item);
+    }
+  }).fail(reportError);
+});
 $("#close-period").on("click",function() {
   if (!window.confirm("마감하면 이 기간의 신규 신청과 집행을 종료합니다. 확정할까요?")) return;
   $(this).prop("disabled",true);
