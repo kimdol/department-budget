@@ -43,8 +43,8 @@ public class PeriodClosing {
         if (current.periodKey().equals(next)) return statement(workspace);
         if (!current.periodKey().equals(closedPeriod) || !current.periodState().equals("CLOSED"))
             throw new ResponseStatusException(HttpStatus.CONFLICT);
-        ledger.advance(workspace,next);
         policies.activateScheduled(workspace,next);
+        ledger.advance(workspace,next);
         return statement(workspace);
     }
 

@@ -28,3 +28,6 @@ sudo systemctl status department-budget
 ```
 
 일시 중지는 `sudo systemctl stop department-budget`, 재개는 `sudo systemctl start department-budget`로 실행한다. 부팅 시 자동 실행도 끄려면 `sudo systemctl disable --now department-budget`을 사용한다. 서비스 중지 후에도 Oracle의 전표가 유지되며, 새 WAR에 스키마 변경이 있으면 재시작 전에 백업과 마이그레이션 절차를 진행한다. [서비스 정의](../ops/department-budget.service) · [원장 복원 절차](ORACLE.md)
+### 규정 예약이 남은 부서의 버전 복귀
+
+V021부터 예약은 부서의 현재 회계 기간을 외래 키로 참조한다. 기간 개시 시 새 WAR는 한 트랜잭션에서 예약을 검증·발행하고 예약을 지운 뒤 부서의 기간을 변경한다. 예약을 처리하지 않는 이전 WAR에서 기간만 변경하면 DB가 거절한다. V020 WAR는 필수 열인 `source_period`를 채우지 않으므로 V021 스키마에서 신규 예약을 작성할 수 없다. 예약 업무를 사용 중이면 V021 호환 WAR로 복구한다. 불일치 상태에서 예약 행을 수동으로 삭제하면 부서장이 승인한 다음 달 규정이 유실된다. [V020에서 업그레이드하는 시험](../src/test/java/kr/budget/claims/ScheduledPolicyMigrationTest.java)

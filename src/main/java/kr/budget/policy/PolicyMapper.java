@@ -15,7 +15,11 @@ public interface PolicyMapper {
     @Select("select category,target_period,draft_id,review_hash from scheduled_policy where workspace_id=#{workspace} order by category")
     List<Scheduled> scheduled(String workspace);
 
-    @Insert("insert into scheduled_policy(workspace_id,category,target_period,draft_id,review_hash) values(#{workspace},#{item.category},#{item.targetPeriod},#{item.draftId},#{item.reviewHash})")
+    @Insert("""
+        insert into scheduled_policy(workspace_id,category,target_period,draft_id,review_hash,source_period)
+        select workspace_id,#{item.category},#{item.targetPeriod},#{item.draftId},#{item.reviewHash},period_key
+        from budget_workspace where workspace_id=#{workspace}
+        """)
     void schedule(String workspace, Scheduled item);
 
     @Delete("delete from scheduled_policy where workspace_id=#{workspace} and draft_id=#{draftId} and target_period=#{targetPeriod}")

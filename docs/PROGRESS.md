@@ -1,5 +1,7 @@
 # 인수 현황
 
+V020에서 11월 마감 부서의 12월 규정을 예약해 둔 뒤 이전 버전의 기간 변경 SQL을 실행했다. H2에서 SQL은 한 행을 갱신했고 규정 예약은 처리되지 않았다. V021은 기존 예약의 원래 부서 기간을 채우고 외래 키로 연결한다. 같은 SQL이 무결성 오류로 거절되고 기존 초안·검토 해시와 대상 기간은 보존됐다. 서비스의 정상 개시 경로는 예약 발행 후에 기간을 갱신한다. [변경 전후 재현](../src/test/java/kr/budget/claims/ScheduledPolicyMigrationTest.java) · [정상 개시와 중복 요청 시험](../src/test/java/kr/budget/claims/PostingContract.java) · [복귀 시 호환 범위](HTTPS.md)
+
 병원 학회비 지원율을 80%에서 90%로 바꾸는 규정을 부서장이 다음 회계 기간에 예약했다. HTTPS Chrome에서 예약 취소·재예약, 당월 버전 0 유지, 다음 달 개시 후 버전 1과 실비 180,000원의 지원 예정액 162,000원을 확인했다. H2 계약 시험에서는 예약 후 초안의 검토값을 바꾸자 기간 개시가 409로 거절되고 기존 마감 상태와 예약이 유지됐다. 값을 복원한 뒤 개시를 두 번 요청해도 새 발행은 한 건이었다. [브라우저 시험](../frontend/tests/hospital-policy.spec.ts) · [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java)
 
 Oracle·MySQL·Caddy 브라우저 시연에서 직원으로 전환한 직후 증빙 요건을 열면 ‘판정 근거’가 클릭 전에 화면에서 사라져 시험이 중단됐다. 역할 선택값은 즉시 바뀌지만 새 결재함은 비동기로 도착해 기존 화면을 교체했다. 업무 버튼을 누를 수 있는 시점을 새 역할의 결재함 표시 이후로 옮겼다. 회귀 시험은 역할 변경 응답을 직접 보류하고 이 구간에 이전 신청·결재 화면을 조작할 수 없는지 검사한다. [실패 실행](https://github.com/kimdol/department-budget/actions/runs/44790716638/job/136477325495) · [회귀 시험](../frontend/tests/employee-form.spec.ts)

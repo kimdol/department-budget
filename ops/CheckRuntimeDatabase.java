@@ -20,6 +20,8 @@ public class CheckRuntimeDatabase {
                     "select inbox_order,attendance_rule from expense_claim where 1=0",
                     "select committed_delta,spent_delta,period_key from budget_posting where 1=0",
                     "select reviewed_draft_id,review_hash from policy_publication where 1=0",
+                    "select head_id,branch_id,amount from branch_allocation where 1=0",
+                    "select source_period,target_period,review_hash from scheduled_policy where 1=0",
                     "select job_instance_id from batch_job_instance where 1=0"
             };
             for (String sql : probes) {

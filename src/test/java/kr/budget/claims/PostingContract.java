@@ -40,6 +40,9 @@ abstract class PostingContract {
         assertEquals(144000,policies.active(workspace,category).calculate(180000,1));
         closing.close(workspace);
         assertEquals(0,policies.active(workspace,category).generation());
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class,() ->
+                jdbc.update("update budget_workspace set period_key=?,period_state='OPEN' where workspace_id=?",next,workspace));
+        assertEquals(period,periods.statement(workspace).period());
         jdbc.update("update policy_draft set sample_days=2 where workspace_id=? and draft_id=?",workspace,id);
         assertEquals(409,assertThrows(ResponseStatusException.class,()->periods.advance(workspace,period)).getStatusCode().value());
         assertEquals(period,periods.statement(workspace).period());
