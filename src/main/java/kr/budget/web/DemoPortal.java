@@ -60,7 +60,7 @@ public class DemoPortal {
                 session.setAttribute("role", Role.EMPLOYEE);
             }
         }
-        return snapshot(session);
+        return snapshot(session,null);
     }
 
     @PostMapping("/api/demo/role")
@@ -72,9 +72,10 @@ public class DemoPortal {
 
     @GetMapping("/api/workspace")
     @ResponseBody
-    public Map<String, Object> snapshot(HttpSession session) {
+    public Map<String, Object> snapshot(HttpSession session,@RequestParam(required=false) Long before) {
         String workspace = workspace(session);
-        return Map.of("balance", mapper.balance(workspace), "claims", mapper.claims(workspace),
+        var rows = mapper.inbox(workspace,before == null ? Long.MAX_VALUE : before);
+        return Map.of("balance", mapper.balance(workspace), "claims", rows.stream().limit(50).toList(), "hasMore",rows.size() > 50,
                 "role", session.getAttribute("role"), "organization",mapper.organization(workspace));
     }
 

@@ -21,12 +21,12 @@ public interface BudgetMapper {
     Balance lockBalance(String workspace);
 
     @Insert("""
-        insert into expense_claim (claim_id, workspace_id, title, category, status, estimated, days, formula, policy_generation,evaluator_version,approval_route)
-        values (#{id}, #{workspace}, #{title}, #{category}, 'SUBMITTED', #{estimated}, #{days}, #{formula}, #{generation},#{version},#{route})
+        insert into expense_claim (claim_id, workspace_id, title, category, status, estimated, days, formula, policy_generation,evaluator_version,approval_route,inbox_order)
+        values (#{id}, #{workspace}, #{title}, #{category}, 'SUBMITTED', #{estimated}, #{days}, #{formula}, #{generation},#{version},#{route},claim_inbox_seq.NEXTVAL)
         """)
     void submit(String id, String workspace, String title, String category, long estimated, int days, String formula, long generation,String version,ApprovalRoute route);
 
-    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note,evaluator_version,approval_route";
+    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note,evaluator_version,approval_route,inbox_order";
 
     @Update("update expense_claim set status='FINANCE_PENDING' where workspace_id=#{workspace} and claim_id=#{id}")
     void forwardToFinance(String workspace,String id);
@@ -41,8 +41,12 @@ public interface BudgetMapper {
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id=#{id} for update")
     Claim lockClaim(String workspace, String id);
 
-    @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} order by claim_id fetch first 50 rows only")
-    List<Claim> claims(String workspace);
+    @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and inbox_order < #{before} order by inbox_order desc fetch first 51 rows only")
+    List<Claim> inbox(String workspace,long before);
+
+    default List<Claim> claims(String workspace) {
+        return inbox(workspace,Long.MAX_VALUE).stream().limit(50).toList();
+    }
 
     @Update("update expense_claim set status='APPROVED', approved=#{approved} where workspace_id=#{workspace} and claim_id=#{id}")
     void approve(String workspace, String id, long approved);

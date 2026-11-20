@@ -294,6 +294,22 @@ abstract class PostingContract {
     }
 
     @Test
+    void laterPagesKeepTheirBoundaryWhenAnotherApplicationArrives() {
+        String workspace = service.open();
+        var ordered = new java.util.ArrayList<String>();
+        for (int index=0;index<52;index++) ordered.add(service.submit(workspace,UUID.randomUUID(),"교육 "+index,"EDUCATION",1000,1));
+        var first = mapper.inbox(workspace,Long.MAX_VALUE);
+        assertEquals(51,first.size());
+        assertEquals(ordered.getLast(),first.getFirst().claimId());
+        long cursor = first.get(49).inboxOrder();
+        service.submit(workspace,UUID.randomUUID(),"추가 신청","EDUCATION",1000,1);
+        var other = service.open();
+        service.submit(other,UUID.randomUUID(),"별도 공간","EDUCATION",1000,1);
+        assertEquals(List.of(ordered.get(1),ordered.getFirst()),mapper.inbox(workspace,cursor).stream().map(Claim::claimId).toList());
+        assertTrue(mapper.inbox(other,cursor).isEmpty());
+    }
+
+    @Test
     void competingApprovalsCannotExceedAllocation() throws Exception {
         String workspace = service.open();
         jdbc.update("update budget_workspace set allocation=100000 where workspace_id=?", workspace);

@@ -22,9 +22,9 @@ flowchart LR
 
 | 추적 단계 | 읽을 곳 | 같은 신청번호에서 확인할 값 |
 | --- | --- | --- |
-| 신청 버튼 | [JSP](../src/main/webapp/WEB-INF/views/portal.jsp), [제출 이벤트](../src/main/resources/static/assets/portal.js#L181) | 화면이 요청 키를 보관한다. 서버가 만든 신청번호를 응답으로 받는다. |
-| 신청 접수 | [DemoPortal.submit](../src/main/java/kr/budget/web/DemoPortal.java#L90), [ClaimService](../src/main/java/kr/budget/claims/ClaimService.java) | 비목·예정액·일수·수식·발행 세대·평가기·결재 경로를 고정한다. 이 시점의 약정은 0원이다. |
-| 부서장 승인 | [commitApproval](../src/main/java/kr/budget/claims/ClaimService.java#L119), [전표 INSERT](../src/main/java/kr/budget/claims/BudgetMapper.java#L78) | 예산 행과 신청을 잠그고 가용액을 검사한다. APPROVAL의 약정 증감은 +200,000원이다. |
+| 신청 버튼 | [JSP](../src/main/webapp/WEB-INF/views/portal.jsp), [제출 이벤트](../src/main/resources/static/assets/portal.js#L200) | 화면이 요청 키를 보관한다. 서버가 만든 신청번호를 응답으로 받는다. |
+| 신청 접수 | [DemoPortal.submit](../src/main/java/kr/budget/web/DemoPortal.java#L91), [ClaimService](../src/main/java/kr/budget/claims/ClaimService.java) | 비목·예정액·일수·수식·발행 세대·평가기·결재 경로를 고정한다. 이 시점의 약정은 0원이다. |
+| 부서장 승인 | [commitApproval](../src/main/java/kr/budget/claims/ClaimService.java#L119), [전표 INSERT](../src/main/java/kr/budget/claims/BudgetMapper.java#L82) | 예산 행과 신청을 잠그고 가용액을 검사한다. APPROVAL의 약정 증감은 +200,000원이다. |
 | 실비 정산 | [settle](../src/main/java/kr/budget/claims/ClaimService.java#L174), [증빙 판정](../src/main/java/kr/budget/claims/EvidencePolicy.java) | 영수증과 실비 225,000원을 대조한다. SETTLEMENT의 약정 증감은 −200,000원, 집행 증감은 +180,000원이다. |
 | 원장 대사 | [결산 SQL](../src/main/java/kr/budget/closing/ClosingMapper.java), [정산 브라우저 시험](../frontend/tests/claims.spec.ts) | 배정 1,000,000원에서 약정 잔액 0원과 누적 집행 180,000원을 차감하면 가용액은 820,000원이다. |
 

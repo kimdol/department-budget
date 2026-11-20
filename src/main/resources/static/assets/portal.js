@@ -4,7 +4,12 @@ const money = value => new Intl.NumberFormat("ko-KR").format(value) + "원";
 const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
 const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
+const cursors = [null];
+let nextCursor = null;
 function render(state) {
+  nextCursor = state.hasMore ? state.claims[state.claims.length-1].inboxOrder : null;
+  $("#older").prop("hidden",nextCursor === null);
+  $("#newer").prop("hidden",cursors.length <= 1);
   $("#organization-choice").prop("hidden",true);
   $("#workspace-organization").prop("hidden",false).text(({COMPANY:"일반 기업 경영지원팀",HOSPITAL:"병원 행정부서",BANK:"은행 경영지원팀"})[state.organization]);
   clearEstimate();
@@ -127,7 +132,21 @@ function render(state) {
     }
   }
 }
-function refresh() { return $.getJSON("/api/workspace").then(render); }
+function refresh() {
+  const before = cursors[cursors.length-1];
+  return $.getJSON("/api/workspace",before === null ? {} : {before}).then(render);
+}
+function changePage(older) {
+  const previous = cursors.slice();
+  if (older && nextCursor !== null) cursors.push(nextCursor);
+  else if (!older && cursors.length > 1) cursors.pop();
+  else return;
+  $("#older,#newer").prop("disabled",true);
+  refresh().fail(error => {cursors.splice(0,cursors.length,...previous); reportError(error);})
+    .always(()=>$("#older,#newer").prop("disabled",false));
+}
+$("#older").on("click",()=>changePage(true));
+$("#newer").on("click",()=>changePage(false));
 function showStatement(report) {
   if ($("#role").val() !== "FINANCE") return;
   const box = $("#statement").empty();
@@ -188,6 +207,7 @@ $("#submit").on("submit",event=>{
   const generation = expectedGeneration === null ? "" : "&expectedGeneration=" + expectedGeneration;
   api("/api/claims", fields + generation + "&requestKey=" + encodeURIComponent(key)).then(() => {
     sessionStorage.removeItem("pending-claim");
+    cursors.splice(0,cursors.length,null);
     return refresh();
   }).fail(error => {
     if (error.status === 409 && generation) {
