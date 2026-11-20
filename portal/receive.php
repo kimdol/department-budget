@@ -39,7 +39,13 @@ try {
     $scope = [$event['workspaceId'], $event['claimId']];
     if ($sequence === 1) {
         $insert = $db->prepare('INSERT INTO budget_claim_summary(workspace_id,claim_id,sequence_no,event_type,amount) VALUES (?,?,?,?,?)');
-        $insert->execute([...$scope, $sequence, $event['eventType'], $event['amount']]);
+        try {
+            $insert->execute([...$scope, $sequence, $event['eventType'], $event['amount']]);
+        } catch (PDOException $conflict) {
+            if (($conflict->errorInfo[1] ?? 0) !== 1062) throw $conflict;
+            $db->rollBack();
+            finish(409);
+        }
     } else {
         $update = $db->prepare('UPDATE budget_claim_summary SET sequence_no=?,event_type=?,amount=? WHERE workspace_id=? AND claim_id=? AND sequence_no=1');
         $update->execute([$sequence, $event['eventType'], $event['amount'], ...$scope]);

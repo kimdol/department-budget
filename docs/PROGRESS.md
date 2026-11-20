@@ -1,5 +1,7 @@
 # 인수 현황
 
+실제 MySQL 8.4.13 수신기에 정산이 끝난 신청의 승인을 새 이벤트 ID로 보내면, 기존 신청 요약의 기본 키 충돌이 일괄 오류 처리로 넘어가 HTTP 503이 반환됐다. 동일 신청의 두 번째 승인에는 409가 기대된다. 승인 요약 삽입에서 중복 키를 구분해 새 수신 이력을 롤백하도록 변경했다. 재시험 응답은 순서대로 409·204·204·204·204·409·409였고 최종 수신 이력 2건과 정산액 180,000원을 확인했다. [재현 시험](../ops/test_portal.py) · [수신 처리](../portal/receive.php)
+
 Oracle Data Pump로 동일 PDB의 별도 스키마에 복원한 결과, 한 신청의 버전 1·2·3이 같은 최초 신청번호로 연결됐고 원본·복원 대사 파일의 SHA-256이 일치했다. 내보내기 34초, 가져오기 23초였다. 해당 실행의 대사 대상은 신청·결재·원장이며, 후속 시험에서 포털 송신 메시지의 순번·금액·전송 상태·재시도 횟수까지 대조한다. [원본·복원 대사 파일](measurements/oracle-restore-44800719035.zip)
 
 신청 버전을 도입한 [9279a68](https://github.com/kimdol/department-budget/commit/9279a68)은 실제 Oracle 원장 시험 27건을 모두 통과했다. [시험 보고서](measurements/oracle-contracts-44800719035.txt) · [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44800719035)

@@ -98,8 +98,8 @@ def main():
                         sequenceNo=1, eventType="APPROVAL", amount=200000)
         settlement = dict(approval, eventId=str(uuid.uuid4()), sequenceNo=2, eventType="SETTLEMENT", amount=180000)
         statuses = [send(settlement), send(approval), send(approval), send(settlement), send(settlement),
-                    send(dict(settlement, amount=179999))]
-        if statuses != [409, 204, 204, 204, 204, 409]:
+                    send(dict(settlement, amount=179999)), send(dict(approval, eventId=str(uuid.uuid4())))]
+        if statuses != [409, 204, 204, 204, 204, 409, 409]:
             raise AssertionError(statuses)
         def read_status(workspace, credential):
             request = Request(f"http://{address}/status.php?workspace={workspace}&claim={approval['claimId']}",
