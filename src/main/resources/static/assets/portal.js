@@ -63,6 +63,9 @@ function render(state) {
       }).appendTo(actions);
     }
     const documents = $("<div>").appendTo(row);
+    $("<button>").text("증빙 요건 확인").on("click",() =>
+      $.getJSON(path + "/evidence/issues").done(issues => documents.text(issues.length ?
+        issues.join(" ") : "필요한 증빙을 모두 제출했습니다.")).fail(reportError)).appendTo(actions);
     $("<button>").text("증빙 조회").on("click", () => {
       $.getJSON(path + "/evidence").done(items => {
         documents.empty();
@@ -93,7 +96,15 @@ function render(state) {
     const managerReview = state.role === "MANAGER" && claim.status === "INCREASE_REQUESTED";
     const financeReview = state.role === "FINANCE" && claim.status === "IN_REVIEW";
     if (managerReview) action("증액 승인","/increase",()=>({round:claim.reviewRound}));
-    if (financeReview) action("정산 확정","/settle",()=>({round:claim.reviewRound}));
+    if (financeReview) $("<button>").text("정산 확정").on("click",function() {
+      const button = $(this).prop("disabled",true);
+      api(path+"/settle",{round:claim.reviewRound}).then(refresh).fail(error => {
+        if (error.status === 422) $.getJSON(path+"/evidence/issues").done(issues =>
+          issues.length ? documents.text(issues.join(" ")) : reportError(error)).fail(reportError);
+        else reportError(error);
+        button.prop("disabled",false);
+      });
+    }).appendTo(actions);
     if (managerReview || financeReview) {
       const reason = $("<input>").attr({"aria-label":"보완 사유",maxlength:240,placeholder:"보완 사유"}).appendTo(actions);
       action("보완 요청","/return",()=>({round:claim.reviewRound,reason:reason.val()}));

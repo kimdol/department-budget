@@ -28,12 +28,34 @@ public class EvidenceService {
         Claim claim = budgets.lockClaim(workspace, id);
         if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         var previous = evidence.find(workspace, id, type.name());
-        if (previous != null) {
-            if (previous.receiptAmount() == amount) return;
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
+        if (previous != null && previous.receiptAmount() == amount) return;
         if (!List.of("APPROVED","NEEDS_RECEIPT").contains(claim.status())) throw new ResponseStatusException(HttpStatus.CONFLICT);
+        if (previous != null) {
+            evidence.recordReplacement(workspace,id,type.name(),previous.receiptAmount(),amount,claim.reviewRound());
+            evidence.replace(workspace,id,type.name(),amount);
+            return;
+        }
         evidence.attach(workspace, id, type.name(), amount);
+    }
+
+    @Transactional
+    public List<String> outstanding(String workspace,String id) {
+        Claim claim = budgets.lockClaim(workspace,id);
+        if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return outstanding(workspace,claim);
+    }
+
+    public List<String> outstanding(String workspace,Claim claim) {
+        var documents = list(workspace,claim.claimId());
+        var issues = new java.util.ArrayList<String>();
+        var receipt = documents.stream().filter(d -> d.evidenceType().equals("RECEIPT")).findFirst();
+        if (receipt.isEmpty()) issues.add("지출 영수증이 필요합니다.");
+        else if (claim.actual() != null && receipt.get().receiptAmount() != claim.actual().longValue())
+            issues.add("영수증 금액과 실제 지출액이 다릅니다.");
+        if (claim.category().equals("CONFERENCE") && budgets.organization(workspace) == OrganizationType.HOSPITAL
+                && documents.stream().noneMatch(d -> d.evidenceType().equals("ATTENDANCE")))
+            issues.add("병원 학회비는 참석 확인서가 필요합니다.");
+        return List.copyOf(issues);
     }
 
     public List<EvidenceMapper.Document> list(String workspace, String id) {

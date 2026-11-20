@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 abstract class PostingContract {
     @Autowired ClaimService service;
     @Autowired BudgetMapper mapper;
+    @Autowired EvidenceService evidence;
     @Autowired JdbcTemplate jdbc;
     @Autowired kr.budget.policy.PolicyService policies;
     @Autowired kr.budget.closing.PeriodClosing periods;
@@ -24,6 +25,7 @@ abstract class PostingContract {
         String workspace = service.open();
         String id = service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1);
         service.approve(workspace,id);
+        evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 225000);
         service.review(workspace,id,225000);
         service.settle(workspace,id);
         var closed = closing.close(workspace);
@@ -56,6 +58,26 @@ abstract class PostingContract {
     }
 
     @Test
+    void incompleteConferenceEvidenceBlocksPostingUntilTheEmployeeCorrectsIt() {
+        String workspace = service.open(OrganizationType.HOSPITAL);
+        String id = service.submit(workspace,UUID.randomUUID(),"학회","CONFERENCE",300000,1);
+        service.approve(workspace,id);
+        evidence.attach(workspace,id,EvidenceService.Type.RECEIPT,220000);
+        service.review(workspace,id,225000);
+        assertEquals(2,evidence.outstanding(workspace,id).size());
+        assertEquals(422,assertThrows(ResponseStatusException.class,() -> service.settle(workspace,id)).getStatusCode().value());
+        assertEquals(0,mapper.balance(workspace).spent());
+        service.returnReview(workspace,id,1,"영수증 금액과 참석 확인서를 보완하세요.",false);
+        evidence.attach(workspace,id,EvidenceService.Type.RECEIPT,225000);
+        evidence.attach(workspace,id,EvidenceService.Type.RECEIPT,225000);
+        evidence.attach(workspace,id,EvidenceService.Type.ATTENDANCE,225000);
+        service.review(workspace,id,225000,1);
+        service.settle(workspace,id,2);
+        assertEquals(180000,mapper.balance(workspace).spent());
+        assertEquals(List.of(220000L),jdbc.queryForList("select previous_amount from evidence_replacement where claim_id=?",Long.class,id));
+    }
+
+    @Test
     void cancellationReleasesOnlyAnExistingCommitmentOnce() {
         String workspace = service.open();
         for (boolean approved : List.of(false, true)) {
@@ -79,6 +101,7 @@ abstract class PostingContract {
         String workspace = service.open();
         String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
         service.approve(workspace, id);
+        evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 225000);
         service.review(workspace, id, 225000);
         service.settle(workspace, id);
         var receipts = new java.util.LinkedHashMap<String,Long>();
@@ -106,6 +129,7 @@ abstract class PostingContract {
         service.approve(workspace, id);
         assertEquals(409, assertThrows(ResponseStatusException.class, () -> closing.close(workspace)).getStatusCode().value());
         assertEquals(List.of(id), periods.statement(workspace).pending());
+        evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 225000);
         service.review(workspace, id, 225000);
         service.settle(workspace, id);
         periods.prepare(workspace);
@@ -127,6 +151,7 @@ abstract class PostingContract {
         String workspace = service.open();
         String id = service.submit(workspace, UUID.randomUUID(), "출장", "TRAVEL", 50000, 1);
         service.approve(workspace, id);
+        evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 45000);
         service.review(workspace, id, 45000);
         service.settle(workspace, id);
         String period = periods.prepare(workspace).periodKey();
@@ -156,6 +181,7 @@ abstract class PostingContract {
         String workspace = service.open();
         String id = service.submit(workspace, UUID.randomUUID(), "세미나", "EDUCATION", 187500, 1);
         service.approve(workspace, id);
+        evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 225000);
         service.review(workspace, id, 225000);
         assertEquals(150000, mapper.balance(workspace).committed());
         service.returnReview(workspace, id, 1, "참가 금액을 확인하세요.", true);
@@ -203,6 +229,8 @@ abstract class PostingContract {
         assertEquals(162000, mapper.lockClaim(workspace, preferred).approved());
         assertEquals(1, mapper.lockClaim(workspace, preferred).policyGeneration());
         assertEquals(144000, mapper.lockClaim(workspace, restored).approved());
+        evidence.attach(workspace, preferred, EvidenceService.Type.RECEIPT, 100000);
+        evidence.attach(workspace,preferred,EvidenceService.Type.ATTENDANCE,100000);
         service.review(workspace, preferred, 100000);
         service.settle(workspace, preferred);
         assertEquals(90000, mapper.balance(workspace).spent());
@@ -227,6 +255,7 @@ abstract class PostingContract {
         String id = service.submit(workspace, UUID.randomUUID(), "교육 참가", "EDUCATION", 300000, 1);
         service.approve(workspace, id);
         assertEquals(200000, mapper.balance(workspace).committed());
+        evidence.attach(workspace, id, EvidenceService.Type.RECEIPT, 225000);
         service.review(workspace, id, 225000);
         service.settle(workspace, id);
         service.settle(workspace, id);

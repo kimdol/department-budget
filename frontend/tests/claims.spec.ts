@@ -22,10 +22,14 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(page.locator("#committed")).toHaveText("200,000원");
     await page.locator("#role").selectOption("EMPLOYEE");
     const uploaded = page.waitForResponse(r => r.url().endsWith("/evidence") && r.request().method() === "POST");
+    await claim.getByRole("button", { name: "증빙 요건 확인" }).click();
+    await expect(claim).toContainText("지출 영수증이 필요합니다.");
     await claim.getByRole("button", { name: "합성 증빙 첨부" }).click();
     expect((await uploaded).ok()).toBe(true);
     await claim.getByRole("button", { name: "정산 신청" }).click();
     await expect(claim).toContainText("정산 검토");
+    await claim.getByRole("button", { name: "증빙 요건 확인" }).click();
+    await expect(claim).toContainText("필요한 증빙을 모두 제출했습니다.");
     await page.locator("#role").selectOption("FINANCE");
     await claim.getByRole("button", { name: "정산 확정" }).click();
     await expect(page.locator("#available")).toHaveText("820,000원");

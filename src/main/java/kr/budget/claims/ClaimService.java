@@ -17,7 +17,10 @@ public class ClaimService {
     private final PolicyService policies;
     private final PortalOutbox outbox;
 
-    public ClaimService(BudgetMapper mapper, PolicyService policies, PortalOutbox outbox) {
+    private final EvidenceService evidence;
+
+    public ClaimService(BudgetMapper mapper, PolicyService policies, PortalOutbox outbox,EvidenceService evidence) {
+        this.evidence = evidence;
         this.mapper = mapper;
         this.policies = policies;
         this.outbox = outbox;
@@ -153,6 +156,7 @@ public class ClaimService {
         requireRound(claim, round);
         if (claim.status().equals("SETTLED")) return;
         require(claim, "IN_REVIEW");
+        if (!evidence.outstanding(workspace,claim).isEmpty()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         long amount = amount(claim, claim.actual());
         mapper.settle(workspace, id, amount);
         post(workspace, id, "SETTLEMENT", -claim.approved(), amount);

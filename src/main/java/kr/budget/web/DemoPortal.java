@@ -174,6 +174,12 @@ public class DemoPortal {
         evidence.attach(authorized(session, Role.EMPLOYEE), id, type, amount);
     }
 
+    @GetMapping("/api/claims/{id}/evidence/issues")
+    @ResponseBody
+    public List<String> evidenceIssues(HttpSession session,@PathVariable String id) {
+        return evidence.outstanding(workspace(session),id);
+    }
+
     @GetMapping("/api/claims/{id}/evidence")
     @ResponseBody
     public List<EvidenceMapper.Document> evidenceList(HttpSession session, @PathVariable String id) {
