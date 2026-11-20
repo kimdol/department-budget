@@ -1,5 +1,7 @@
 # 인수 현황
 
+공개 프록시용 Tomcat 프로필에서 루프백 HTTP와 HTTPS 전달 헤더를 비교했다. 실제 응답에서 HSTS, no-store, JSESSIONID의 Secure·HttpOnly·SameSite=Lax를 확인했다. [단일 VM 배포 절차와 남은 외부 검증](HTTPS.md)
+
 규정 작업실에서 40ms 간격으로 여섯 글자를 입력했을 때 마지막 입력부터 결과가 DOM에 반영되기까지 중앙값은 264.7ms였다. 대기 타이머를 250ms에서 150ms로 줄인 뒤 같은 조건에서 157.0ms를 기록했다. 전후 각각 예열 1회와 측정 5회, 모든 회차에서 미리보기 요청은 1건이었다. [재현 조건과 원자료](measurements/README.md#수식-입력-후-결과-표시)
 
 커밋 98cf644의 실제 Oracle CI에서 V015를 포함한 빈 스키마 설치, 계약 시험, Data Pump 복원·대사와 배포용 WAR의 Chrome 시험이 모두 통과했다. 병원 규정 검토 요청 당시의 비교 사례 보존을 배포본에서도 확인했다. [실행 단계](https://github.com/kimdol/department-budget/actions/runs/44768400881/job/136399149853) · [학습용 스키마에서 비교 사례 조회](ORACLE-WALKTHROUGH.md#규정-변경-후-재현)
