@@ -1,5 +1,7 @@
 # 인수 현황
 
+직원은 비용 신청을 작성하다가 React 화면으로 전환해 입력 내용을 이어갈 수 있다. JSP와 React는 같은 제출·미리보기 처리기를 쓴다. 로컬 HTTPS Chrome에서 두 화면 모두 금액 0원 입력 시 금액란에 포커스가 남고, 다른 탭에서 역할을 바꾼 뒤 제출하면 권한 오류가 표시됐다. 직원 역할로 돌아와 Enter로 제출한 뒤 승인하면 약정 200,000원, 가용액 800,000원이었다. [React 신청 화면](../frontend/src/employee.tsx) · [화면 전환 계약 시험](../frontend/tests/employee-form.spec.ts)
+
 수식은 원문 SHA-256과 평가기 버전으로 구문 트리를 찾아 매번 그 신청의 입력으로 계산한다. 최근 트리 256개를 보존한다. 같은 트리에 서로 다른 실비 500개를 병렬로 넣은 결과와, 캐시에서 빠진 이전 수식을 재해석한 결과를 확인했다. [평가기](../src/main/java/kr/budget/policy/ExpenseFormula.java) · [수식 시험](../src/test/java/kr/budget/policy/ExpenseFormulaTest.java)
 
 비용 신청의 비목 선택과 재무 결산표가 공개 비목 코드표를 공유한다. 로컬 HTTPS 시험에서 최초 조회는 200, 응답 본문의 SHA-256과 일치하는 ETag를 보낸 조회는 본문 없는 304, 오래된 태그를 보낸 조회는 200이었다. 같은 시험에서 방문자 예산 응답의 `no-store`도 확인했다. [코드표 원본](../src/main/resources/catalog/expense-categories.json) · [응답 검증](../frontend/tests/https.spec.ts)
@@ -115,7 +117,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 | 조직별 승인 주체 | 세션별 직원·부서장·재무 역할과 부서별 서버 인가, 은행 본부 재무의 지점 예산 배정 | 독립된 구성원 신원에 기반한 자기 승인 차단 |
 | 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교, 버전별 불변 구문 트리 캐시 | 다음 달 예약 발행 |
 | 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis·Oracle PL/SQL 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조 | Apache Camel 기반 JSON·CSV 공통 변환, 그누보드 연동 |
-| UI·운영 검수 | JSP·jQuery 업무 처리와 React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | React 직원 신청 화면의 동일 계약 검증, 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
+| UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
 | 성능 | 100만 신청의 깊은 목록 조회·논리 읽기·DB p95, 결재함 본문·정적 자산·수식 입력 측정 | 같은 데이터 규모의 월별 집계와 동시 승인 쓰기 지연, 공개 환경에서의 브라우저 측정 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)

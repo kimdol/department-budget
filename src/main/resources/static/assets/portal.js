@@ -344,12 +344,20 @@ function clearEstimate() {
   expectedGeneration = null;
   $("#estimate-result").empty();
 }
-$("#submit").on("input change",clearEstimate);
+$("#entry").on("input change","form",clearEstimate);
+$("#employee-view").on("click",function() {
+  const trigger = $(this).prop("disabled",true);
+  const script = document.createElement("script");
+  script.src = this.dataset.module;
+  script.onerror = () => {trigger.prop("disabled",false); notice("직원 신청 화면을 불러오지 못했습니다. 다시 시도하세요.");};
+  document.head.append(script);
+});
 $("#estimate").on("click", () => {
-  if (!document.querySelector("#submit").reportValidity()) return;
+  const form = document.querySelector("#employee-submit") || document.querySelector("#submit");
+  if (!form.reportValidity()) return;
   clearEstimate();
   const revision = estimateRevision;
-  const data = $("#submit").find('[name="category"],[name="estimated"],[name="days"]').serialize();
+  const data = $(form).find('[name="category"],[name="estimated"],[name="days"]').serialize();
   $.getJSON("/api/claims/estimate",data).done(result => {
     if (revision !== estimateRevision) return;
     expectedGeneration = result.generation;
@@ -359,7 +367,7 @@ $("#estimate").on("click", () => {
     $("<span>").text(" 정산 준비 · " + result.evidenceRequirements.join(" ")).appendTo("#estimate-result");
   }).fail(error => {if (revision === estimateRevision) reportError(error);});
 });
-$("#submit").on("submit",event=>{
+$("#entry").on("submit","form",event=>{
   event.preventDefault();
   const button = $(event.target).find("button").prop("disabled",true);
   const fields = $(event.target).serialize();

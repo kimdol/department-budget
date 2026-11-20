@@ -28,9 +28,9 @@ public class PortalAssets {
     public PortalAssets() throws IOException, NoSuchAlgorithmException {
         categories = new ClassPathResource("catalog/expense-categories.json").getContentAsByteArray();
         categoriesTag = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(categories));
-        for (String name : new String[]{"portal.css","portal.js","policy-editor.js"}) {
+        for (String name : new String[]{"portal.css","portal.js","policy-editor.js","employee.js"}) {
             var resource = new ClassPathResource("static/assets/" + name);
-            if (!resource.exists() && name.equals("policy-editor.js")) continue;
+            if (!resource.exists() && (name.equals("policy-editor.js") || name.equals("employee.js"))) continue;
             byte[] content = resource.getContentAsByteArray();
             String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));
             MediaType type = MediaType.parseMediaType(name.endsWith(".css") ? "text/css;charset=UTF-8" : "text/javascript;charset=UTF-8");

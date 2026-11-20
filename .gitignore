@@ -7,3 +7,4 @@ test-results/
 .idea/
 *.iml
 src/main/resources/static/assets/policy-editor.js
+src/main/resources/static/assets/employee.js

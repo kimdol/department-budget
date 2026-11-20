@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "tsc --noEmit && esbuild src/policy.tsx --bundle --minify --outfile=../src/main/resources/static/assets/policy-editor.js"
+    "build": "tsc --noEmit && esbuild src/policy.tsx --bundle --minify --outfile=../src/main/resources/static/assets/policy-editor.js && esbuild src/employee.tsx --bundle --minify --outfile=../src/main/resources/static/assets/employee.js"
   },
   "dependencies": {
     "react": "19.2.4",
