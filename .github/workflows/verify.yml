@@ -62,3 +62,7 @@ jobs:
         with:
           name: oracle-inbox-plans
           path: target/oracle-inbox/
+      - name: Verify Caddy HTTPS with Oracle in Chrome
+        run: bash ops/ci_https_proxy.sh
+        env:
+          BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
