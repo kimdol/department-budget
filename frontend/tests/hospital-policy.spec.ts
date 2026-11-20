@@ -1,0 +1,25 @@
+import { expect, test } from "@playwright/test";
+
+test("병원 학회비 규정을 비교해 발행하고 과거 버전을 복구한다", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("체험 조직").selectOption("HOSPITAL");
+  await page.getByRole("button", { name: "개인 데모 시작" }).click();
+  await expect(page.locator("#workspace-organization")).toHaveText("병원 행정부서");
+  await page.locator("#role").selectOption("FINANCE");
+  await page.locator("#policy-panel summary").click();
+  const editor = page.getByRole("region", { name: "비용 지원 규정" });
+  await editor.getByLabel("인정액 수식").fill("min(eligible_cost * 0.90, event_cap)");
+  await expect(editor).toContainText(/144,000.*162,000/);
+  await editor.getByRole("button", { name: "검토 요청" }).click();
+  await page.locator("#role").selectOption("MANAGER");
+  await editor.getByRole("button", { name: "발행", exact: true }).click();
+  await expect(editor).toContainText("적용 버전 1");
+  await page.locator("#role").selectOption("FINANCE");
+  await editor.getByRole("button", { name: "복구 후보로 선택" }).click();
+  await expect(editor).toContainText(/162,000.*144,000/);
+  await editor.getByRole("button", { name: "검토 요청" }).click();
+  await page.locator("#role").selectOption("MANAGER");
+  await editor.getByRole("button", { name: "발행", exact: true }).click();
+  await expect(editor).toContainText("적용 버전 2");
+  await expect(editor).toContainText(/144,000.*144,000/);
+});

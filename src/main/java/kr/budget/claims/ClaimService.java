@@ -24,8 +24,12 @@ public class ClaimService {
     }
 
     public String open() {
+        return open(OrganizationType.COMPANY);
+    }
+
+    public String open(OrganizationType organization) {
         String workspace = UUID.randomUUID().toString();
-        mapper.open(workspace, java.time.YearMonth.now(java.time.ZoneId.of("Asia/Seoul")).toString());
+        mapper.open(workspace, java.time.YearMonth.now(java.time.ZoneId.of("Asia/Seoul")).toString(), organization);
         return workspace;
     }
 

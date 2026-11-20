@@ -5,8 +5,11 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface BudgetMapper {
-    @Insert("insert into budget_workspace (workspace_id,period_key) values (#{workspace},#{period})")
-    void open(String workspace, String period);
+    @Insert("insert into budget_workspace (workspace_id,period_key,organization_type) values (#{workspace},#{period},#{organization})")
+    void open(String workspace, String period, OrganizationType organization);
+
+    @Select("select organization_type from budget_workspace where workspace_id=#{workspace}")
+    OrganizationType organization(String workspace);
 
     @Select("select period_state from budget_workspace where workspace_id=#{workspace}")
     String periodState(String workspace);

@@ -174,7 +174,10 @@ abstract class PostingContract {
 
     @Test
     void conferenceRulesArePinnedAtSubmissionAndCanBeRestoredForNewClaims() {
-        String workspace = service.open();
+        String workspace = service.open(OrganizationType.HOSPITAL);
+        String bank = service.open(OrganizationType.BANK);
+        String company = service.open(OrganizationType.COMPANY);
+        assertEquals(OrganizationType.HOSPITAL,mapper.organization(workspace));
         String original = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
         String expression = "min(eligible_cost * 0.90, event_cap)";
         var preview = policies.preview(workspace, "CONFERENCE", expression, 180000, 1);
@@ -185,6 +188,11 @@ abstract class PostingContract {
         assertEquals(409, assertThrows(ResponseStatusException.class,
                 () -> policies.publish(workspace, draft)).getStatusCode().value());
         String preferred = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
+        for (String other : List.of(bank,company)) {
+            String application = service.submit(other, UUID.randomUUID(), "외부 학회", "CONFERENCE", 180000, 1);
+            service.approve(other,application);
+            assertEquals(144000,mapper.lockClaim(other,application).approved());
+        }
         String regular = service.submit(workspace, UUID.randomUUID(), "일반", "EDUCATION", 180000, 1);
         String restore = policies.draft(workspace, "CONFERENCE", 1, policies.history(workspace, "CONFERENCE").getLast().formula());
         policies.publish(workspace, restore);

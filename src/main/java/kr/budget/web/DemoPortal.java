@@ -52,10 +52,11 @@ public class DemoPortal {
 
     @PostMapping("/api/demo")
     @ResponseBody
-    public Map<String, Object> start(HttpSession session) {
+    public Map<String, Object> start(HttpSession session,
+            @RequestParam(defaultValue="COMPANY") kr.budget.claims.OrganizationType organization) {
         synchronized (session) {
             if (session.getAttribute("workspace") == null) {
-                session.setAttribute("workspace", service.open());
+                session.setAttribute("workspace", service.open(organization));
                 session.setAttribute("role", Role.EMPLOYEE);
             }
         }
@@ -74,7 +75,7 @@ public class DemoPortal {
     public Map<String, Object> snapshot(HttpSession session) {
         String workspace = workspace(session);
         return Map.of("balance", mapper.balance(workspace), "claims", mapper.claims(workspace),
-                "role", session.getAttribute("role"));
+                "role", session.getAttribute("role"), "organization",mapper.organization(workspace));
     }
 
     @GetMapping("/api/claims/estimate")
