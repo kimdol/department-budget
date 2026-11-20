@@ -29,6 +29,11 @@ select 'REPLACEMENT|' || workspace_id || '|' || original_id || '|' || replacemen
 from claim_replacement order by workspace_id,original_id;
 select 'VERSION|' || workspace_id || '|' || series_id || '|' || version_no || '|' || claim_id
 from claim_version order by workspace_id,series_id,version_no;
+select 'OUTBOX|' || workspace_id || '|' || claim_id || '|' || sequence_no || '|' || event_id ||
+       '|' || event_type || '|' || amount || '|' || attempts || '|' || delivered ||
+       '|' || nvl(rawtohex(standard_hash(last_error,'SHA256')),'-') ||
+       '|' || to_char(created_at,'YYYY-MM-DD"T"HH24:MI:SS.FF6')
+from portal_outbox order by workspace_id,claim_id,sequence_no;
 select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || policy_generation ||
        '|' || evaluator_version || '|' || rawtohex(standard_hash(formula,'SHA256')) ||
        '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) || '|' || approval_route ||

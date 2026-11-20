@@ -1,5 +1,7 @@
 # 인수 현황
 
+Oracle Data Pump로 동일 PDB의 별도 스키마에 복원한 결과, 한 신청의 버전 1·2·3이 같은 최초 신청번호로 연결됐고 원본·복원 대사 파일의 SHA-256이 일치했다. 내보내기 34초, 가져오기 23초였다. 해당 실행의 대사 대상은 신청·결재·원장이며, 후속 시험에서 포털 송신 메시지의 순번·금액·전송 상태·재시도 횟수까지 대조한다. [원본·복원 대사 파일](measurements/oracle-restore-44800719035.zip)
+
 신청 버전을 도입한 [9279a68](https://github.com/kimdol/department-budget/commit/9279a68)은 실제 Oracle 원장 시험 27건을 모두 통과했다. [시험 보고서](measurements/oracle-contracts-44800719035.txt) · [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44800719035)
 
 변경 폼에 원래 기간을 채우기 위해 결재함 전체에 일수를 추가한 첫 구현에서는 51건을 접수하는 브라우저 시험이 실패했다. 결재함 요약에는 일수가 없어야 하지만 50행 모두에 포함됐기 때문이다. 변경 폼을 펼칠 때 해당 신청의 계산 상세에서 일수를 읽도록 바꿨다. 응답을 기다리는 동안 사용자가 직접 입력한 기간은 유지한다. [목록 계약](../frontend/tests/inbox-pages.spec.ts) · [변경 폼 시험](../frontend/tests/keyboard-review.spec.ts)
