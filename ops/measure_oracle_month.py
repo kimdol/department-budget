@@ -29,7 +29,8 @@ insert into budget_posting(claim_id,workspace_id,kind,committed_delta,spent_delt
 commit;
 select 'FIXTURE|'||count(*)||'|'||count(distinct period_key)||'|'||count(distinct workspace_id)
     from budget_posting where workspace_id like 'inbox-measurement-%';
-create index budget_release.exp_month_trial on budget_release.budget_posting(workspace_id,period_key,claim_id) invisible;
+alter index budget_release.posting_month_claim rename to exp_month_trial;
+alter index budget_release.exp_month_trial invisible;
 exec dbms_stats.gather_table_stats('BUDGET_RELEASE','BUDGET_POSTING',cascade=>true);
 exec dbms_stats.gather_table_stats('BUDGET_RELEASE','EXPENSE_CLAIM',cascade=>true);
 alter session set statistics_level=all;

@@ -55,7 +55,9 @@ def experiment():
            measure_block(1, "candidate"), "drop index budget_release.exp_month_trial;",
            measure_block(2, "baseline"), measure_block(3, "baseline"),
            "create index budget_release.exp_month_trial on budget_release.budget_posting(workspace_id,period_key,claim_id) invisible;",
-           measure_block(4, "candidate"), "exit success"]
+           measure_block(4, "candidate"),
+           "alter index budget_release.exp_month_trial rename to posting_month_claim;",
+           "alter index budget_release.posting_month_claim visible;", "exit success"]
     return "\n".join(sql)+"\n"
 
 
