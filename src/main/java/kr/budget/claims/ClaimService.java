@@ -69,7 +69,7 @@ public class ClaimService {
         if (expectedGeneration != null && expectedGeneration != policy.generation())
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         policy.calculate(estimated, days);
-        mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation());
+        mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation(),policy.evaluatorVersion());
         mapper.rememberSubmission(workspace, key, id);
         return id;
     }
@@ -182,8 +182,17 @@ public class ClaimService {
         mapper.post(workspace, id, kind, reserved, spent);
     }
 
+    public record Calculation(String evaluatorVersion,long generation,String formula,int days,long estimated,
+                              long initialSupport,Long actual,Long actualSupport) {}
+
+    public Calculation replay(String workspace,String id) {
+        Claim claim = locked(workspace,id);
+        return new Calculation(claim.evaluatorVersion(),claim.policyGeneration(),claim.formula(),claim.days(),claim.estimated(),
+                amount(claim,claim.estimated()),claim.actual(),claim.actual() == null ? null : amount(claim,claim.actual()));
+    }
+
     private long amount(Claim claim, long cost) {
-        return new PolicyVersion(claim.policyGeneration(), claim.formula()).calculate(cost, claim.days());
+        return new PolicyVersion(claim.policyGeneration(), claim.formula(), claim.evaluatorVersion()).calculate(cost, claim.days());
     }
 
     private void checkAmount(long amount) {

@@ -35,7 +35,7 @@ public class PolicyService {
     public Preview preview(String workspace, String category, String formula, long cost, int days) {
         PolicyVersion active = active(workspace, category);
         return new Preview(active.generation(), active.calculate(cost, days),
-                new PolicyVersion(active.generation(), formula).calculate(cost, days));
+                new PolicyVersion(active.generation(), formula, active.evaluatorVersion()).calculate(cost, days));
     }
 
     @Transactional
@@ -43,10 +43,10 @@ public class PolicyService {
         budgets.lockBalance(workspace);
         PolicyVersion current = active(workspace, category);
         checkGeneration(expected, current);
-        var candidate = new PolicyVersion(expected, formula);
+        var candidate = new PolicyVersion(expected, formula,current.evaluatorVersion());
         for (long cost : new long[]{0, 180000, 225000, 300000}) candidate.calculate(cost, 1);
         String id = UUID.randomUUID().toString();
-        policies.draft(workspace, id, category, expected, formula);
+        policies.draft(workspace, id, category, expected, formula,candidate.evaluatorVersion());
         return id;
     }
 
@@ -58,7 +58,7 @@ public class PolicyService {
         PolicyVersion current = active(workspace, draft.category());
         checkGeneration(draft.baseGeneration(), current);
         long next = current.generation() + 1;
-        policies.publish(workspace, draft.category(), next, draft.formula());
+        policies.publish(workspace, draft.category(), next, draft.formula(),draft.evaluatorVersion());
         return next;
     }
 

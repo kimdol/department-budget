@@ -234,6 +234,13 @@ abstract class PostingContract {
         service.review(workspace, preferred, 100000);
         service.settle(workspace, preferred);
         assertEquals(90000, mapper.balance(workspace).spent());
+        var decision = service.replay(workspace,preferred);
+        assertEquals("decimal-v1",decision.evaluatorVersion());
+        assertEquals(162000,decision.initialSupport());
+        assertEquals(90000L,decision.actualSupport());
+        assertEquals(expression,decision.formula());
+        jdbc.update("update expense_claim set evaluator_version='unavailable' where claim_id=?",preferred);
+        assertThrows(IllegalStateException.class,() -> service.replay(workspace,preferred));
     }
 
     @Test

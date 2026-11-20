@@ -63,6 +63,13 @@ function render(state) {
       }).appendTo(actions);
     }
     const documents = $("<div>").appendTo(row);
+    $("<button>").text("신청 당시 계산 근거").on("click",() =>
+      $.getJSON(path+"/calculation").done(calc => {
+        documents.empty();
+        $("<p>").text("발행 버전 " + calc.generation + " · 평가기 " + calc.evaluatorVersion + " · " + calc.formula).appendTo(documents);
+        $("<p>").text(calc.days + "일 · 예정 " + money(calc.estimated) + " → 인정 " + money(calc.initialSupport)).appendTo(documents);
+        if (calc.actual !== null) $("<p>").text("실제 지출 " + money(calc.actual) + " → 인정 " + money(calc.actualSupport)).appendTo(documents);
+      }).fail(reportError)).appendTo(actions);
     $("<button>").text("증빙 요건 확인").on("click",() =>
       $.getJSON(path + "/evidence/assessment").done(result => {
         documents.text(result.issues.length ? result.issues.join(" ") : "필요한 증빙을 모두 제출했습니다.");

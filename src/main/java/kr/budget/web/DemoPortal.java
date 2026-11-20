@@ -111,6 +111,12 @@ public class DemoPortal {
         return periods.statement(authorized(session, Role.FINANCE));
     }
 
+    @GetMapping("/api/claims/{id}/calculation")
+    @ResponseBody
+    public ClaimService.Calculation calculation(HttpSession session,@PathVariable String id) {
+        return service.replay(workspace(session),id);
+    }
+
     @GetMapping("/api/claims/{id}/postings")
     @ResponseBody
     public List<ClosingMapper.Posting> postings(HttpSession session, @PathVariable String id) {

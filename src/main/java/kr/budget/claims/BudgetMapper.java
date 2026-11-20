@@ -21,12 +21,12 @@ public interface BudgetMapper {
     Balance lockBalance(String workspace);
 
     @Insert("""
-        insert into expense_claim (claim_id, workspace_id, title, category, status, estimated, days, formula, policy_generation)
-        values (#{id}, #{workspace}, #{title}, #{category}, 'SUBMITTED', #{estimated}, #{days}, #{formula}, #{generation})
+        insert into expense_claim (claim_id, workspace_id, title, category, status, estimated, days, formula, policy_generation,evaluator_version)
+        values (#{id}, #{workspace}, #{title}, #{category}, 'SUBMITTED', #{estimated}, #{days}, #{formula}, #{generation},#{version})
         """)
-    void submit(String id, String workspace, String title, String category, long estimated, int days, String formula, long generation);
+    void submit(String id, String workspace, String title, String category, long estimated, int days, String formula, long generation,String version);
 
-    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note";
+    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note,evaluator_version";
 
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id = " +
             "(select claim_id from submission_receipt where workspace_id=#{workspace} and request_key=#{key})")

@@ -39,6 +39,9 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(page.locator("#spent")).toHaveText("180,000원");
     await expect(page.locator("#committed")).toHaveText("0원");
     await expect(claim.locator("small")).toHaveText(number);
+    await claim.getByRole("button", { name: "신청 당시 계산 근거" }).click();
+    await expect(claim).toContainText("평가기 decimal-v1");
+    await expect(claim).toContainText("실제 지출 225,000원 → 인정 180,000원");
     await page.getByRole("button", { name: "결산표 조회" }).click();
     await expect(page.locator("#statement")).toContainText("교육비 · 1건 · 180,000원");
     await claim.getByRole("button", { name: "전표 조회" }).click();
