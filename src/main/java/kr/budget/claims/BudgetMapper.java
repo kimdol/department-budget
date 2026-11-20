@@ -20,7 +20,7 @@ public interface BudgetMapper {
         """)
     void submit(String id, String workspace, String title, String category, long estimated, int days, String formula, long generation);
 
-    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled";
+    String COLUMNS = "claim_id,title,category,status,estimated,days,formula,policy_generation,approved,actual,settled,review_round,review_note";
 
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id = " +
             "(select claim_id from submission_receipt where workspace_id=#{workspace} and request_key=#{key})")
@@ -38,8 +38,20 @@ public interface BudgetMapper {
     @Update("update expense_claim set status='APPROVED', approved=#{approved} where workspace_id=#{workspace} and claim_id=#{id}")
     void approve(String workspace, String id, long approved);
 
-    @Update("update expense_claim set status='IN_REVIEW', actual=#{actual} where workspace_id=#{workspace} and claim_id=#{id}")
-    void review(String workspace, String id, long actual);
+    @Update("update expense_claim set status=#{status}, actual=#{actual}, review_round=review_round+1, review_note=null where workspace_id=#{workspace} and claim_id=#{id}")
+    void review(String workspace, String id, long actual, String status);
+
+    @Update("update expense_claim set status='IN_REVIEW', approved=#{amount} where workspace_id=#{workspace} and claim_id=#{id}")
+    void increase(String workspace, String id, long amount);
+
+    @Update("update expense_claim set status='NEEDS_RECEIPT', review_note=#{reason} where workspace_id=#{workspace} and claim_id=#{id}")
+    void returnReview(String workspace, String id, String reason);
+
+    @Insert("""
+        insert into claim_review_event (workspace_id,claim_id,review_round,event_type,actor_role,amount,note)
+        values (#{workspace},#{id},#{round},#{type},#{actor},#{amount},#{note,jdbcType=VARCHAR})
+        """)
+    void event(String workspace, String id, int round, String type, String actor, long amount, String note);
 
     @Update("update expense_claim set status='SETTLED', settled=#{settled} where workspace_id=#{workspace} and claim_id=#{id}")
     void settle(String workspace, String id, long settled);

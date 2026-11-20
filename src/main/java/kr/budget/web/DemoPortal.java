@@ -76,14 +76,28 @@ public class DemoPortal {
 
     @PostMapping("/api/claims/{id}/review")
     @ResponseBody
-    public void review(HttpSession session, @PathVariable String id, @RequestParam long actual) {
-        service.review(authorized(session, Role.EMPLOYEE), id, actual);
+    public void review(HttpSession session, @PathVariable String id, @RequestParam long actual,
+            @RequestParam(defaultValue="0") int round) {
+        service.review(authorized(session, Role.EMPLOYEE), id, actual, round);
+    }
+
+    @PostMapping("/api/claims/{id}/increase")
+    @ResponseBody
+    public void increase(HttpSession session, @PathVariable String id, @RequestParam int round) {
+        service.increase(authorized(session, Role.MANAGER), id, round);
+    }
+
+    @PostMapping("/api/claims/{id}/return")
+    @ResponseBody
+    public void returnReview(HttpSession session, @PathVariable String id, @RequestParam int round, @RequestParam String reason) {
+        boolean manager = session.getAttribute("role") == Role.MANAGER;
+        service.returnReview(authorized(session, manager ? Role.MANAGER : Role.FINANCE), id, round, reason, manager);
     }
 
     @PostMapping("/api/claims/{id}/settle")
     @ResponseBody
-    public void settle(HttpSession session, @PathVariable String id) {
-        service.settle(authorized(session, Role.FINANCE), id);
+    public void settle(HttpSession session, @PathVariable String id, @RequestParam(defaultValue="1") int round) {
+        service.settle(authorized(session, Role.FINANCE), id, round);
     }
 
     @GetMapping("/api/policies")

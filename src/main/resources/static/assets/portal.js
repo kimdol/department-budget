@@ -1,4 +1,5 @@
-const statusName = {SUBMITTED:"결재 대기", APPROVED:"약정 완료", IN_REVIEW:"정산 검토", SETTLED:"정산 완료"};
+const statusName = {SUBMITTED:"결재 대기", APPROVED:"약정 완료", IN_REVIEW:"정산 검토", SETTLED:"정산 완료",
+  INCREASE_REQUESTED:"증액 승인 대기", NEEDS_RECEIPT:"보완 요청"};
 const money = value => new Intl.NumberFormat("ko-KR").format(value) + "원";
 const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
@@ -16,6 +17,7 @@ function render(state) {
     const row = $("<article>").addClass("claim").appendTo(list);
     $("<strong>").text(claim.title + " · " + statusName[claim.status]).appendTo(row);
     $("<small>").text(claim.claimId).appendTo(row);
+    if (claim.reviewNote) $("<p>").text("보완 사유 · " + claim.reviewNote).appendTo(row);
     $("<p>").text("예정 " + money(claim.estimated) + " / 승인 " + money(claim.approved) + " / 정산 " + money(claim.settled)).appendTo(row);
     const actions = $("<div>").addClass("actions").appendTo(row);
     const path = "/api/claims/" + encodeURIComponent(claim.claimId);
@@ -24,11 +26,18 @@ function render(state) {
       api(path + route, data()).then(refresh).fail(error => {reportError(error); $(this).prop("disabled",false);});
     }).appendTo(actions);
     if (state.role === "MANAGER" && claim.status === "SUBMITTED") action("사전승인","/approve",()=>({}));
-    if (state.role === "EMPLOYEE" && claim.status === "APPROVED") {
+    if (state.role === "EMPLOYEE" && ["APPROVED","NEEDS_RECEIPT"].includes(claim.status)) {
       const amount = $("<input>").attr({type:"number",min:1,"aria-label":"실제 지출액(원)"}).val(225000).appendTo(actions);
-      action("정산 신청","/review",()=>({actual:amount.val()}));
+      action("정산 신청","/review",()=>({actual:amount.val(),round:claim.reviewRound}));
     }
-    if (state.role === "FINANCE" && claim.status === "IN_REVIEW") action("정산 확정","/settle",()=>({}));
+    const managerReview = state.role === "MANAGER" && claim.status === "INCREASE_REQUESTED";
+    const financeReview = state.role === "FINANCE" && claim.status === "IN_REVIEW";
+    if (managerReview) action("증액 승인","/increase",()=>({round:claim.reviewRound}));
+    if (financeReview) action("정산 확정","/settle",()=>({round:claim.reviewRound}));
+    if (managerReview || financeReview) {
+      const reason = $("<input>").attr({"aria-label":"보완 사유",maxlength:240,placeholder:"보완 사유"}).appendTo(actions);
+      action("보완 요청","/return",()=>({round:claim.reviewRound,reason:reason.val()}));
+    }
   }
 }
 function refresh() { return $.getJSON("/api/workspace").then(render); }

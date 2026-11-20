@@ -57,17 +57,57 @@ public class ClaimService {
     }
 
     public void review(String workspace, String id, long actual) {
+        review(workspace, id, actual, 0);
+    }
+
+    public void review(String workspace, String id, long actual, int expectedRound) {
         checkAmount(actual);
         Claim claim = locked(workspace, id);
-        if (claim.actual() != null && claim.actual() == actual) return;
-        require(claim, "APPROVED");
-        if (amount(claim, actual) > claim.approved()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
-        mapper.review(workspace, id, actual);
+        if (claim.reviewRound() == expectedRound + 1 && claim.actual() != null && claim.actual() == actual) return;
+        requireRound(claim, expectedRound);
+        if (!claim.status().equals("NEEDS_RECEIPT")) require(claim, "APPROVED");
+        String next = amount(claim, actual) > claim.approved() ? "INCREASE_REQUESTED" : "IN_REVIEW";
+        mapper.review(workspace, id, actual, next);
+        mapper.event(workspace, id, claim.reviewRound() + 1, "SUBMIT_ACTUAL", "EMPLOYEE", actual, null);
+    }
+
+    public void increase(String workspace, String id, int round) {
+        Balance balance = mapper.lockBalance(workspace);
+        Claim claim = locked(workspace, id);
+        requireRound(claim, round);
+        if (claim.status().equals("IN_REVIEW") && claim.approved() == amount(claim, claim.actual())) return;
+        require(claim, "INCREASE_REQUESTED");
+        long adjusted = amount(claim, claim.actual());
+        long extra = adjusted - claim.approved();
+        if (extra > balance.getAvailable()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        mapper.increase(workspace, id, adjusted);
+        post(workspace, id, "INCREASE_" + round, extra, 0);
+        mapper.event(workspace, id, round, "APPROVE_INCREASE", "MANAGER", extra, null);
+    }
+
+    public void returnReview(String workspace, String id, int round, String reason, boolean manager) {
+        if (reason == null || reason.isBlank() || reason.length() > 240)
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        Claim claim = locked(workspace, id);
+        requireRound(claim, round);
+        if (claim.status().equals("NEEDS_RECEIPT") && reason.equals(claim.reviewNote())) return;
+        require(claim, manager ? "INCREASE_REQUESTED" : "IN_REVIEW");
+        mapper.returnReview(workspace, id, reason);
+        mapper.event(workspace, id, round, "RETURN", manager ? "MANAGER" : "FINANCE", claim.actual(), reason);
+    }
+
+    private void requireRound(Claim claim, int round) {
+        if (claim.reviewRound() != round) throw new ResponseStatusException(HttpStatus.CONFLICT);
     }
 
     public void settle(String workspace, String id) {
+        settle(workspace, id, 1);
+    }
+
+    public void settle(String workspace, String id, int round) {
         mapper.lockBalance(workspace);
         Claim claim = locked(workspace, id);
+        requireRound(claim, round);
         if (claim.status().equals("SETTLED")) return;
         require(claim, "IN_REVIEW");
         long amount = amount(claim, claim.actual());

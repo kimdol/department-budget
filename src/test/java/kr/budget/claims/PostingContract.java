@@ -17,6 +17,27 @@ abstract class PostingContract {
     @Autowired kr.budget.policy.PolicyService policies;
 
     @Test
+    void increasesOnlyTheDifferenceAndRequiresTheLatestReviewRound() {
+        String workspace = service.open();
+        String id = service.submit(workspace, UUID.randomUUID(), "세미나", "EDUCATION", 187500, 1);
+        service.approve(workspace, id);
+        service.review(workspace, id, 225000);
+        assertEquals(150000, mapper.balance(workspace).committed());
+        service.returnReview(workspace, id, 1, "참가 금액을 확인하세요.", true);
+        service.review(workspace, id, 225000, 0);
+        assertEquals("NEEDS_RECEIPT", mapper.lockClaim(workspace, id).status());
+        service.review(workspace, id, 225000, 1);
+        assertThrows(ResponseStatusException.class, () -> service.increase(workspace, id, 1));
+        service.increase(workspace, id, 2);
+        service.increase(workspace, id, 2);
+        assertEquals(180000, mapper.balance(workspace).committed());
+        assertThrows(ResponseStatusException.class, () -> service.settle(workspace, id, 1));
+        service.settle(workspace, id, 2);
+        assertEquals(820000, mapper.balance(workspace).getAvailable());
+        assertEquals(30000, jdbc.queryForObject("select committed_delta from budget_posting where claim_id=? and kind='INCREASE_2'", Long.class, id));
+    }
+
+    @Test
     void conferenceRulesArePinnedAtSubmissionAndCanBeRestoredForNewClaims() {
         String workspace = service.open();
         String original = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
