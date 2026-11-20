@@ -68,6 +68,16 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     }
     page.once("dialog", dialog => dialog.accept());
     await page.getByRole("button", { name: "이 기간 마감 확정" }).click();
+    await page.getByText("구 결산표 CSV 대조", {exact:true}).click();
+    const csv = page.getByLabel("비목별 월 집계 CSV");
+    const period = (await page.locator("#statement strong").innerText()).slice(0,7);
+    const row = "period,category,count,spent\n"+period+",EDUCATION,1,";
+    await csv.fill(row);
+    await page.getByRole("button", {name:"확정 결산표와 비교"}).click();
+    await expect(page.locator("#statement")).toContainText("금액 누락 / 확정 결산표 1건 · 180,000원");
+    await csv.fill(row+"180000");
+    await page.getByRole("button", {name:"확정 결산표와 비교"}).click();
+    await expect(page.locator("#statement")).toContainText("모든 비목의 건수와 집행액이 일치합니다.");
     await page.getByRole("button", { name: "다음 달 열기" }).click();
     await expect(page.locator("#statement")).toContainText("마감 전");
     await claim.getByRole("button", { name: "전표 조회" }).click();

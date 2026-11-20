@@ -1,5 +1,7 @@
 # 인수 현황
 
+재무 화면의 마감 완료 결산표에서 기간·비목·건수·집행액 형식의 합성 CSV를 확정 스냅샷과 비교한다. Chrome에서 180,000원 일치와 누락 금액을 확인했다. 단위 시험 2건에서 음수 정정액, 양쪽 비목 누락, 중복 비목과 다른 기간을 검증했다. H2 루프백 HTTPS 브라우저 시험 6건 통과. 실습 범위는 월 집계 대조이며 상용 원본 검수와 포털 CSV 메시지 변환은 별도 항목이다. [대조 구현](../src/main/java/kr/budget/closing/StatementComparison.java) · [경계 사례](../src/test/java/kr/budget/closing/StatementComparisonTest.java)
+
 95a6d5f에서 같은 Caddy·Oracle·Chrome 시험이 통과했다. 체험 종료 후 같은 HTTPS 원점에서 새 예산을 열었고, 다른 방문자가 제출한 신청은 그대로 남았다. 테스트용 CA를 설치한 CI 루프백에서 검증했으며 공개 도메인과 OCI VM 기동은 남아 있다. [수정 후 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282)
 
 비표준 HTTPS 포트의 Caddy를 거친 Chrome 시험에서 TLS·쿠키·캐시 검사는 성공했지만 체험 종료 후 시작 버튼에 도달하지 못했다. 로그아웃 성공 응답이 프록시 뒤에서 외부 주소를 다시 구성하지 않도록 302 Location을 같은 원점의 `/`로 고정했다. Tomcat HTTP 회귀 시험에서 Location 값과 종료된 세션의 401을 확인했다. [재현 실행](https://github.com/kimdol/department-budget/actions/runs/44771940670) · [응답 회귀 시험](../src/test/java/kr/budget/web/PortalHttpTest.java)

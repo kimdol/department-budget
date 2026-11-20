@@ -12,6 +12,7 @@ import kr.budget.claims.EvidenceMapper;
 import kr.budget.closing.PeriodClosing;
 import kr.budget.closing.ClosingService;
 import kr.budget.closing.ClosingMapper;
+import kr.budget.closing.StatementComparison;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import kr.budget.policy.PolicyService;
@@ -168,6 +169,13 @@ public class DemoPortal {
     @ResponseBody
     public PeriodClosing.Statement close(HttpSession session) {
         return closing.close(authorized(session, Role.FINANCE));
+    }
+
+    @PostMapping("/api/statements/{period}/compare")
+    @ResponseBody
+    public List<StatementComparison.Difference> compareStatement(HttpSession session, @PathVariable String period,
+            @RequestParam String csv) {
+        return StatementComparison.compare(periods.archive(authorized(session, Role.FINANCE), period), csv);
     }
 
     @PostMapping("/api/claims/{id}/review")

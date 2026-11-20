@@ -164,8 +164,28 @@ function showStatement(report) {
   $("<p>").text("누적 집행 " + money(report.balance.spent) + " / 가용 예산 " + money(report.balance.available)).appendTo(box);
   if (report.pending.length) $("<p>").text("진행 중인 신청 " + report.pending.join(", ")).appendTo(box);
   $("#close-period").prop("hidden", report.state === "CLOSED" || report.pending.length > 0);
-  if (report.state === "CLOSED") $("<button>").text("다음 달 열기").on("click", () =>
-    api("/api/statements/"+report.period+"/advance",{}).done(showStatement).fail(reportError)).appendTo(box);
+  if (report.state === "CLOSED") {
+    const details = $("<details>").appendTo(box);
+    $("<summary>").text("구 결산표 CSV 대조").appendTo(details);
+    const label = $("<label>").text("비목별 월 집계 CSV").appendTo(details);
+    const csv = $("<textarea>").attr({rows:4,maxlength:2048,placeholder:"period,category,count,spent\n"+report.period+",EDUCATION,1,180000"}).appendTo(label);
+    const result = $("<div>").attr("role","status");
+    $("<button>").text("확정 결산표와 비교").on("click",function() {
+      const button = $(this).prop("disabled",true);
+      const submitted = csv.val();
+      api("/api/statements/"+report.period+"/compare",{csv:submitted}).done(rows=>{
+        if (csv.val() !== submitted) return;
+        result.text(rows.length ? "차이 "+rows.length+"건" : "모든 비목의 건수와 집행액이 일치합니다.");
+        const values = (count,spent) => count == null ? "비목 없음" : count+"건 · "+(spent == null ? "금액 누락" : money(spent));
+        for (const row of rows) $("<p>").text(row.category+" · 구 결산표 "+values(row.legacyCount,row.legacySpent)
+          +" / 확정 결산표 "+values(row.ledgerCount,row.ledgerSpent)).appendTo(result);
+      }).fail(reportError).always(()=>button.prop("disabled",false));
+    }).appendTo(details);
+    csv.on("input",()=>result.empty());
+    result.appendTo(details);
+    $("<button>").text("다음 달 열기").on("click", () =>
+      api("/api/statements/"+report.period+"/advance",{}).done(showStatement).fail(reportError)).appendTo(box);
+  }
 }
 $("#view-statement").on("click",()=>$.getJSON("/api/statement").done(showStatement).fail(reportError));
 $("#close-period").on("click",function() {
