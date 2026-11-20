@@ -32,6 +32,10 @@ class ReleasePackageTest(unittest.TestCase):
             package(project,war,sql,report,commit,output)
             expected = {"department-budget.war","install.sql","commit.txt","Caddyfile",
                         "department-budget.service","CheckRuntimeDatabase.java","oracle_install.py"}
+            portal_files = {"portal/receive.php","portal/status.php","portal/mysql/V001__projection.sql"}
+            expected.update(portal_files)
+            for name in portal_files:
+                self.assertEqual((project/name).read_bytes(),(output/name).read_bytes())
             lines = (output/"SHA256SUMS").read_text().splitlines()
             self.assertEqual({line.split()[1] for line in lines},expected)
             for line in lines:

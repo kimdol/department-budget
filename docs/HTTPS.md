@@ -28,6 +28,12 @@ sha256sum --check SHA256SUMS
 
 Ubuntu CI에서 실제 Caddy가 시험 CA로 발급한 인증서를 신뢰 목록에 등록한 뒤 Chrome으로 배포용 WAR와 Oracle에 접속했다. 두 방문자의 독립 신청·정산·초기화, HSTS·세션·캐시, 정적 자산 재사용을 확인했다. systemd 서비스 정의는 같은 실행에서 정적 검사를 통과했다. 실제 OCI의 공개 인증서 발급, VM 재기동과 외부 접속 검증은 배포 후 기록한다. [Caddy HTTPS 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282/job/136415004389) · [시험 스크립트](../ops/ci_https_proxy.sh)
 
+## 포털 수신 연결
+
+배포 묶음의 `portal/mysql/V001__projection.sql`을 빈 MySQL 수신 스키마에 적용한다. PHP 8.1 이상과 PDO MySQL을 갖춘 HTTPS 서버의 같은 경로에 `portal/receive.php`와 `portal/status.php` 두 파일을 배치한다. SQL 파일은 웹 루트 밖에 보관한다. PHP 서비스 환경에 `PORTAL_MYSQL_DSN`, `PORTAL_MYSQL_USER`, `PORTAL_MYSQL_PASSWORD`를 설정한다.
+
+Java 서비스의 `BUDGET_PORTAL_URL`에 수신기의 HTTPS 주소(경로 끝 `/receive.php`)를 지정한다. Java와 PHP 서비스의 `BUDGET_PORTAL_TOKEN`에는 동일한 비밀 값을 설정한다. Java는 수신 주소 기준 같은 디렉터리의 `status.php`에서 신청별 수신액을 읽는다. 서비스를 시작한 뒤 대표 신청을 정산하고 포털 수신 순서 2와 수신액 180,000원을 확인한다. [CI의 Oracle·MySQL 대사](../ops/ci_https_proxy.sh)
+
 ## Java 서비스 설치와 중지
 
 외부 배포 뒤 대표 정산과 TLS 원자료를 함께 남기려면 저장소의 `frontend`에서 아래 명령을 실행한다. 셸의 `TEST_DEPLOYMENT_URL`에는 이미 배포한 공개 HTTPS 원점을 지정한다. 새 Chrome 세션 두 개가 독립된 합성 업무를 생성한다. 정산 재전송 직후 같은 신청번호의 전표 두 건과 결재함·보고서 잔액을 대조하고, TLS 및 세션 쿠키의 속성을 별도 파일로 남긴다.

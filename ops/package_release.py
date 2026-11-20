@@ -29,8 +29,13 @@ def package(project, war, tested_sql, rollback_report, commit, output):
             raise ValueError("Oracle에서 시험한 설치 SQL과 WAR의 정의가 다릅니다.")
         for name in ["Caddyfile", "department-budget.service", "CheckRuntimeDatabase.java", "oracle_install.py"]:
             shutil.copyfile(project / "ops" / name, bundle / name)
+        for name in ["portal/receive.php", "portal/status.php", "portal/mysql/V001__projection.sql"]:
+            target = bundle / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(project / name, target)
         (bundle / "commit.txt").write_text(commit+"\n", encoding="ascii", newline="\n")
-        checksums = [digest(file.read_bytes())+"  "+file.name for file in sorted(bundle.iterdir())]
+        files = sorted(file for file in bundle.rglob("*") if file.is_file())
+        checksums = [digest(file.read_bytes())+"  "+file.relative_to(bundle).as_posix() for file in files]
         (bundle / "SHA256SUMS").write_text("\n".join(checksums)+"\n", encoding="ascii", newline="\n")
         bundle.rename(output)
 
