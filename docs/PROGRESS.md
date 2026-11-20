@@ -1,5 +1,7 @@
 # 인수 현황
 
+95a6d5f에서 같은 Caddy·Oracle·Chrome 시험이 통과했다. 체험 종료 후 같은 HTTPS 원점에서 새 예산을 열었고, 다른 방문자가 제출한 신청은 그대로 남았다. 테스트용 CA를 설치한 CI 루프백에서 검증했으며 공개 도메인과 OCI VM 기동은 남아 있다. [수정 후 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282)
+
 비표준 HTTPS 포트의 Caddy를 거친 Chrome 시험에서 TLS·쿠키·캐시 검사는 성공했지만 체험 종료 후 시작 버튼에 도달하지 못했다. 로그아웃 성공 응답이 프록시 뒤에서 외부 주소를 다시 구성하지 않도록 302 Location을 같은 원점의 `/`로 고정했다. Tomcat HTTP 회귀 시험에서 Location 값과 종료된 세션의 401을 확인했다. [재현 실행](https://github.com/kimdol/department-budget/actions/runs/44771940670) · [응답 회귀 시험](../src/test/java/kr/budget/web/PortalHttpTest.java)
 
 기존 수식 평가기는 피연산자와 괄호 중첩을 세어 왼쪽 결합 연산이 긴 식의 트리 깊이를 제한하지 못했다. 같은 입력에 1을 32번 곱하면 이전 평가기는 225,000원을 계산한다. 신규 초안의 decimal-v2는 연산·함수·값의 노드와 높이를 세어 깊이 32, 노드 256 상한을 적용한다. 저장된 decimal-v1 신청은 이전 계약으로 재현한다. 복구 요청은 업무 공간·비목의 과거 세대와 수식을 대조하고 당시 평가기를 다시 발행한다. 로컬 Java 시험 33건과 루프백 Chrome 시험 6건 통과. [수식 경계값](../src/test/java/kr/budget/policy/ExpenseFormulaTest.java) · [결정 재현](../src/test/java/kr/budget/claims/PostingContract.java) · [복구 화면](../frontend/tests/hospital-policy.spec.ts)
