@@ -431,7 +431,8 @@ abstract class PostingContract {
     }
 
     @Test
-    void deliveryCanResumeAfterReceiverCommitsButItsAcknowledgementIsLost() {
+    @org.junit.jupiter.api.extension.ExtendWith(org.springframework.boot.test.system.OutputCaptureExtension.class)
+    void deliveryCanResumeAfterReceiverCommitsButItsAcknowledgementIsLost(org.springframework.boot.test.system.CapturedOutput output) {
         String workspace = service.open();
         String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
         service.approve(workspace, id);
@@ -457,6 +458,11 @@ abstract class PostingContract {
         assertNull(outbox.retryable(workspace, failure.eventId()));
         relay.deliverPending();
         relay.deliverPending();
+        String correlation = " eventId=" + failure.eventId() + " claimId=" + id + " sequence=1";
+        String logs = output.getAll();
+        int failedAt = logs.indexOf("Portal delivery failed" + correlation);
+        assertTrue(failedAt >= 0);
+        assertTrue(logs.indexOf("Portal delivery acknowledged" + correlation) > failedAt);
         assertEquals(List.of(1,1,2), attempts);
         assertEquals(List.of(200000L,180000L), List.copyOf(receipts.values()));
         assertEquals(2, jdbc.queryForObject("select count(*) from portal_outbox where claim_id=? and delivered=1", Integer.class, id));

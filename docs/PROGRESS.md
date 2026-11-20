@@ -1,5 +1,7 @@
 # 인수 현황
 
+포털 전송 장애는 서버 로그의 `Portal delivery failed`에서 eventId를 찾고, 같은 eventId의 `Portal delivery acknowledged`로 재처리 완료를 확인한다. claimId는 신청번호, sequence는 같은 신청 안의 전송 순서다. 수신처가 저장 직후 응답을 잃는 회귀 시험에서 같은 이벤트의 실패·성공 순서와 중복 없는 수신 금액을 검사했다. 로컬 Maven 시험 55건 통과, Oracle 전용 28건 제외. [전송 처리](../src/main/java/kr/budget/portal/PortalRelay.java) · [회귀 시험](../src/test/java/kr/budget/claims/PostingContract.java)
+
 ‘신청 당시 계산 근거’에 실제 평가 순서와 중간값을 표시한다. Chrome에서 예정액 300,000원에 지원율 0.8을 곱한 240,000원, 행사 한도 200,000원, 최종 200,000원과 실비 인정액 180,000원을 확인했다. 구문 트리는 평가기 버전별로 재사용하며 단계 목록은 근거 조회에서만 생성한다. 조회의 두 연결 회귀 시험에서 기존 SELECT FOR UPDATE가 H2의 미커밋 신청 수정과 충돌해 잠금 시간 초과가 발생했다. 같은 업무 공간의 일반 SELECT로 변경해 수정 중에도 직전 커밋의 예정액과 계산 단계를 읽도록 했다. [평가기](../src/main/java/kr/budget/policy/ExpenseFormula.java) · [두 연결 회귀 시험](../src/test/java/kr/budget/claims/PostingContract.java)
 
 실제 Oracle·배포 WAR에서 동시 승인 22쌍의 응답과 전표를 확인했다. 매 쌍의 잔액은 20,000원, 약정 전표는 1건이었다. 예열 2쌍 제외 후 상태별 20개 표본에서 승인 HTTP p95 13.844ms, 예산 부족 HTTP p95 19.678ms였다. [원자료](measurements/oracle-approval-contention-44807797272.json)

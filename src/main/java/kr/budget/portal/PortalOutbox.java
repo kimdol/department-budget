@@ -38,8 +38,8 @@ public interface PortalOutbox {
     List<Event> pending();
 
     @Update("update portal_outbox set delivered=1,attempts=attempts+1,last_error=null where event_id=#{id} and delivered=0")
-    void acknowledged(String id);
+    int acknowledged(String id);
 
     @Update("update portal_outbox set attempts=attempts+1,last_error=#{error} where event_id=#{id} and delivered=0")
-    void failed(String id, String error);
+    int failed(String id, String error);
 }
