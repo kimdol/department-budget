@@ -13,6 +13,8 @@ sqlplus -L BUDGET_APP@BUDGET_PDB @target/install.sql
 
 ## 기존 버전에서 올리기
 
+Oracle Free의 같은 PDB 내 별도 스키마에 복원한 CI 실행에서 Data Pump 내보내기는 51초, 가져오기는 33초였다. 원본·복원 대사 파일은 각각 169행이며 내용이 일치했다. 대사 단계의 초 단위 계측값은 0초였다. 이 수치는 합성 계약 시험 데이터에 대한 1회 관측이며 VM 재구축, 외부 전송, 업무 재개 시간은 포함하지 않는다. [시간 원자료](measurements/oracle-restore-time-44784441705.txt) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44784441705)
+
 현재 배포 리비전과 적용한 마지막 V번호를 확인하고 아래 절차로 백업한다. 요청 및 배치 실행을 중지한 뒤 새 WAR에 추가된 V번호만 순서대로 SQL*Plus에서 실행한다. 적용 파일명, 체크섬과 결과를 배포 기록에 보관한다. Spring Batch 라이브러리 버전도 변경됐다면 해당 버전의 Oracle 메타데이터 마이그레이션을 함께 검토한다. Oracle DDL은 암묵적 커밋을 수행하므로 중간 실패 시 마지막 성공 문장과 실제 제약·열 상태를 대조한다. 최초 설치 스크립트는 기존 객체가 하나라도 있으면 작업을 중단한다.
 
 ## 백업과 별도 스키마 복원
