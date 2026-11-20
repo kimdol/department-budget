@@ -6,13 +6,14 @@
 
 Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 신청·결재함, React·TypeScript는 규정 비교·발행, PHP·MySQL은 사내 포털 수신에 사용한다. [화면에서 원장까지 소스 따라가기](#소스-따라가기)
 
-Oracle에서 신청 10,000건 중 같은 51건을 읽을 때, 앞선 9,000건을 건너뛰는 조회는 논리 읽기 200회, 직전 행의 커서를 사용하는 결재함 조회는 12회였다. 동일 인덱스에서 읽은 행은 각각 9,051행과 51행이었다. [실험 조건과 SQL](docs/ORACLE-WALKTHROUGH.md#깊은-결재함-페이지의-읽기-비용) · [실제 실행 계획 원자료](docs/measurements/oracle-inbox-44770051843.zip)
+## 직무별 구현 성과
 
-배포용 WAR에서 생성한 설치 SQL을 빈 Oracle 스키마에 적용하고 같은 SQL의 재실행이 ORA-20001로 차단됨을 확인했다. 이 스키마에 WAR를 연결해 Chrome에서 두 방문자의 교육비 처리와 월마감, 병원 학회비 규정 발행·복구, 출장 사전승인, 결재함 페이지 이동 시험 4건을 통과했다. [실행 결과](https://github.com/kimdol/department-budget/actions/runs/44765732583)
-
-**실제 Oracle 원장 계약 시험 14건이 모두 통과했다.** Data Pump로 같은 PDB의 별도 스키마에 복원한 뒤 업무 공간 20개, 전표 28행, 마감 잔액 4행과 비목 집계 4행을 대조했다. 원본과 복원본의 전체 대사 파일 SHA-256이 일치했다. [GitHub 실행 결과](https://github.com/kimdol/department-budget/actions/runs/44764720608) · [대사 원자료](docs/measurements/oracle-44764720608) · [신청 한 건으로 Oracle 직접 실습](docs/ORACLE-WALKTHROUGH.md)
-
-버전이 고정된 jQuery를 브라우저가 재사용하도록 바꿔 로컬 결재함 재방문의 정적 자산 전송량을 97,383바이트에서 9,550바이트로 줄였다. 신규 방문의 전송량은 같았다. [측정 조건과 5회 원자료](docs/measurements/README.md)
+| 업무 영역 | 구현과 검증 결과 |
+| --- | --- |
+| Java·Oracle 조회 최적화 | 합성 신청 10,000건의 결재함에서 앞선 9,000건 이후 같은 51건을 조회했다. 페이지 커서를 사용해 Oracle 논리 읽기를 OFFSET 200회에서 12회로 줄였다. [실행 계획 원자료](docs/measurements/oracle-inbox-44770051843.zip) |
+| 금융·경영지원 SI/SM | 본부 예산 행을 잠근 상태에서 지점 교육비 200,000원을 승인하고 본부 약정 0원을 유지했다. 실제 Oracle 원장 계약 15건을 통과했고, Data Pump로 같은 PDB의 별도 스키마에 복원한 뒤 부서 관계·전표·잔액을 대조했다. [시험 실행](https://github.com/kimdol/department-budget/actions/runs/44777958172) · [원본과 복원 결과](docs/measurements/oracle-departments-44777958172.zip) |
+| 웹 화면 성능 | 버전이 고정된 jQuery에 브라우저 캐시 정책을 적용해 로컬 Chrome 결재함 재방문 시 정적 자산 3개의 전송량 중앙값을 97,383B에서 9,550B로 줄였다. 첫 방문 전송량은 같았다. [전후 5회 측정](docs/measurements/README.md) |
+| 병원 행정·규정 관리 | 학회비 지원율을 80%에서 90%로 바꾼 뒤에도 이전 신청의 인정액 144,000원을 재현했다. 같은 실비 180,000원의 신규 신청은 162,000원, 이전 규정 복구 후 접수한 신청은 144,000원이었다. [발행·복구 계약 시험](src/test/java/kr/budget/claims/PostingContract.java) |
 
 ![재무 담당자의 교육비 정산 결과와 월 결산표](docs/images/settlement.png)
 
@@ -44,6 +45,8 @@ CI에서는 실제 Oracle 원장과 송신함, HTTPS를 경유한 PHP 수신기,
 Chrome, Java 21, Maven과 Node.js가 설치된 환경에서 `frontend` 디렉터리의 `npm ci`, `npm run build`, `npx playwright test`를 차례로 실행한다. 시험은 루프백 주소에서 전용 메모리 DB와 Tomcat을 시작한다.
 
 ## 실행과 검증
+
+배포용 WAR에서 추출한 설치 SQL을 빈 Oracle 스키마에 적용했다. 같은 SQL을 다시 실행하면 ORA-20001로 중단되는 것을 확인했다. [설치 시험](https://github.com/kimdol/department-budget/actions/runs/44765732583) · [신청 한 건으로 Oracle 직접 실습](docs/ORACLE-WALKTHROUGH.md)
 
 Java 21과 Maven을 사용한다. `mvn test`는 계산 규칙과 로컬 H2 계약 시험을 실행한다. 실제 Oracle 통합 시험은 **비어 있는 전용 시험 스키마**를 준비하고 `BUDGET_TEST_EMPTY_SCHEMA=yes`, `BUDGET_DB_URL`, `BUDGET_DB_USER`, `BUDGET_DB_PASSWORD`를 환경 변수로 설정한 뒤 같은 명령으로 실행한다. 이 모드는 시험 시작 시 스키마를 생성한다.
 
