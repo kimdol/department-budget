@@ -1,0 +1,19 @@
+{
+  "environment": "loopback",
+  "transport": {
+    "trusted": true,
+    "protocol": "TLSv1.3"
+  },
+  "hsts": "max-age=31536000 ; includeSubDomains",
+  "cookie": {
+    "secure": true,
+    "httpOnly": true,
+    "sameSite": "Lax"
+  },
+  "workspaceCache": "no-cache, no-store, max-age=0, must-revalidate",
+  "libraryCache": "max-age=31536000, public, immutable",
+  "reused": {
+    "transferSize": 0,
+    "encodedBodySize": 87533
+  }
+}
