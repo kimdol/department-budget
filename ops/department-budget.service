@@ -1,0 +1,22 @@
+[Unit]
+Description=Department Budget Portal
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=department-budget
+Group=department-budget
+WorkingDirectory=/opt/department-budget
+EnvironmentFile=/etc/department-budget/runtime.env
+ExecStart=/usr/bin/java -jar /opt/department-budget/department-budget.war --spring.profiles.active=proxy
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

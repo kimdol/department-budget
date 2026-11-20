@@ -8,3 +8,17 @@ Java 21과 Caddy 2가 설치된 Linux VM을 기준으로 한다. 홈 디렉터�
 4. Java와 Caddy 서비스를 재기동한 다음 외부 네트워크에서 데모를 연다. 저장소의 `frontend`에서 환경 변수 `TEST_DEPLOYMENT_URL`에 공개 HTTPS 원점 주소를, `RECORD_TLS`에 `1`을 지정하고 `npx --no-install playwright test --reporter=list`를 실행한다. 외부 시험은 공개 인증서, 세션·캐시 헤더, 두 방문자의 독립 업무 처리를 함께 검사한다.
 
 로컬에서 [Tomcat 통합 시험](../src/test/java/kr/budget/web/ProxyTransportTest.java)으로 루프백 HTTP 요청과 HTTPS 전달 헤더를 받은 요청의 HSTS 응답 차이, 세션 속성, 민감 화면의 캐시 정책을 확인했다. 실제 Caddy 인증서 발급, VM 재기동과 외부 접속 검증은 배포 후 기록한다.
+
+## Java 서비스 설치와 중지
+
+새 VM에서 로그인 셸이 없는 시스템 사용자와 그룹을 `department-budget` 이름으로 만든다. `/opt/department-budget`에 검증한 WAR를 `department-budget.war`로 설치한다. 배포 디렉터리와 WAR는 root가 소유하고 서비스 사용자는 읽을 수 있게 한다. 환경 파일 `/etc/department-budget/runtime.env`는 root 소유, 권한 0600으로 생성하고 Oracle 연결 변수를 한 줄에 하나씩 지정한다. 이 파일을 Git이나 빌드 결과에 포함하지 않는다.
+
+```sh
+sudo install -m 0644 ops/department-budget.service /etc/systemd/system/department-budget.service
+sudo systemd-analyze verify /etc/systemd/system/department-budget.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now department-budget
+sudo systemctl status department-budget
+```
+
+일시 중지는 `sudo systemctl stop department-budget`, 재개는 `sudo systemctl start department-budget`로 실행한다. 부팅 시 자동 실행도 끄려면 `sudo systemctl disable --now department-budget`을 사용한다. 서비스 중지 후에도 Oracle의 전표가 유지되며, 새 WAR에 스키마 변경이 있으면 재시작 전에 백업과 마이그레이션 절차를 진행한다. [서비스 정의](../ops/department-budget.service) · [원장 복원 절차](ORACLE.md)
