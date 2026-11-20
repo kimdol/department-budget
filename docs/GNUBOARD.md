@@ -21,4 +21,11 @@ git -C target/gnuboard5 sparse-checkout add lib
 python ops/test_portal.py --gnuboard
 ```
 
-시험은 원본 커밋을 확인하고 공식 훅 디스패처에 확장을 등록한 뒤 비회원·회원 메뉴를 검사한다. 실제 PHP 수신기에서 정산한 MySQL 데이터를 읽기 전용 계정으로 조회하고, 부서 매핑이 없는 회원에게 목록과 신청번호 검색 결과가 비어 있는지 확인한다. 이 시험에서 로그인 신원은 합성 입력으로 제공한다. 설치된 포털에서의 로그인·로그아웃과 테마 화면은 별도 검증 항목이다. [회귀 시험](../ops/test_gnuboard.php) · [조회 쿼리](../gnuboard/plugin/budget/report.php)
+설치와 로그인 세션까지 재현하려면 원본 태그의 전체 파일과 PHP mysqli·mbstring·GD 확장을 준비한다. 다음 명령은 공식 설치 페이지로 임시 그누보드 DB와 파일을 만들고, 로그인한 회원이 기본 테마에서 보고서를 여는 과정을 HTTP로 검사한다.
+
+```sh
+git -C target/gnuboard5 sparse-checkout disable
+python ops/test_portal.py --gnuboard-site
+```
+
+훅 단독 시험은 합성 회원 신원으로 메뉴와 조회 범위를 검사한다. 설치 시험에서는 임시 설치의 관리자 회원으로 로그인해도 부서 매핑을 등록하기 전까지 조회 결과가 비어 있었다. 매핑 후 같은 세션에서 신청번호·정산 확정·180,000원을 확인했고 응답은 `no-store`였다. 로그인 전과 로그아웃 직후 같은 보고서 주소는 403을 반환했다. [설치·로그인 시험](../ops/test_gnuboard_site.py) · [훅 회귀 시험](../ops/test_gnuboard.php) · [조회 쿼리](../gnuboard/plugin/budget/report.php)

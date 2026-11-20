@@ -129,7 +129,7 @@ def main():
                    "SELECT event_type,amount FROM budget_claim_summary;").stdout.splitlines()
         if rows != ["2", "SETTLEMENT\t180000"]:
             raise AssertionError(rows)
-        if "--gnuboard" in sys.argv:
+        if "--gnuboard" in sys.argv or "--gnuboard-site" in sys.argv:
             framework = root / "target/gnuboard5"
             revision = subprocess.check_output(["git","-C",str(framework),"rev-parse","HEAD"],text=True).strip()
             if revision != "42bcd3ad6b85dd530963e9606ba1ec8bdf9c83ab":
@@ -143,6 +143,12 @@ def main():
             subprocess.run(php_args + [str(root/"ops/test_gnuboard.php"),str(framework),approval["claimId"]],check=True,
                            env=dict(os.environ,PORTAL_MYSQL_DSN=f"mysql:host=127.0.0.1;port={port};dbname=budget",
                                     PORTAL_READER_USER="reader",PORTAL_READER_PASSWORD=reader_password))
+            if "--gnuboard-site" in sys.argv:
+                from test_gnuboard_site import verify_site
+                verify_site(root,framework,directory,php_args,"127.0.0.1:"+str(free_port()),port,sql,
+                            dict(os.environ,PORTAL_MYSQL_DSN=f"mysql:host=127.0.0.1;port={port};dbname=budget",
+                                 PORTAL_READER_USER="reader",PORTAL_READER_PASSWORD=reader_password),
+                            approval["workspaceId"],approval["claimId"])
         print(json.dumps(dict(mysql=sql("SELECT VERSION()").stdout.strip(), http=statuses, receipts=2, settled=180000)))
         if "--browser" in sys.argv:
             subprocess.run([sys.executable,str(root/"ops/test_https.py")],
