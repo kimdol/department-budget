@@ -23,3 +23,11 @@ npx playwright test desk-transfer
 ```
 
 변경 후에는 b5c3bbd에서 같은 명령의 MEASURE_DESK 값을 after로 지정한다.
+
+## 수식 입력 후 결과 표시
+
+Chrome 한 세션에서 실비 180,000원의 기본 신청 공간을 열고 수식을 `eligible_cost`로 설정한다. 결과가 갱신된 뒤 ` * 0.9` 여섯 글자를 40ms 간격으로 입력한다. 마지막 input 이벤트부터 후보 지원액 162,000원이 DOM에 반영될 때까지 브라우저 시계로 측정했다. 실제 화면 페인트와 외부 네트워크 지연은 측정 범위 밖이다.
+
+로컬 H2·Tomcat HTTPS, 동일 장비·Chrome, 동시 사용자 1명, 예열 1회 후 같은 페이지에서 5회 측정했다. 변경 전 중앙값은 264.7ms(263.1~266.6), 변경 후는 157.0ms(156.9~158.2)였다. 두 조건 모두 매회 요청 1건이다. 150~250ms 동안 입력을 멈추면 새 설정에서는 중간 수식 요청이 추가될 수 있다. 이 입력 속도 구간의 비용은 측정하지 않았다.
+
+재현 시 변경 전은 d6ff907, 변경 후는 f499d69를 사용한다. 각각 frontend에서 npm ci와 npm run build를 실행한 뒤 저장소 루트에서 환경 변수 MEASURE_FORMULA를 before 또는 after로 지정하고 `python ops/test_https.py`를 실행한다. Git 이력 d6ff907은 기준 리비전 9c94447에 측정기와 기초 원자료만 추가한 커밋이다. [측정 코드](../../frontend/tests/formula-latency.spec.ts) · [변경 전](formula-before.json) · [변경 후](formula-after.json)
