@@ -14,7 +14,7 @@ jobs:
           APP_USER: budget
           APP_USER_PASSWORD: ${{ github.run_id }}Demo
         ports:
-          - 1521:1521
+          - 127.0.0.1:1521:1521
         options: --health-cmd healthcheck.sh --health-interval 10s --health-timeout 5s --health-retries 30
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,19 @@ jobs:
         env:
           BUDGET_TEST_EMPTY_SCHEMA: 'yes'
           BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
+      - run: python3 ops/check_oracle_contract.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oracle-contract-results
+          path: target/surefire-reports/kr.budget.claims.OraclePostingTest.txt
+          if-no-files-found: error
+      - name: Restore and reconcile Oracle ledger
+        run: bash ops/ci_oracle_restore.sh
+        env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+          BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
-          path: target/surefire-reports/TEST-*.xml
+          name: oracle-restore-comparison
+          path: target/oracle-restore/

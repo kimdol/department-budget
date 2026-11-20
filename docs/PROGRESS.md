@@ -1,5 +1,7 @@
 # 인수 현황
 
+GitHub 원격 main을 다시 조회한 결과 5e5c8e0이다. workflow 쓰기 권한 승인을 기다리고 있다. Oracle CI에 실제 시험 누락 차단, Data Pump 내보내기와 별도 스키마 복원, 정렬된 대사 결과 전체 비교를 추가했다. Bash 문법 검사와 Oracle 시험을 건너뛴 로컬 결과에 대한 차단 동작을 확인했다. 실제 CI 복원 성공 증거는 아직 없다.
+
 증빙 요건을 [EvidencePolicy](../src/main/java/kr/budget/claims/EvidencePolicy.java)의 불변 조건 트리로 분리했다. 병원 학회비에만 참석 확인서를 요구하며, 다른 조직에서는 조직 조건에서 결과가 결정된다. 결재함의 ‘판정 근거’에서 실제 평가한 조건과 생략한 조건을 확인한다. [세 값의 조합 시험](../src/test/java/kr/budget/policy/EligibilityRuleTest.java)은 충족·미충족·자료 부족의 9가지 입력 쌍을 모두/하나 조건 각각에 적용한다. Java 27건, 로컬 HTTPS Chrome 4건 통과. 실제 Oracle 시험 12건 미실행.
 
 루프백 Tomcat HTTPS에서 Chrome 시험 4건 통과. Node TLS 클라이언트는 시험 인증서를 신뢰 목록에 추가하고 호스트를 검증했다. Chrome은 해당 실행에서 생성한 공개 키 지문만 예외로 허용했다. TLS 1.3, HSTS, 세션 쿠키 Secure·HttpOnly·SameSite=Lax, 업무 API no-store 및 버전 고정 jQuery 재방문 전송량 0바이트를 확인했다. [응답 원자료](measurements/loopback-https.json) · [HTTPS 시험](../frontend/tests/https.spec.ts). 외부 호스트의 공개 인증서와 프록시 응답은 미검증이다.

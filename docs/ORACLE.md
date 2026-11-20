@@ -17,6 +17,8 @@ sqlplus -L BUDGET_APP@BUDGET_PDB @target/install.sql
 
 ## 백업과 별도 스키마 복원
 
+GitHub Actions의 Verify Oracle Ledger 작업은 로컬·Oracle 계약 시험 이름이 일치하고 모두 실행됐는지 검사한다. 이어서 원본 스키마를 내보내 같은 시험 PDB의 별도 사용자 BUDGET_RESTORE에 가져온다. 공간·전표·마감 잔액·비목 행의 존재와 원본·복원의 전체 대사 결과 일치를 확인한 뒤 결과와 SHA-256을 보관한다. [CI 복원 절차](../ops/ci_oracle_restore.sh) · [시험 실행 확인](../ops/check_oracle_contract.py). 별도 인스턴스 재해 복구는 추가 검증 대상이다.
+
 아래는 자체 관리 Oracle PDB에서 DBA가 Data Pump 디렉터리 BUDGET_BACKUP을 만들고 읽기·쓰기 권한과 서버 디스크 공간을 제공한 경우의 절차다. 같은 Oracle 버전·문자 집합의 별도 검증 PDB에 비어 있는 대상 스키마를 준비한다. 같은 서비스로 전달할 외부 연계와 예약 작업을 복원 환경에서 비활성화한다. Autonomous Database의 객체 스토리지 내보내기와 복구는 해당 서비스 운영 절차가 필요하다.
 
 1. 원본 앱과 배치·연계 쓰기를 멈추고 처리 중 트랜잭션이 끝나면 대사 파일을 만든다. 서버에서 내보내기가 끝날 때까지 쓰기 중지를 유지한다.
