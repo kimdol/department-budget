@@ -1,0 +1,14 @@
+{
+  "environment": "loopback HTTPS",
+  "claims": 51,
+  "pageSize": 50,
+  "unit": "decoded response body bytes",
+  "role": "MANAGER",
+  "samples": [
+    22454,
+    22454,
+    22454,
+    22454,
+    22454
+  ]
+}
