@@ -1,5 +1,7 @@
 # 인수 현황
 
+병원 규정 작업실에서 학회비 180,000원에 대한 지원율을 80%에서 90%로 바꾸면 지원 예정액과 함께 직원 부담액 36,000원 → 18,000원을 비교할 수 있다. Chrome에서 잘못된 단위의 위치 표시, 검토 요청 비활성화, 수정 후 미리보기·검토·발행·복구까지 확인했다. 루프백 HTTPS 시험 6건 통과. [브라우저 시험](../frontend/tests/hospital-policy.spec.ts)
+
 수식 편집에서 원화와 일수를 더하거나 `min`으로 비교하면 단위 오류만 반환돼 담당자가 수정할 위치를 알 수 없었다. `eligible_cost + days`와 `min(eligible_cost, days)`에서 두 번째 항의 시작 위치인 17·20번째 문자를 기대한 회귀 시험 2건이 이 사유로 실패했다. 파서가 두 번째 항을 읽기 전에 공백을 건너뛴 위치를 보관하고 단위 검사에 전달하도록 변경한 뒤 수식 시험 13건이 모두 통과했다. [수식 파서](../src/main/java/kr/budget/policy/ExpenseFormula.java) · [회귀 시험](../src/test/java/kr/budget/policy/ExpenseFormulaTest.java)
 
 배포 후 외부 네트워크의 Chrome에서 다음 명령을 실행한다. `frontend` 디렉터리에서 `npm ci`를 실행한 뒤 환경 변수 `TEST_DEPLOYMENT_URL`에 실제 데모의 HTTPS 원점 주소를 설정하고 `RECORD_TLS=1`을 설정한다. `npx --no-install playwright test --reporter=list`는 방문자별 업무 처리와 초기화, TLS·세션·캐시를 확인한다. 응답 측정값은 `docs/measurements/deployment-https.json`에 기록한다. 배포 주소를 지정하면 시험용 서버를 기동하지 않는다. 루프백 HTTPS에서 Chrome 시험 6건을 통과했고, 공개 시험 설정이 HTTP 주소를 거부하는 것을 확인했다. 공개 호스트 검증은 대기 중이다.
