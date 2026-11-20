@@ -12,7 +12,10 @@ const won = (n:number) => n.toLocaleString("ko-KR") + "원";
 
 async function request<T>(url:string, data?:Record<string,string>, signal?:AbortSignal):Promise<T> {
   const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')!.content;
-  const response = await fetch(url, {
+  const endpoint = new URL(url,location.origin);
+  const department = new URLSearchParams(location.search).get("department");
+  if (department) endpoint.searchParams.set("department",department);
+  const response = await fetch(endpoint, {
     method:data ? "POST" : "GET", signal,
     headers:data ? {"X-CSRF-TOKEN":token} : undefined,
     body:data ? new URLSearchParams(data) : undefined

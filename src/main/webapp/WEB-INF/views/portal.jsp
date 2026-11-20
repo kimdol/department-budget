@@ -8,6 +8,7 @@
 <p id="notice" role="status" aria-live="polite">데모를 시작하면 독립된 부서 예산 100만 원이 배정됩니다.</p>
 
 <p id="workspace-organization" hidden></p>
+<label id="department-choice" hidden>체험 부서 <select id="department"><option value="PRIMARY">제1부서</option><option value="SECONDARY">제2부서</option></select></label>
 <div id="desk" hidden><div class="metrics"><article>배정액<strong id="allocation"></strong></article><article>약정 잔액<strong id="committed"></strong></article><article>누적 집행<strong id="spent"></strong></article><article>가용 예산<strong id="available"></strong></article></div>
 <nav aria-label="시연 역할"><label>시연 역할 <select id="role"><option value="EMPLOYEE">직원</option><option value="MANAGER">부서장</option><option value="FINANCE">재무 담당자</option></select></label>
 <form id="end-demo" method="post" action="/api/demo/end"><input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"><button>내 체험 종료</button></form></nav>

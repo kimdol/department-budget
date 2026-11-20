@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface BudgetMapper {
+    @Update("update budget_workspace set parent_workspace=#{primaryId} where workspace_id=#{secondaryId}")
+    void linkDepartments(String primaryId, String secondaryId);
     @Insert("insert into budget_workspace (workspace_id,period_key,organization_type) values (#{workspace},#{period},#{organization})")
     void open(String workspace, String period, OrganizationType organization);
 

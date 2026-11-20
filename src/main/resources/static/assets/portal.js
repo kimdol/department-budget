@@ -5,8 +5,23 @@ const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
 const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
 const cursors = [null];
+const department = new URLSearchParams(location.search).get("department") || "PRIMARY";
+function departmentUrl(path) {
+  if (department === "PRIMARY") return path;
+  const url = new URL(path,location.origin);
+  url.searchParams.set("department",department);
+  return url.pathname + url.search;
+}
+$.ajaxPrefilter(options=>{
+  if (options.url.startsWith("/api/")) options.url = departmentUrl(options.url);
+});
+$("#department").on("change",event=>location.assign("/?department="+encodeURIComponent(event.target.value)));
 let nextCursor = null;
 function render(state) {
+  $("#department-choice").prop("hidden",false);
+  const departmentNames = {BANK:["본부 경영지원팀","지점 경영지원팀"],HOSPITAL:["총무팀","교육수련팀"],COMPANY:["인사팀","총무팀"]}[state.organization];
+  $("#department option").each((index,option)=>$(option).text(departmentNames[index]));
+  $("#department").val(department);
   nextCursor = state.hasMore ? state.claims[state.claims.length-1].inboxOrder : null;
   $("#older").prop("hidden",nextCursor === null);
   $("#newer").prop("hidden",cursors.length <= 1);
@@ -99,7 +114,7 @@ function render(state) {
         documents.empty();
         if (!items.length) documents.text("제출한 증빙이 없습니다.");
         for (const item of items) {
-          $("<a>").attr("href",path+"/evidence/"+encodeURIComponent(item.evidenceType))
+          $("<a>").attr("href",departmentUrl(path+"/evidence/"+encodeURIComponent(item.evidenceType)))
             .text((item.evidenceType==="RECEIPT" ? "지출 영수증" : "참석 확인서")+" · "+money(item.receiptAmount)).appendTo(documents);
         }
       }).fail(reportError);

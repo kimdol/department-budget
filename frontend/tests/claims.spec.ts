@@ -42,6 +42,25 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     const receiptLink = claim.getByRole("link", { name: "지출 영수증 · 225,000원" });
     const receiptUrl = await receiptLink.getAttribute("href");
     expect((await other.request.get(receiptUrl!)).status()).toBe(404);
+    const branch = await page.context().newPage();
+    try {
+      await branch.goto("/");
+      await branch.getByLabel("체험 부서").selectOption("SECONDARY");
+      await expect(branch.locator("#role")).toHaveValue("EMPLOYEE");
+      await expect(branch.locator("#claims")).toHaveText("아직 신청한 비용이 없습니다.");
+      await expect(branch.locator("#available")).toHaveText("1,000,000원");
+      await branch.locator('[name="title"]').fill("총무팀 교육");
+      await branch.getByRole("button", {name:"신청 제출"}).click();
+      await expect(branch.locator(".claim")).toContainText("총무팀 교육");
+      await branch.locator("#role").selectOption("MANAGER");
+      await expect(branch.locator("#notice")).toContainText("사전승인");
+      expect((await branch.request.get(receiptUrl!+"?department=SECONDARY")).status()).toBe(404);
+      await branch.getByRole("button", {name:"사전승인"}).click();
+      await expect(branch.locator("#committed")).toHaveText("200,000원");
+      await expect(page.locator("#role")).toHaveValue("FINANCE");
+    } finally {
+      await branch.close();
+    }
     const downloading = page.waitForEvent("download");
     await receiptLink.click();
     const download = await downloading;

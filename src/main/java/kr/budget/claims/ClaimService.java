@@ -30,6 +30,15 @@ public class ClaimService {
         return open(OrganizationType.COMPANY);
     }
 
+    public record Departments(String primaryId, String secondaryId) {}
+
+    public Departments openDepartments(OrganizationType organization) {
+        String primary = open(organization);
+        String secondary = open(organization);
+        mapper.linkDepartments(primary, secondary);
+        return new Departments(primary, secondary);
+    }
+
     public String open(OrganizationType organization) {
         String workspace = UUID.randomUUID().toString();
         mapper.open(workspace, java.time.YearMonth.now(java.time.ZoneId.of("Asia/Seoul")).toString(), organization);

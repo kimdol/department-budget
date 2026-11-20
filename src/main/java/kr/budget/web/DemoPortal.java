@@ -7,6 +7,7 @@ import kr.budget.portal.PortalOutbox;
 import kr.budget.portal.PortalDelivery;
 import org.springframework.beans.factory.ObjectProvider;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import kr.budget.claims.BudgetMapper;
 import kr.budget.claims.ClaimService;
 import kr.budget.claims.EvidenceService;
@@ -29,6 +30,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class DemoPortal {
     public enum Role { EMPLOYEE, MANAGER, FINANCE }
     private final ClaimService service;
+    private final HttpServletRequest request;
     private final BudgetMapper mapper;
     private final PolicyService policies;
     private final PolicyMapper policyMapper;
@@ -42,7 +44,9 @@ public class DemoPortal {
 
     public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper,
             EvidenceService evidence, PeriodClosing periods, ClosingService closing, ClosingMapper statements,
-            ObjectProvider<PortalReceipts> receipts, PortalOutbox outbox, ObjectProvider<PortalDelivery> delivery) {
+            ObjectProvider<PortalReceipts> receipts, PortalOutbox outbox, ObjectProvider<PortalDelivery> delivery,
+            HttpServletRequest request) {
+        this.request = request;
         this.outbox = outbox;
         this.delivery = delivery;
         this.receipts = receipts;
@@ -67,9 +71,10 @@ public class DemoPortal {
     public Map<String, Object> start(HttpSession session,
             @RequestParam(defaultValue="COMPANY") kr.budget.claims.OrganizationType organization) {
         synchronized (session) {
-            if (session.getAttribute("workspace") == null) {
-                session.setAttribute("workspace", service.open(organization));
-                session.setAttribute("role", Role.EMPLOYEE);
+            if (session.getAttribute("departments") == null) {
+                session.setAttribute("departments", service.openDepartments(organization));
+                session.setAttribute("role-PRIMARY", Role.EMPLOYEE);
+                session.setAttribute("role-SECONDARY", Role.EMPLOYEE);
             }
         }
         return snapshot(session,null);
@@ -79,7 +84,7 @@ public class DemoPortal {
     @ResponseBody
     public void switchRole(@RequestParam Role role, HttpSession session) {
         workspace(session);
-        session.setAttribute("role", role);
+        session.setAttribute("role-" + department(), role);
     }
 
     @GetMapping("/api/workspace")
@@ -88,7 +93,7 @@ public class DemoPortal {
         String workspace = workspace(session);
         var rows = mapper.inbox(workspace,before == null ? Long.MAX_VALUE : before);
         return Map.of("balance", mapper.balance(workspace), "claims", rows.stream().limit(50).toList(), "hasMore",rows.size() > 50,
-                "role", session.getAttribute("role"), "organization",mapper.organization(workspace),"portalEnabled",receipts.getIfAvailable()!=null);
+                "role", role(session), "organization",mapper.organization(workspace),"portalEnabled",receipts.getIfAvailable()!=null);
     }
 
     @GetMapping("/api/claims/estimate")
@@ -216,7 +221,7 @@ public class DemoPortal {
     @PostMapping("/api/claims/{id}/return")
     @ResponseBody
     public void returnReview(HttpSession session, @PathVariable String id, @RequestParam int round, @RequestParam String reason) {
-        boolean manager = session.getAttribute("role") == Role.MANAGER;
+        boolean manager = role(session) == Role.MANAGER;
         service.returnReview(authorized(session, manager ? Role.MANAGER : Role.FINANCE), id, round, reason, manager);
     }
 
@@ -296,12 +301,24 @@ public class DemoPortal {
 
     private String authorized(HttpSession session, Role required) {
         String workspace = workspace(session);
-        if (session.getAttribute("role") != required) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (role(session) != required) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return workspace;
     }
 
     private String workspace(HttpSession session) {
-        if (session.getAttribute("workspace") instanceof String workspace) return workspace;
+        if (session.getAttribute("departments") instanceof ClaimService.Departments ids)
+            return department().equals("PRIMARY") ? ids.primaryId() : ids.secondaryId();
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
+
+    private String department() {
+        String selected = request.getParameter("department");
+        if (selected == null || selected.equals("PRIMARY")) return "PRIMARY";
+        if (selected.equals("SECONDARY")) return "SECONDARY";
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+
+    private Role role(HttpSession session) {
+        return (Role)session.getAttribute("role-" + department());
     }
 }
