@@ -11,9 +11,7 @@ sqlplus -L BUDGET_APP@BUDGET_PDB @target/install.sql
 
 [설치 파일 생성기](../ops/oracle_install.py)는 배포할 WAR에 포함된 V001 이후의 업무 SQL과 같은 WAR의 Spring Batch Core에서 추출한 Oracle 전용 SQL을 묶는다. 실제 WAR에서 V001~V009, Spring Batch 5.2.5의 테이블 정의 및 시퀀스 3개를 추출했다. CI에서는 Spring의 SQL 초기화로 실제 Oracle 설치를 검증했고 Data Pump로 별도 스키마 복원에 성공했다. 배포용 WAR에서 생성한 설치 SQL을 빈 Oracle 스키마에 적용하고 같은 SQL의 재실행이 ORA-20001로 차단됨을 확인했다. 이 스키마에 WAR를 연결해 Chrome에서 두 방문자의 교육비 처리와 월마감, 병원 학회비 규정 발행·복구, 출장 사전승인, 결재함 페이지 이동 시험 4건을 통과했다. [실행 결과](https://github.com/kimdol/department-budget/actions/runs/44765732583) [복원 결과](https://github.com/kimdol/department-budget/actions/runs/44764720608)
 
-## 기존 버전에서 올리기
-
-### OCI 배포 VM에서 JDBC 연결 확인
+## OCI 배포 VM에서 JDBC 연결 확인
 
 Autonomous Database를 사용할 때는 배포 VM에서 접근 가능한 네트워크를 설정한다. 지갑 없이 TLS를 사용하는 구성에서는 DB에 TLS 접속을 허용하고 접근 제어 목록에 VM의 송신 주소 또는 해당 VCN을 등록한다. DB 콘솔의 연결 화면에서 TLS용 접속 설명자를 받아 `jdbc:oracle:thin:@` 뒤에 붙인 값을 `BUDGET_DB_URL`로 설정한다. 사용자·비밀번호는 앱 전용 계정을 쓴다. [Oracle JDBC Thin TLS 연결](https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/connect-jdbc-thin-tls.html) · [네트워크 및 인증 설정](https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/support-tls-mtls-authentication.html)
 
@@ -28,6 +26,8 @@ java -cp "$driver_dir/*" ops/CheckRuntimeDatabase.java TCPS
 CI의 Oracle Free 시험은 같은 도구로 루프백 TCP 연결을 확인하고 같은 연결을 TCPS로 검증하면 실패해야 통과한다. 실제 OCI 세션의 TCPS 통과와 원격 VM에서의 애플리케이션 업무 실행은 계정과 자원 할당 후 확인할 항목이다. [접속 검사](../ops/CheckRuntimeDatabase.java) · [배포 WAR 시험](../ops/ci_oracle_release.sh)
 
 Oracle Free의 같은 PDB 내 별도 스키마에 복원한 CI 실행에서 Data Pump 내보내기는 51초, 가져오기는 33초였다. 원본·복원 대사 파일은 각각 169행이며 내용이 일치했다. 대사 단계의 초 단위 계측값은 0초였다. 이 수치는 합성 계약 시험 데이터에 대한 1회 관측이며 VM 재구축, 외부 전송, 업무 재개 시간은 포함하지 않는다. [시간 원자료](measurements/oracle-restore-time-44784441705.txt) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44784441705)
+
+## 기존 버전에서 올리기
 
 현재 배포 리비전과 적용한 마지막 V번호를 확인하고 아래 절차로 백업한다. 요청 및 배치 실행을 중지한 뒤 새 WAR에 추가된 V번호만 순서대로 SQL*Plus에서 실행한다. 적용 파일명, 체크섬과 결과를 배포 기록에 보관한다. Spring Batch 라이브러리 버전도 변경됐다면 해당 버전의 Oracle 메타데이터 마이그레이션을 함께 검토한다. Oracle DDL은 암묵적 커밋을 수행하므로 중간 실패 시 마지막 성공 문장과 실제 제약·열 상태를 대조한다. 최초 설치 스크립트는 기존 객체가 하나라도 있으면 작업을 중단한다.
 

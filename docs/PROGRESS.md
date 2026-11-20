@@ -1,5 +1,7 @@
 # 인수 현황
 
+Linux CI에서 Caddy의 HTTP 308 이동, 경로·쿼리 보존, TLS 1.3, 결재함·규정 편집기 요청의 동일 출처를 확인했다. 별도 CI에서 패키지 WAR의 JDBC 드라이버로 Oracle Free에 TCP 접속해 업무·배치 스키마 조회 5건을 통과했고 같은 세션에 TCPS를 요구하면 검사가 실패했다. OCI 배포 VM의 DB 전송 방식과 공개 인증서 검증은 대기 중이다. [웹 응답 원자료](measurements/proxy-transport-44788840479.json) · [JDBC 검사 실행](https://github.com/kimdol/department-budget/actions/runs/44789061101/job/136471567405)
+
 재무 결산표에서 비목별 집행액을 펼치면 해당 기간에 합산된 원신청을 50건씩 조회한다. 신청을 펼치면 원전표와 다음 달 환입을 확인할 수 있다. 로컬 HTTPS Chrome에서 같은 신청번호가 최초 기간에는 180,000원, 다음 달에는 −30,000원으로 집계되는 것을 확인했다. [시연 시험](../frontend/tests/claims.spec.ts)
 
 월마감에서 전표 합계와 부서 잔액의 약정·집행 차이를 금액으로 제공한다. Oracle은 MyBatis 호출형 매퍼의 PL/SQL 출력 매개변수를 사용하고 H2는 같은 계약의 집계 SQL을 사용한다. 로컬 계약 시험에서 정산 후 집행 잔액을 700원 낮추자 차이 +700원, 마감 요청 409, 확정 보고서 0건을 확인했다. 시험 데이터를 복원한 후에만 가용액 820,000원으로 마감됐다. [대사 코드](../src/main/java/kr/budget/closing/LedgerReconciliation.java) · [마감 인수 시험](../src/test/java/kr/budget/claims/PostingContract.java)
