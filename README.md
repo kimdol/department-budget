@@ -4,7 +4,7 @@
 
 **공개 데모는 배포 준비 중이다.** [3분 체험 순서](#3분-체험)에서 직원의 300,000원 신청부터 부서장의 200,000원 약정, 재무의 180,000원 정산까지 따라갈 수 있다. 아래 화면은 로컬 Tomcat과 H2에서 Chrome으로 처리한 결과다. 같은 시점에 두 번째 방문자의 가용 예산은 1,000,000원이었다.
 
-Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 신청·결재함, React·TypeScript는 규정 비교·발행, PHP·MySQL은 사내 포털 수신에 사용한다. [화면에서 원장까지 소스 따라가기](#소스-따라가기)
+Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 신청·결재함, React·TypeScript는 직원 신청과 규정 비교·발행, PHP·MySQL은 사내 포털 수신에 사용한다. 직원 역할에서 **직원용 신청 화면으로 전환**을 누르면 입력한 내용을 React 화면에서 이어서 제출할 수 있다. [두 화면의 신청 계약 시험](frontend/tests/employee-form.spec.ts) · [화면에서 원장까지 소스 따라가기](#소스-따라가기)
 
 ## 직무별 구현 성과
 
