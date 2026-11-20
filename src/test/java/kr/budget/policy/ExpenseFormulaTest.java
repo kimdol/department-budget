@@ -27,6 +27,28 @@ class ExpenseFormulaTest {
     }
 
     @Test
+    void compiledTreeSharesOnlyFormulaStructureAcrossConcurrentClaims() {
+        var formula = ExpenseFormula.compile(ExpenseFormula.EDUCATION,true);
+        assertSame(formula,ExpenseFormula.compile(ExpenseFormula.EDUCATION,true));
+        assertNotSame(formula,ExpenseFormula.compile(ExpenseFormula.EDUCATION,false));
+        java.util.stream.LongStream.rangeClosed(1,500).parallel().forEach(n -> {
+            long cost = 1000 * n;
+            assertEquals(Math.min(cost * 8 / 10,200000),formula.calculate(inputs(cost)));
+        });
+    }
+
+    @Test
+    void evictedHistoricalFormulaCanBeCompiledAgainWithTheSameDecision() {
+        String source = "floor(eligible_cost*0.71)";
+        var original = ExpenseFormula.compile(source,false);
+        for (int n = 1; n <= 256; n++) ExpenseFormula.compile("min(eligible_cost," + n + "*event_cap)",false);
+        var restored = ExpenseFormula.compile(source,false);
+        assertNotSame(original,restored);
+        assertEquals(159750,original.calculate(inputs(225000)));
+        assertEquals(159750,restored.calculate(inputs(225000)));
+    }
+
+    @Test
     void calculatesEducationCommitmentAndSettlement() {
         assertEquals(200000, ExpenseFormula.calculate(ExpenseFormula.EDUCATION, inputs(300000)));
         assertEquals(180000, ExpenseFormula.calculate(ExpenseFormula.EDUCATION, inputs(225000)));
