@@ -9,7 +9,7 @@ python ops/oracle_install.py target/department-budget-0.1.0.war target/install.s
 sqlplus -L BUDGET_APP@BUDGET_PDB @target/install.sql
 ```
 
-[설치 파일 생성기](../ops/oracle_install.py)는 배포할 WAR에 포함된 V001 이후의 업무 SQL과 같은 WAR의 Spring Batch Core에서 추출한 Oracle 전용 SQL을 묶는다. 실제 WAR에서 V001~V009, Spring Batch 5.2.5의 테이블 정의 및 시퀀스 3개를 추출했다. 생성한 SQL의 실제 Oracle 설치와 별도 스키마 복원은 미검증이다.
+[설치 파일 생성기](../ops/oracle_install.py)는 배포할 WAR에 포함된 V001 이후의 업무 SQL과 같은 WAR의 Spring Batch Core에서 추출한 Oracle 전용 SQL을 묶는다. 실제 WAR에서 V001~V009, Spring Batch 5.2.5의 테이블 정의 및 시퀀스 3개를 추출했다. CI에서는 Spring의 SQL 초기화로 실제 Oracle 설치를 검증했고 Data Pump로 별도 스키마 복원에 성공했다. 생성기가 묶은 단일 SQL 파일 자체의 실행은 별도 검증 대상이다. [복원 결과](https://github.com/kimdol/department-budget/actions/runs/44764720608)
 
 ## 기존 버전에서 올리기
 

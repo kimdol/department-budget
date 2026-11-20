@@ -4,6 +4,8 @@
 
 공개 데모는 배포 준비 중이다. 아래는 로컬 Tomcat과 H2에서 Chrome으로 대표 업무를 직접 처리한 결과다. 같은 시점에 두 번째 방문자의 가용 예산은 1,000,000원이었다.
 
+**실제 Oracle 원장 계약 시험 14건이 모두 통과했다.** Data Pump로 같은 PDB의 별도 스키마에 복원한 뒤 업무 공간 20개, 전표 28행, 마감 잔액 4행과 비목 집계 4행을 대조했다. 원본과 복원본의 전체 대사 파일 SHA-256이 일치했다. [GitHub 실행 결과](https://github.com/kimdol/department-budget/actions/runs/44764720608) · [대사 원자료](docs/measurements/oracle-44764720608) · [신청 한 건으로 Oracle 직접 실습](docs/ORACLE-WALKTHROUGH.md)
+
 버전이 고정된 jQuery를 브라우저가 재사용하도록 바꿔 로컬 결재함 재방문의 정적 자산 전송량을 97,383바이트에서 9,550바이트로 줄였다. 신규 방문의 전송량은 같았다. [측정 조건과 5회 원자료](docs/measurements/README.md)
 
 ![재무 담당자의 교육비 정산 결과와 월 결산표](docs/images/settlement.png)

@@ -1,5 +1,7 @@
 # 인수 현황
 
+75f463d에서 Oracle CI 전체 성공. 실제 Oracle 계약 14건 통과, 누락 0건. Data Pump 복원 후 두 대사 파일의 SHA-256은 A7330105D1E199A95CD1563812C9D1683582426590BCA36650E59167F077E175로 일치했다. [실행](https://github.com/kimdol/department-budget/actions/runs/44764720608) · [보관한 원자료](measurements/oracle-44764720608). 공개 앱 호스팅은 OCI 무료 계정 가입 진행 중이다.
+
 공개 커밋 d0316d9에서 Oracle 원장 계약 14건과 전체 Java 시험 43건이 누락·실패 없이 통과했다. 이어지는 Data Pump 단계는 표준 입력 비밀번호를 받지 못해 ORA-01005로 종료됐다. 컨테이너 내부 임시 파라미터 파일을 소유자만 읽게 생성하고 명령 종료 시 제거하도록 수정했다. [실제 Oracle 실행](https://github.com/kimdol/department-budget/actions/runs/44764118942)
 
 최초 공개 Oracle CI는 V001에서 ORA-01408로 실패했다. expense_claim의 (workspace_id, claim_id) 유일 제약이 동일 열 인덱스를 이미 생성했다. H2에서는 통과했던 명시적 인덱스를 제거했다. 빈 Oracle 스키마에 최초 설치가 실패한 단계이므로 V001의 중복 선언을 직접 정정했다. [실패한 실행](https://github.com/kimdol/department-budget/actions/runs/44763501353)
@@ -12,19 +14,19 @@
 
 | 구분 | 업무 | 확인된 범위 · 남은 검증 |
 | --- | --- | --- |
-| 필수 | 신청·약정·정산·정정 | H2 원장 계약 14건 통과. 실제 Oracle 계약 14건 실행 대기 |
+| 필수 | 신청·약정·정산·정정 | H2와 실제 Oracle에서 같은 원장 계약 각 14건 통과 |
 | 필수 | 규정 발행·복구·계산 재현 | Java 수식 11건·조건 트리 2건 통과. Chrome에서 병원 학회비 발행 및 복구 확인 |
 | 필수 | 세션·증빙·웹 응답 | Tomcat HTTP 시험 2건, 로컬 HTTPS Chrome 6건 통과. 외부 공개 도메인의 역할 시연 대기 |
 | 필수 | 월마감·포털 | 실패한 배치 재시작과 원본 기간 보존을 H2에서 확인. 실제 PHP·MySQL 수신 구간 검증. 외부 송신 경로 대기 |
-| 심화 | 성능·복원 | 재방문 전송량 측정 완료. Oracle 실행 계획·잠금 대기·Data Pump 복원 대기 |
+| 심화 | 성능·복원 | 재방문 전송량 측정과 실제 Oracle 별도 스키마 복원 대사 완료. Oracle 실행 계획·잠금 대기 측정 대기 |
 | 선택 | 상용 UI·리포팅 전환 | 제품 환경 미확보 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
 
 ## 재개할 때
 
-1. 저장소에서 git status, git log -1, git ls-remote origin refs/heads/main을 대조한다. 마지막 확인 당시 공개 main은 5e5c8e0이었다.
-2. GitHub에 저장소 범위의 워크플로 쓰기 권한이 승인되면 원격과 커밋 작성자·변경 파일을 확인하고 main을 푸시한다. Verify Oracle Ledger가 실제 시험과 복원을 모두 완료했는지 확인한다.
+1. git status, git log -1과 git ls-remote origin refs/heads/main을 대조한다.
+2. 다음 기능 변경에서도 Verify Oracle Ledger의 계약 시험과 복원 산출물 일치를 확인한다. 실제 Oracle 근거가 있는 기준 커밋은 75f463d다.
 3. 독립 호스팅과 Oracle 연결 권한이 확보되면 공개 URL에서 새 브라우저 두 개로 대표 업무와 격리를 재현한다. 공개 전 대기 중인 설계 범위에는 포털 조회 화면·레거시 CSV, 별도 부서 구성원 인가, 운영자 규정 조건 편집이 포함된다.
 4. 로컬 재현은 frontend에서 npm ci와 npm run build, 루트에서 mvn package, python ops/test_https.py 순서다. 포털 수신 시험은 python ops/test_portal.py로 실행한다.
 
