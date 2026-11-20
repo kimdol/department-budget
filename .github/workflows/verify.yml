@@ -80,8 +80,8 @@ jobs:
       - name: Measure monthly settlement reports in Oracle
         run: |
           python3 ops/measure_oracle_month.py
-          python3 ops/measure_oracle_posting_writes.py
           java -cp 'target/oracle-release/jdbc/*' ops/MeasureBudgetLock.java > target/oracle-month/budget-lock.csv
+          python3 ops/measure_oracle_posting_writes.py
         env:
           ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
           BUDGET_DB_USER: budget_release

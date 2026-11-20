@@ -47,8 +47,10 @@ end;
 
 def experiment():
     sql = ["whenever sqlerror exit failure rollback", "whenever oserror exit failure",
-           "set serveroutput on sqlblanklines on feedback off heading off pagesize 0",
+           "set sqlblanklines on", "set feedback off", "set heading off", "set pagesize 0",
            "alter session set container=FREEPDB1;", "alter session set current_schema=budget_release;",
+           "set serveroutput on size unlimited",
+           "exec dbms_output.put_line('OUTPUT_READY');",
            "select 'POPULATION|'||count(*) from budget_posting where workspace_id like 'inbox-measurement-%';",
            measure_block(1, "candidate"), "drop index budget_release.exp_month_trial;",
            measure_block(2, "baseline"), measure_block(3, "baseline"),
@@ -63,6 +65,8 @@ if __name__ == "__main__":
                             input=experiment(),text=True,stdout=subprocess.PIPE)
     (folder/"posting-writes.txt").write_text(result.stdout,encoding="utf-8")
     result.check_returncode()
+    if "OUTPUT_READY" not in result.stdout.splitlines():
+        raise ValueError("SQL*Plus did not capture DBMS_OUTPUT in the measurement PDB")
     if "POPULATION|1000000" not in result.stdout.splitlines():
         raise ValueError("Missing one million existing postings")
     rows = re.findall(r"^WRITE\|(\d)\|(baseline|candidate)\|(\d+)\|(\d+)\|(\d+)$",result.stdout,re.M)
