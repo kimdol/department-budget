@@ -63,7 +63,13 @@ jobs:
         with:
           name: oracle-inbox-plans
           path: target/oracle-inbox/
-      - name: Verify Caddy HTTPS with Oracle in Chrome
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          coverage: none
+      - name: Verify Caddy HTTPS with Oracle and MySQL in Chrome
         run: bash ops/ci_https_proxy.sh
         env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
           BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo

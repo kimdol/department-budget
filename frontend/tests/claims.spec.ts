@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체험한다", async ({ browser, page, baseURL }) => {
@@ -51,6 +51,7 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
         await claim.getByRole("button",{name:"사내 포털 수신 결과"}).click();
         await expect(claim).toContainText("포털 수신 차수 2 · 정산 확정 · 180,000원",{timeout:1000});
       }).toPass({timeout:15000});
+      if (process.env.RECORD_PORTAL_CLAIM) await writeFile(process.env.RECORD_PORTAL_CLAIM, number.trim());
     }
     await expect(page.locator("#committed")).toHaveText("0원");
     await expect(claim.locator("small")).toHaveText(number);
