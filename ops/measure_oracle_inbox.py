@@ -14,16 +14,20 @@ def measurement_sql():
         "alter session set container=FREEPDB1;",
         "alter session set current_schema=budget_release;",
         "alter session set statistics_level=all;",
-        "insert into budget_workspace(workspace_id) values ('inbox-measurement');",
+        """insert into budget_workspace(workspace_id)
+            select 'inbox-measurement-' || level from dual connect by level <= 100;""",
         """insert into expense_claim(claim_id, workspace_id, title, category, status,
             estimated, days, formula, inbox_order)
-            select 'sample-' || level, 'inbox-measurement', 'Training ' || level,
-            'EDUCATION','SUBMITTED',300000,1,'eligible_cost',level
-            from dual connect by level <= 10000;""",
+            select 'sample-' || d.department || '-' || c.seq, 'inbox-measurement-' || d.department,
+            'Training ' || c.seq,'EDUCATION','SUBMITTED',300000,1,'eligible_cost',c.seq
+            from (select level department from dual connect by level <= 100) d
+            cross join (select level seq from dual connect by level <= 10000) c;""",
         "commit;",
+        """select 'FIXTURE|' || count(*) || '|' || count(distinct workspace_id)
+            from expense_claim where workspace_id like 'inbox-measurement-%';""",
         "exec dbms_stats.gather_table_stats('BUDGET_RELEASE','EXPENSE_CLAIM',cascade=>true);",
         "variable workspace varchar2(36)",
-        "exec :workspace := 'inbox-measurement';",
+        "exec :workspace := 'inbox-measurement-50';",
         "variable boundary number",
         "exec :boundary := 1001;",
     ]
@@ -50,9 +54,11 @@ if __name__ == "__main__":
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "plans.txt").write_text(result.stdout, encoding="utf-8")
     result.check_returncode()
+    if "FIXTURE|1000000|100" not in result.stdout.splitlines():
+        raise ValueError("Expected one million claims in 100 departments")
     for run in range(4):
         for name in ("offset", "cursor"):
             section = result.stdout.split(f"BEGIN {run} {name}\n")[1].split(f"END {run} {name}")[0]
-            ids = re.findall(r"^sample-(\d+)\s", section, re.MULTILINE)
+            ids = re.findall(r"^sample-50-(\d+)\s", section, re.MULTILINE)
             if ids != [str(i) for i in range(1000, 949, -1)] or "Buffers" not in section:
                 raise ValueError(f"Missing rows or execution statistics in {run} {name}")
