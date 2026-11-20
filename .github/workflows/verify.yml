@@ -81,8 +81,12 @@ jobs:
         run: |
           python3 ops/measure_oracle_month.py
           python3 ops/measure_oracle_posting_writes.py
+          java -cp 'target/oracle-release/jdbc/*' ops/MeasureBudgetLock.java > target/oracle-month/budget-lock.csv
         env:
           ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+          BUDGET_DB_USER: budget_release
+          BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
+          BUDGET_DB_URL: jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
