@@ -2,6 +2,7 @@ set -euo pipefail
 : "${ORACLE_SERVICE_CONTAINER:?}" "${BUDGET_DB_PASSWORD:?}" "${RUNNER_TEMP:?}"
 work=target/oracle-upgrade
 mkdir -p "$work"
+python3 ops/test_oracle_install.py
 war=target/department-budget-0.1.0.war
 previous="$RUNNER_TEMP/previous-budget-release/$war"
 python3 ops/oracle_install.py "$previous" "$work/old-install.sql"
