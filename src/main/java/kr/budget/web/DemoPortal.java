@@ -9,6 +9,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
 import kr.budget.claims.BudgetMapper;
+import kr.budget.claims.BranchAllocation;
 import kr.budget.claims.ClaimService;
 import kr.budget.claims.EvidenceService;
 import kr.budget.claims.AttendanceRule;
@@ -32,6 +33,7 @@ public class DemoPortal {
     public enum Role { EMPLOYEE, MANAGER, FINANCE }
     private final ClaimService service;
     private final HttpServletRequest request;
+    private final BranchAllocation allocations;
     private final BudgetMapper mapper;
     private final PolicyService policies;
     private final PolicyMapper policyMapper;
@@ -46,7 +48,8 @@ public class DemoPortal {
     public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper,
             EvidenceService evidence, PeriodClosing periods, ClosingService closing, ClosingMapper statements,
             ObjectProvider<PortalReceipts> receipts, PortalOutbox outbox, ObjectProvider<PortalDelivery> delivery,
-            HttpServletRequest request) {
+            HttpServletRequest request, BranchAllocation allocations) {
+        this.allocations = allocations;
         this.request = request;
         this.outbox = outbox;
         this.delivery = delivery;
@@ -129,6 +132,18 @@ public class DemoPortal {
     @ResponseBody
     public PeriodClosing.Statement statement(HttpSession session) {
         return periods.statement(authorized(session, Role.FINANCE));
+    }
+
+    @GetMapping("/api/branch-allocation")
+    @ResponseBody
+    public BranchAllocation.Report branchReport(HttpSession session) {
+        return allocations.report(authorized(session,Role.FINANCE));
+    }
+
+    @PostMapping("/api/branch-allocation")
+    @ResponseBody
+    public void allocate(HttpSession session,@RequestParam UUID requestKey,@RequestParam long amount) {
+        allocations.allocate(authorized(session,Role.FINANCE),requestKey,amount);
     }
 
     @GetMapping("/api/claims/{id}/calculation")

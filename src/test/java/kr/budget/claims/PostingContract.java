@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 abstract class PostingContract {
     @Autowired ClaimService service;
     @Autowired BudgetMapper mapper;
+    @Autowired BranchAllocation allocations;
     @Autowired EvidenceService evidence;
     @Autowired JdbcTemplate jdbc;
     @Autowired kr.budget.policy.PolicyService policies;
@@ -40,6 +41,29 @@ abstract class PostingContract {
 
     private long publishReviewed(String workspace, String id) {
         return policies.publish(workspace,id,policyMapper.findDraft(workspace,id).getReviewHash());
+    }
+
+    @Test
+    void headOfficeTransfersOnlyAvailableFundsAndKeepsBranchAllocationOnRetry() {
+        var departments = service.openDepartments(OrganizationType.BANK);
+        String head = departments.primaryId();
+        String branch = departments.secondaryId();
+        String claim = service.submit(head,UUID.randomUUID(),"본부 교육","EDUCATION",300000,1);
+        service.approve(head,claim);
+        assertEquals(422,assertThrows(ResponseStatusException.class,()->allocations.allocate(head,UUID.randomUUID(),800001)).getStatusCode().value());
+        UUID key = UUID.randomUUID();
+        allocations.allocate(head,key,300000);
+        allocations.allocate(head,key,300000);
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->allocations.allocate(head,key,300001)).getStatusCode().value());
+        var report = allocations.report(head);
+        assertEquals(1,report.recent().size());
+        assertEquals(500000,report.head().getAvailable());
+        assertEquals(1300000,report.branch().getAvailable());
+        assertEquals(2000000,report.head().allocation()+report.branch().allocation());
+        assertEquals(403,assertThrows(ResponseStatusException.class,()->allocations.report(branch)).getStatusCode().value());
+        closing.close(branch);
+        allocations.allocate(head,key,300000);
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->allocations.allocate(head,UUID.randomUUID(),1)).getStatusCode().value());
     }
 
     @Test

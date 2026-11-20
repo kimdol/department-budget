@@ -10,6 +10,8 @@ group by w.workspace_id,w.period_key,w.period_state,w.allocation,w.committed,w.s
 order by w.workspace_id;
 select 'DEPARTMENT|' || parent_workspace || '|' || workspace_id || '|' || organization_type
 from budget_workspace where parent_workspace is not null order by parent_workspace,workspace_id;
+select 'ALLOCATION|' || head_id || '|' || request_key || '|' || branch_id || '|' || period_key || '|' || amount
+from branch_allocation order by head_id,request_key;
 select 'POSTING|' || workspace_id || '|' || period_key || '|' || claim_id || '|' || kind ||
        '|' || committed_delta || '|' || spent_delta || '|' || nvl(original_kind,'-')
 from budget_posting order by workspace_id,period_key,claim_id,kind;

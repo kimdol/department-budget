@@ -34,6 +34,8 @@ function render(state) {
     FINANCE:"정산을 확정한 뒤 전표와 월 결산표에서 집행액을 확인하세요."};
   notice(nextSteps[state.role]);
   $("#month-end").prop("hidden", state.role !== "FINANCE");
+  $("#branch-allocation").prop("hidden",state.organization !== "BANK" || department !== "PRIMARY" || state.role !== "FINANCE");
+  $("#branch-report").empty();
   $("#statement").empty();
   $("#portal-failures").empty();
   $("#view-failures").prop("hidden", !state.portalEnabled || state.role !== "FINANCE");
@@ -202,6 +204,31 @@ function changePage(older) {
 }
 $("#older").on("click",()=>changePage(true));
 $("#newer").on("click",()=>changePage(false));
+function showBranchBalance() {
+  return $.getJSON("/api/branch-allocation").done(report=>{
+    if ($("#branch-allocation").prop("hidden")) return;
+    const box = $("#branch-report").empty();
+    for (const [label,balance] of [["본부",report.head],["지점",report.branch]]) {
+      $("<p>").text(label+" 배정액 "+money(balance.allocation)+" · 가용액 "+money(balance.available)).appendTo(box);
+    }
+    for (const entry of report.recent) $("<p>").text(entry.periodKey+" · 지점 배정 "+money(entry.amount)).appendTo(box);
+  }).fail(reportError);
+}
+$("#view-branch").on("click",showBranchBalance);
+$("#allocate").on("submit",event=>{
+  event.preventDefault();
+  const form = $(event.target);
+  const amount = form.find("input").val();
+  const previous = JSON.parse(sessionStorage.getItem("pending-allocation") || "null");
+  const key = previous?.amount === amount ? previous.key : crypto.randomUUID();
+  sessionStorage.setItem("pending-allocation",JSON.stringify({amount,key}));
+  const button = form.find("button").prop("disabled",true);
+  api("/api/branch-allocation",{requestKey:key,amount}).then(()=>{
+    sessionStorage.removeItem("pending-allocation");
+    form[0].reset();
+    return refresh().then(showBranchBalance);
+  }).fail(reportError).always(()=>button.prop("disabled",false));
+});
 function statementSources(box, period, category, before) {
   const params = before == null ? {category} : {category,before};
   $.getJSON("/api/statements/"+encodeURIComponent(period)+"/claims",params).done(result=>{

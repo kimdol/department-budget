@@ -42,7 +42,7 @@ pump impdp budget_restore remap_schema=BUDGET:BUDGET_RESTORE directory=BUDGET_CI
 import_seconds=$SECONDS
 SECONDS=0
 read_ledger budget_restore "$work/restored.txt"
-for kind in WORKSPACE DEPARTMENT POSTING BALANCE LINE POLICY CLAIM EVIDENCE REVIEW; do
+for kind in WORKSPACE DEPARTMENT ALLOCATION POSTING BALANCE LINE POLICY CLAIM EVIDENCE REVIEW; do
     grep -q "^${kind}|" "$work/source.txt"
 done
 diff -u "$work/source.txt" "$work/restored.txt"
