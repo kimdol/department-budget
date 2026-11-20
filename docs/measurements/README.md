@@ -62,3 +62,8 @@ python ops/measure_formula.py 18ad229
 python ops/measure_formula.py 18ad229
 python ops/measure_formula.py a59b125
 ```
+## 월 결산의 부서·기간별 전표 집계
+
+Oracle Free에서 정산 전표 100만 건을 부서 100개와 12개월로 나눴다. 부서 50의 11월 집계는 교육비·학회비 각 278건, 출장비 277건으로 총 833건이었다. 매번 비목별 건수와 집행액을 검사했다. 매퍼의 실제 결산 SQL에 같은 부서와 기간을 바인딩한 뒤, 동일 세션에서 후보 인덱스 `(workspace_id, period_key, claim_id)`의 사용 여부를 교대로 바꿨다. 두 실행 순서에서 SQL 전체의 논리 읽기는 기존 11,459회, 후보 765회였고 후보 계획은 인덱스 범위 스캔으로 해당 기간의 833건을 읽었다.
+
+Intel Xeon 6975P-C, 논리 CPU 4개, 메모리 약 15.3 GiB의 Linux CI에서 조건별 1회 예열 후 20회의 서버 측 커서 실행·결과 순회 시간을 기록했다. p95는 기존 40.856ms에서 후보 4.635ms로 줄었다. 전표 입력 시 인덱스 유지 비용은 이 시험 범위 밖이다. 후보는 CI의 비가시 인덱스로 생성했다. 재현 순서는 같은 CI Oracle에 `python3 ops/measure_oracle_inbox.py`를 실행한 다음 `python3 ops/measure_oracle_month.py`를 실행하는 것이다. [실행 계획·원자료·장비 정보](oracle-month-44794959491.zip) · [측정 커밋](https://github.com/kimdol/department-budget/commit/0f6166d) · [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44794959491)

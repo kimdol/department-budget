@@ -1,5 +1,7 @@
 # 인수 현황
 
+Oracle 월 결산 시험에서 부서·기간 인덱스를 사용하면 전표 100만 건 중 해당 부서의 월별 833건을 집계하는 논리 읽기가 11,459회에서 765회로, 예열 후 20회 p95가 40.856ms에서 4.635ms로 줄었다. 양쪽의 비목별 건수와 금액이 일치했다. 후보 인덱스의 전표 쓰기 비용은 미측정이다. [실행 계획과 시간 원자료](measurements/oracle-month-44794959491.zip)
+
 개인 학습 장부는 자격시험·교육·도서비를 브라우저 IndexedDB에 저장한다. 로컬 HTTPS Chrome에서 개인 예산 500,000원에 응시료 70,000원·지원액 20,000원을 기록하자 잔여액은 450,000원이었다. 다음 교육비 300,000원에 80%·한도 200,000원을 적용한 지출 후 예상 잔액은 350,000원이었다. 입력·저장·예상 계산 중 네트워크 요청은 0건이었다. 새로고침 후 기록이 남았고 별도 브라우저 세션의 장부는 비어 있었다. [저장·계산 코드](../src/main/resources/static/assets/personal.js) · [격리 시험](../frontend/tests/personal-ledger.spec.ts)
 
 증빙 첨부 후 목록을 갱신하는 수정(c94cb76)은 Oracle·Caddy·MySQL 통합 실행을 끝까지 통과했다. Chrome에서 증빙 근거를 다시 열고 교육비 정산을 완료했으며 별도 포털 장애 시연의 Oracle·MySQL 정산 2차 180,000원도 일치했다. Caddy 경유 TLS 1.3에서 비목 코드표 재검증은 304, jQuery 재방문 전송량은 0B였다. [통합 실행](https://github.com/kimdol/department-budget/actions/runs/44794133039/job/136489129550) · [응답 원자료](measurements/proxy-transport-44794133039.json)
@@ -134,7 +136,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 | 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교, 버전별 불변 구문 트리 캐시, 다음 달 예약 발행 | 예약 발행의 외부 배포 검증 |
 | 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis·Oracle PL/SQL 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조 | Apache Camel 기반 JSON·CSV 공통 변환, 그누보드 연동 |
 | UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
-| 성능 | 100만 신청의 깊은 목록 조회·논리 읽기·DB p95, 결재함 본문·정적 자산·수식 입력 측정 | 같은 데이터 규모의 월별 집계와 동시 승인 쓰기 지연, 공개 환경에서의 브라우저 측정 |
+| 성능 | 100만 신청의 깊은 목록과 100만 전표의 월별 집계·논리 읽기·DB p95, 결재함 본문·정적 자산·수식 입력 측정 | 동시 승인 쓰기 지연, 후보 인덱스 유지 비용, 공개 환경에서의 브라우저 측정 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
 
