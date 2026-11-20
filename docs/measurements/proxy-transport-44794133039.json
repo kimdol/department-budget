@@ -1,0 +1,31 @@
+{
+  "environment": "proxy-ci",
+  "origin": "https://localhost:18758",
+  "transport": {
+    "trusted": true,
+    "protocol": "TLSv1.3",
+    "validFrom": "Nov 20 18:39:51 2026 GMT",
+    "validTo": "Nov 21 06:39:51 2026 GMT"
+  },
+  "redirect": {
+    "status": 308,
+    "location": "https://localhost:18758/assets/portal.css?visit=redirect"
+  },
+  "sameOriginRequests": 11,
+  "hsts": "max-age=31536000 ; includeSubDomains",
+  "cookie": {
+    "secure": true,
+    "httpOnly": true,
+    "sameSite": "Lax"
+  },
+  "workspaceCache": "no-cache, no-store, max-age=0, must-revalidate",
+  "libraryCache": "max-age=31536000, public, immutable",
+  "catalog": {
+    "etag": "\"68d43670ac2f04c8f03e167cd9feeb794e9b60d47318577c3dc03ccc43537650\"",
+    "revalidation": 304
+  },
+  "reused": {
+    "transferSize": 0,
+    "encodedBodySize": 87533
+  }
+}

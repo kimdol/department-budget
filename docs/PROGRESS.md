@@ -1,5 +1,7 @@
 # 인수 현황
 
+증빙 첨부 후 목록을 갱신하는 수정(c94cb76)은 Oracle·Caddy·MySQL 통합 실행을 끝까지 통과했다. Chrome에서 증빙 근거를 다시 열고 교육비 정산을 완료했으며 별도 포털 장애 시연의 Oracle·MySQL 정산 2차 180,000원도 일치했다. Caddy 경유 TLS 1.3에서 비목 코드표 재검증은 304, jQuery 재방문 전송량은 0B였다. [통합 실행](https://github.com/kimdol/department-budget/actions/runs/44794133039/job/136489129550) · [응답 원자료](measurements/proxy-transport-44794133039.json)
+
 Oracle의 월별 집계 측정은 결재함 시험의 100개 부서·신청 100만 건에 정산 전표를 한 건씩 연결하고 12개월로 분산한다. 한 부서의 11월 교육비 278건, 학회비 278건, 출장비 277건과 각 건의 집행액 180,000원을 확인한다. 제품의 결산 매퍼에서 조회문을 읽어 기존 인덱스와 시험용 인덱스 가시성을 교대로 적용한다. 첫 실행을 제외하고 조건별 20회 측정하며, SQL 실행 계획과 원자료는 CI의 `oracle-month-plans`에 기록한다. [측정 코드](../ops/measure_oracle_month.py)
 
 보완 중 교육비를 출장비로 바꾸면 원신청의 약정 200,000원을 해제하고 새 신청을 결재 대기로 접수한다. 3일 출장비 225,000원의 인정액은 150,000원으로 다시 계산된다. 두 신청에 서로의 신청번호와 당시 규정이 남는다. 같은 요청을 재전송해도 원신청의 전표는 승인·취소 두 건이고, 잘못된 금액으로 재신청하면 기존 약정이 유지됐다. [서비스](../src/main/java/kr/budget/claims/ClaimService.java) · [두 신청의 이력 확인](../frontend/tests/keyboard-review.spec.ts)
