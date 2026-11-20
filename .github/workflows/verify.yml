@@ -87,3 +87,8 @@ jobs:
         env:
           ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
           BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: proxy-transport
+          path: target/https-proxy/transport.json
+          if-no-files-found: error

@@ -37,7 +37,7 @@ export TEST_PORTAL_RECEIVER="$PWD/$work/portal/receive.php"
 php -S 127.0.0.1:18760 -t "$work/portal" > "$work/php.log" 2>&1 &
 php_server=$!
 cp ops/Caddyfile "$work/Caddyfile"
-printf '\nlocalhost:18759 {\n reverse_proxy 127.0.0.1:18760\n}\n' >> "$work/Caddyfile"
+printf '\n127.0.0.1:18759 {\n reverse_proxy 127.0.0.1:18760\n}\n' >> "$work/Caddyfile"
 proxy=$(docker run -d --network host -e BUDGET_PUBLIC_HOST=localhost:18758 \
     -v "$PWD/$work/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine)
 for attempt in {1..30}; do
@@ -48,7 +48,7 @@ export TEST_DEPLOYMENT_URL=https://localhost:18758 NODE_EXTRA_CA_CERTS="$PWD/$wo
 keytool -importcert -noprompt -alias portal -file "$NODE_EXTRA_CA_CERTS" -keystore "$work/trust.p12" \
     -storetype PKCS12 -storepass changeit
 export BUDGET_DB_URL=jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1 BUDGET_DB_USER=budget_release
-export BUDGET_PORTAL_URL=https://localhost:18759/receive.php BUDGET_PORTAL_DELAY_MS=3000
+export BUDGET_PORTAL_URL=https://127.0.0.1:18759/receive.php BUDGET_PORTAL_DELAY_MS=3000
 java -Djavax.net.ssl.trustStore="$PWD/$work/trust.p12" -Djavax.net.ssl.trustStorePassword=changeit \
     -jar target/department-budget-0.1.0.war --spring.profiles.active=proxy > "$work/tomcat.log" 2>&1 &
 server=$!
@@ -67,7 +67,7 @@ for database in "$HOME/.pki/nssdb" "$HOME/.local/share/pki/nssdb"; do
 done
 cd frontend
 export RECORD_PORTAL_CLAIM="$PWD/../$work/claim.txt"
-TEST_PHP_ADDRESS=127.0.0.1:18760 node node_modules/@playwright/test/cli.js test https.spec.ts claims.spec.ts portal-retry.spec.ts --reporter=list
+CI_PROXY_PROBE=1 RECORD_TLS=1 TEST_PHP_ADDRESS=127.0.0.1:18760 node node_modules/@playwright/test/cli.js test https.spec.ts claims.spec.ts portal-retry.spec.ts --reporter=list
 claim=$(cat "$RECORD_PORTAL_CLAIM")
 [[ "$claim" =~ ^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$ ]]
 projection=$(mysql_query "select concat(workspace_id,'|',claim_id,'|',sequence_no,'|',event_type,'|',amount)

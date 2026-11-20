@@ -7,15 +7,31 @@ import path from "node:path";
 
 test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, baseURL }) => {
   test.skip(!baseURL?.startsWith("https://"));
-  const transport = await new Promise<{ trusted: boolean, protocol: string | null }>((resolve,reject) => {
+  const transport = await new Promise<{ trusted:boolean, protocol:string|null, validFrom:string, validTo:string }>((resolve,reject) => {
     get(baseURL!, response => {
       const socket = response.socket as TLSSocket;
-      resolve({ trusted: socket.authorized, protocol: socket.getProtocol() });
+      const cert = socket.getPeerCertificate();
+      resolve({ trusted:socket.authorized, protocol:socket.getProtocol(), validFrom:cert.valid_from, validTo:cert.valid_to });
       response.resume();
     }).on("error",reject);
   });
   expect(transport.trusted).toBe(true);
   expect(transport.protocol).toMatch(/^TLSv1\.[23]$/);
+  expect(Date.parse(transport.validFrom)).toBeLessThanOrEqual(Date.now());
+  expect(Date.parse(transport.validTo)).toBeGreaterThan(Date.now());
+  let redirect;
+  if (process.env.TEST_DEPLOYMENT_URL) {
+    const target = new URL("/assets/portal.css?visit=redirect",baseURL);
+    const plain = new URL(target);
+    plain.protocol = "http:";
+    plain.port = "";
+    const response = await page.request.get(plain.href,{maxRedirects:0});
+    redirect = {status:response.status(),location:response.headers().location};
+    expect([301,308]).toContain(redirect.status);
+    expect(redirect.location).toBe(target.href);
+  }
+  const requests = new Set<string>();
+  page.on("request",request=>requests.add(request.url()));
   const landing = await page.goto("/");
   expect(await landing!.headerValue("strict-transport-security")).toMatch(/max-age=[1-9]/);
   expect(await landing!.headerValue("cache-control")).toContain("no-store");
@@ -41,6 +57,11 @@ test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, ba
   const snapshot = await page.request.get("/api/workspace");
   expect(snapshot.status()).toBe(200);
   expect(snapshot.headers()["cache-control"]).toContain("no-store");
+  await page.locator("#role").selectOption("FINANCE");
+  await page.locator("#policy-panel summary").click();
+  await expect(page.getByRole("button",{name:"검토 요청"})).toBeEnabled();
+  expect(requests.has(new URL(editor!,baseURL).href)).toBe(true);
+  for (const address of requests) expect(new URL(address).origin).toBe(new URL(baseURL!).origin);
   const library = await page.request.get("/webjars/jquery/3.7.1/jquery.min.js");
   expect(library.headers()["cache-control"]).toContain("immutable");
   await page.goto("about:blank");
@@ -54,10 +75,13 @@ test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, ba
   expect(reused.encodedBodySize).toBeGreaterThan(0);
   if (process.env.RECORD_TLS === "1") {
     const deployment = Boolean(process.env.TEST_DEPLOYMENT_URL);
-    const result = { environment:deployment ? "deployment" : "loopback", origin:baseURL, transport, hsts:await landing!.headerValue("strict-transport-security"),
+    const proxyCI = Boolean(process.env.CI_PROXY_PROBE);
+    const result = { environment:proxyCI ? "proxy-ci" : deployment ? "deployment" : "loopback", origin:baseURL, transport, redirect,
+      sameOriginRequests:requests.size, hsts:await landing!.headerValue("strict-transport-security"),
       cookie:{ secure:cookie!.secure,httpOnly:cookie!.httpOnly,sameSite:cookie!.sameSite },
       workspaceCache:snapshot.headers()["cache-control"], libraryCache:library.headers()["cache-control"], reused };
     const file = deployment ? "deployment-https.json" : "loopback-https.json";
-    await writeFile(path.resolve(__dirname,"../../docs/measurements",file),JSON.stringify(result,null,2)+"\n");
+    const output = proxyCI ? path.resolve(__dirname,"../../target/https-proxy/transport.json") : path.resolve(__dirname,"../../docs/measurements",file);
+    await writeFile(output,JSON.stringify(result,null,2)+"\n");
   }
 });
