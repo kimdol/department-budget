@@ -10,6 +10,8 @@ const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
 const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
 const cursors = [null];
+const claimFilter = document.getElementById("claim-filter");
+for (const [value,label] of Object.entries(statusName)) claimFilter.add(new Option(label,value));
 let categories = {};
 let catalogRequest;
 function loadCategories() {
@@ -35,6 +37,7 @@ $.ajaxPrefilter(options=>{
 $("#department").on("change",event=>location.assign("/?department="+encodeURIComponent(event.target.value)));
 let nextCursor = null;
 function render(state) {
+  claimFilter.dataset.applied = claimFilter.value;
   $("#department-choice").prop("hidden",false);
   const departmentNames = {BANK:["본부 경영지원팀","지점 경영지원팀"],HOSPITAL:["총무팀","교육수련팀"],COMPANY:["인사팀","총무팀"]}[state.organization];
   $("#department option").each((index,option)=>$(option).text(departmentNames[index]));
@@ -75,13 +78,13 @@ function render(state) {
     editingAmounts.set(input.dataset.expenseRound,input.value);
   }
   list.empty();
-  if (!state.claims.length) list.text("아직 신청한 비용이 없습니다.");
+  if (!state.claims.length) list.text(claimFilter.value ? "해당 상태의 신청이 없습니다." : "아직 신청한 비용이 없습니다.");
   for (const claim of state.claims) {
     const row = $("<article>").addClass("claim").appendTo(list);
     const headingId = "claim-title-" + claim.claimId;
     $("<strong>").attr({id:headingId,tabindex:-1}).text(claim.title + " · " + statusName[claim.status]).appendTo(row);
     row.attr("aria-labelledby",headingId);
-    const refreshClaim = () => refresh().then(()=>document.getElementById(headingId)?.focus());
+    const refreshClaim = () => refresh().then(()=>(document.getElementById(headingId) || claimFilter).focus());
     $("<small>").text(claim.claimId).appendTo(row);
     if (pendingAction[claim.status]) $("<p>").text("다음 담당자 · " + pendingAction[claim.status]).appendTo(row);
     if (claim.reviewNote) $("<p>").text("보완 사유 · " + claim.reviewNote).appendTo(row);
@@ -126,7 +129,7 @@ function render(state) {
         for (const v of versions) $("<p>").text("버전 "+v.versionNo+" · "+v.title+" · "+money(v.estimated)+" · "+
           v.days+"일 · "+statusName[v.status]+" · "+v.claimId).appendTo(documents);
       }).fail(reportError)).appendTo(actions);
-    $("<button>").text("결재 이력").on("click", () =>
+    const historyButton = $("<button>").text("결재 이력").on("click", () =>
       $.getJSON(path+"/history").done(events => {
         const names = {SUBMIT:"신청 접수",FORWARD_FINANCE:"재무로 결재 요청",FINAL_APPROVAL:"최종 사전승인",
           SUBMIT_ACTUAL:"실제 지출 제출",APPROVE_INCREASE:"증액 승인",RETURN:"보완 요청",SETTLE:"정산 확정",
@@ -140,6 +143,10 @@ function render(state) {
           $("<p>").text([event.recordedAt.replace("T"," "),phase,roles[event.actorRole],
             names[event.eventType] || event.eventType,money(event.amount),event.note,event.actorMemberId].filter(Boolean).join(" · ")).appendTo(documents);
         }
+        $("<button>").text("결재 이력 닫기").on("click",()=>{
+          documents.empty();
+          historyButton.trigger("focus");
+        }).appendTo(documents).trigger("focus");
       }).fail(reportError)).appendTo(actions);
     if (state.role === "FINANCE" && state.portalEnabled) $("<button>").text("사내 포털 수신 결과").on("click",() =>
       $.getJSON(path+"/portal-receipt").done(receipt => {
@@ -284,8 +291,27 @@ function render(state) {
 }
 function refresh() {
   const before = cursors[cursors.length-1];
-  return $.getJSON("/api/workspace",before === null ? {} : {before}).then(render);
+  const status = claimFilter.value;
+  const params = before === null ? {} : {before};
+  if (status) params.status = status;
+  return $.getJSON("/api/workspace",params).then(state=>{
+    if (status === claimFilter.value && before === cursors[cursors.length-1]) render(state);
+  });
 }
+$(claimFilter).on("change",()=>{
+  const previous = cursors.slice();
+  claimFilter.disabled = true;
+  $("#older,#newer").prop("disabled",true);
+  cursors.splice(0,cursors.length,null);
+  refresh().fail(error=>{
+    claimFilter.value = claimFilter.dataset.applied || "";
+    cursors.splice(0,cursors.length,...previous);
+    reportError(error);
+  }).always(()=>{
+    claimFilter.disabled = false;
+    $("#older,#newer").prop("disabled",false);
+  });
+});
 function changePage(older) {
   const previous = cursors.slice();
   if (older && nextCursor !== null) cursors.push(nextCursor);

@@ -27,4 +27,4 @@
 <div id="portal-failures" aria-live="polite"></div>
 <div id="statement" aria-live="polite"></div>
 <button id="close-period" hidden>이 기간 마감 확정</button></section>
-<section><h2>신청 내역</h2><div id="claims"></div><button id="newer" hidden>이전 페이지</button><button id="older" hidden>다음 페이지</button></section></div></main></body></html>
+<section><h2>신청 내역</h2><label>신청 상태<select id="claim-filter"><option value="">전체 상태</option></select></label><div id="claims"></div><button id="newer" hidden>이전 페이지</button><button id="older" hidden>다음 페이지</button></section></div></main></body></html>

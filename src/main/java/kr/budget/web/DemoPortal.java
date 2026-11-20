@@ -81,7 +81,7 @@ public class DemoPortal {
                 session.setAttribute("role-SECONDARY", Role.EMPLOYEE);
             }
         }
-        return snapshot(session,null);
+        return snapshot(session,null,null);
     }
 
     @PostMapping("/api/demo/role")
@@ -93,9 +93,12 @@ public class DemoPortal {
 
     @GetMapping("/api/workspace")
     @ResponseBody
-    public Map<String, Object> snapshot(HttpSession session,@RequestParam(required=false) Long before) {
+    public Map<String, Object> snapshot(HttpSession session,@RequestParam(required=false) Long before,
+                                         @RequestParam(required=false) String status) {
         String workspace = workspace(session);
-        var rows = mapper.inbox(workspace,before == null ? Long.MAX_VALUE : before);
+        long cursor = before == null ? Long.MAX_VALUE : before;
+        var rows = status == null || status.isEmpty() ? mapper.inbox(workspace,cursor)
+                : mapper.inboxByStatus(workspace,cursor,status);
         Role member = role(session);
         return Map.of("balance", mapper.balance(workspace), "claims", rows.stream().limit(50).toList(), "hasMore",rows.size() > 50,
                 "role", member.effective(),"persona",member,"memberId",member.memberId,

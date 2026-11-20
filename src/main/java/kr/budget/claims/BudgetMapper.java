@@ -77,6 +77,9 @@ public interface BudgetMapper {
     @Select("select " + INBOX_COLUMNS + " from expense_claim where workspace_id=#{workspace} and inbox_order < #{before} order by inbox_order desc fetch first 51 rows only")
     List<InboxItem> inbox(String workspace,long before);
 
+    @Select("select " + INBOX_COLUMNS + " from expense_claim where workspace_id=#{workspace} and status=#{status} and inbox_order < #{before} order by inbox_order desc fetch first 51 rows only")
+    List<InboxItem> inboxByStatus(String workspace,long before,String status);
+
     default List<InboxItem> claims(String workspace) {
         return inbox(workspace,Long.MAX_VALUE).stream().limit(50).toList();
     }
