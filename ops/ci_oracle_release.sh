@@ -35,6 +35,10 @@ for attempt in {1..60}; do
     sleep 1
 done
 curl -fsS --max-time 3 "http://127.0.0.1:$SERVER_PORT/" > /dev/null
+if grep -Fq 'Using generated security password' "$work/tomcat.log"; then
+    echo 'Unexpected default password account in release startup' >&2
+    exit 1
+fi
 (
     cd frontend
     TEST_EXTERNAL_RELEASE=1 npx --no-install playwright test claims.spec.ts hospital-policy.spec.ts travel-approval.spec.ts inbox-pages.spec.ts --reporter=list
