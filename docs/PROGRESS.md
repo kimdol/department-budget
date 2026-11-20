@@ -82,12 +82,21 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 
 | 구분 | 업무 | 확인된 범위 · 남은 검증 |
 | --- | --- | --- |
-| 필수 | 신청·약정·정산·정정 | H2와 실제 Oracle에서 같은 원장 계약 각 15건 통과 |
+| 필수 | 신청·약정·정산·정정 | 실제 Oracle에서 원장 계약 19건 통과. 커밋 직전 승인 실패, 정산 재전송, 다음 달 환입 포함. [기준 실행](https://github.com/kimdol/department-budget/actions/runs/44785908320) |
 | 필수 | 규정 발행·복구·계산 재현 | 수식 시험 14건·조건 트리 2건 통과. 이전·새 평가기의 과거 결정 재현과 복구를 실제 Oracle과 Chrome에서 확인 |
-| 필수 | 세션·증빙·웹 응답 | Tomcat HTTP 시험 2건, 로컬 HTTPS Chrome 6건 통과. 외부 공개 도메인의 역할 시연 대기 |
+| 필수 | 세션·증빙·웹 응답 | 세션 ID 교체, 두 방문자와 두 부서의 업무·증빙 격리, no-store, 해시 자산의 재사용을 로컬 HTTPS에서 확인. 외부 공개 도메인의 역할 시연 대기 |
 | 필수 | 월마감·포털 | 실패한 배치 재시작과 원본 기간 보존을 H2·Oracle 원장 계약에서 확인. 실제 PHP·MySQL 수신 구간 검증. 외부 송신 경로 대기 |
 | 심화 | 성능·복원 | 재방문 전송량, 수식 미리보기 지연, Oracle 깊은 페이지의 논리 읽기 측정 완료. 같은 PDB의 별도 스키마 복원 대사 완료. 승인 잠금 대기 시간 미측정 |
 | 선택 | 상용 UI·리포팅 전환 | 제품 환경 미확보 |
+
+| 설계서의 세부 인수 항목 | 구현한 범위 | 남은 확인·구현 |
+| --- | --- | --- |
+| 직원의 사전 결정과 결재 | JSP 신청함의 지원액·본인 부담액·역할 경로, 접수 당시 규정 및 증빙 조건 고정 | 신청 범위·금액 변경 후 재상신과 이전 신청 연결, 개인 지출 장부 |
+| 조직별 승인 주체 | 세션별 직원·부서장·재무 역할과 부서별 서버 인가 | 독립된 구성원 신원에 기반한 자기 승인 차단, 본부의 지점별 배정 변경 |
+| 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 단일 사례의 지원액·경로 비교 | 다음 달 예약 발행, 여러 과거 신청에 대한 일괄 영향 비교, 불변 구문 트리 캐시 |
+| 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조 | Oracle PL/SQL 대사, Apache Camel 기반 JSON·CSV 공통 변환, 그누보드 연동 |
+| UI·운영 검수 | JSP·jQuery 업무 처리와 React 규정 작업실, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | React 직원 신청 화면의 동일 계약 검증, 키보드·오류 포커스와 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
+| 성능 | 100만 신청의 깊은 목록 조회·논리 읽기·DB p95, 결재함 본문·정적 자산·수식 입력 측정 | 같은 데이터 규모의 월별 집계와 동시 승인 쓰기 지연, 공개 환경에서의 브라우저 측정 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
 
@@ -95,7 +104,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 
 1. git status, git log -1과 git ls-remote origin refs/heads/main을 대조한다.
 2. 다음 기능 변경에서도 Verify Oracle Ledger의 계약 시험과 복원 산출물 일치를 확인한다. 수식 평가기 교체를 포함한 [Oracle 기준 실행](https://github.com/kimdol/department-budget/actions/runs/44771763566)은 80ac4c6에 해당한다.
-3. 독립 호스팅과 Oracle 연결 권한이 확보되면 공개 URL에서 새 브라우저 두 개로 대표 업무와 격리를 재현한다. 공개 전 대기 중인 설계 범위에는 레거시 CSV, 별도 부서 구성원 인가, 운영자 규정 조건 편집이 포함된다.
+3. OCI 접근 권한이 확보되면 무료 자원 할당 가능 여부와 Oracle 연결을 확인하고 공개 URL에서 새 브라우저 두 개로 대표 업무와 격리를 재현한다. 그동안에는 위 세부 인수 항목에서 남은 구현과 검증을 이어간다.
 4. 로컬 재현은 frontend에서 npm ci와 npm run build, 루트에서 mvn package, python ops/test_https.py 순서다. 포털 수신 시험은 python ops/test_portal.py로 실행한다.
 
 ## 외부 환경
