@@ -13,6 +13,20 @@ sqlplus -L BUDGET_APP@BUDGET_PDB @target/install.sql
 
 ## 기존 버전에서 올리기
 
+### OCI 배포 VM에서 JDBC 연결 확인
+
+Autonomous Database를 사용할 때는 배포 VM에서 접근 가능한 네트워크를 설정한다. 지갑 없이 TLS를 사용하는 구성에서는 DB에 TLS 접속을 허용하고 접근 제어 목록에 VM의 송신 주소 또는 해당 VCN을 등록한다. DB 콘솔의 연결 화면에서 TLS용 접속 설명자를 받아 `jdbc:oracle:thin:@` 뒤에 붙인 값을 `BUDGET_DB_URL`로 설정한다. 사용자·비밀번호는 앱 전용 계정을 쓴다. [Oracle JDBC Thin TLS 연결](https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/connect-jdbc-thin-tls.html) · [네트워크 및 인증 설정](https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/support-tls-mtls-authentication.html)
+
+업무 및 배치 스키마를 설치한 뒤 서비스와 동일한 VM·접속 환경 변수로 다음 검사를 수행한다. 저장소 루트에서 배포할 WAR를 사용한다. JDBC 연결 후 Oracle이 보고한 세션 전송 방식과 원장·규정·배치 테이블 접근을 검사한다. 결과에는 드라이버 버전, 전송 방식과 검사 건수만 출력한다.
+
+```sh
+driver_dir=$(mktemp -d)
+unzip -j target/department-budget-0.1.0.war 'WEB-INF/lib/ojdbc*.jar' -d "$driver_dir"
+java -cp "$driver_dir/*" ops/CheckRuntimeDatabase.java TCPS
+```
+
+CI의 Oracle Free 시험은 같은 도구로 루프백 TCP 연결을 확인하고 같은 연결을 TCPS로 검증하면 실패해야 통과한다. 실제 OCI 세션의 TCPS 통과와 원격 VM에서의 애플리케이션 업무 실행은 계정과 자원 할당 후 확인할 항목이다. [접속 검사](../ops/CheckRuntimeDatabase.java) · [배포 WAR 시험](../ops/ci_oracle_release.sh)
+
 Oracle Free의 같은 PDB 내 별도 스키마에 복원한 CI 실행에서 Data Pump 내보내기는 51초, 가져오기는 33초였다. 원본·복원 대사 파일은 각각 169행이며 내용이 일치했다. 대사 단계의 초 단위 계측값은 0초였다. 이 수치는 합성 계약 시험 데이터에 대한 1회 관측이며 VM 재구축, 외부 전송, 업무 재개 시간은 포함하지 않는다. [시간 원자료](measurements/oracle-restore-time-44784441705.txt) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44784441705)
 
 현재 배포 리비전과 적용한 마지막 V번호를 확인하고 아래 절차로 백업한다. 요청 및 배치 실행을 중지한 뒤 새 WAR에 추가된 V번호만 순서대로 SQL*Plus에서 실행한다. 적용 파일명, 체크섬과 결과를 배포 기록에 보관한다. Spring Batch 라이브러리 버전도 변경됐다면 해당 버전의 Oracle 메타데이터 마이그레이션을 함께 검토한다. Oracle DDL은 암묵적 커밋을 수행하므로 중간 실패 시 마지막 성공 문장과 실제 제약·열 상태를 대조한다. 최초 설치 스크립트는 기존 객체가 하나라도 있으면 작업을 중단한다.

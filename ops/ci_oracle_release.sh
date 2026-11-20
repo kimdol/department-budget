@@ -25,6 +25,12 @@ fi
 grep -q 'ORA-20001: Empty schema required' "$work/repeat.log"
 
 export BUDGET_DB_USER=budget_release BUDGET_DB_URL=jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1
+unzip -j target/department-budget-0.1.0.war 'WEB-INF/lib/ojdbc*.jar' -d "$work/jdbc"
+java -cp "$work/jdbc/*" ops/CheckRuntimeDatabase.java TCP
+if java -cp "$work/jdbc/*" ops/CheckRuntimeDatabase.java TCPS > "$work/transport-check.log" 2>&1; then
+    exit 1
+fi
+grep -Fq "Unexpected database transport" "$work/transport-check.log"
 export HTTPS_ONLY=false SERVER_ADDRESS=127.0.0.1 SERVER_PORT=18753
 java -jar target/department-budget-0.1.0.war > "$work/tomcat.log" 2>&1 &
 server=$!
