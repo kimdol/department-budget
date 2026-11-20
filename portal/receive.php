@@ -18,7 +18,9 @@ try {
         if (!is_string($event[$field] ?? null) || !preg_match('/^[a-f0-9-]{36}$/D', $event[$field])) finish(422);
     }
     $sequence = $event['sequenceNo'] ?? 0;
-    if (!in_array($sequence, [1, 2], true) || ($event['eventType'] ?? '') !== [1=>'APPROVAL', 2=>'SETTLEMENT'][$sequence]) finish(422);
+    if (!in_array($sequence, [1, 2], true)) finish(422);
+    $types = $sequence === 1 ? ['APPROVAL'] : ['SETTLEMENT', 'CANCELLATION'];
+    if (!in_array($event['eventType'] ?? '', $types, true)) finish(422);
     if (!is_int($event['amount'] ?? null) || $event['amount'] < 0 || $event['amount'] > 999999999999) finish(422);
     $db = new PDO(getenv('PORTAL_MYSQL_DSN'), getenv('PORTAL_MYSQL_USER'), getenv('PORTAL_MYSQL_PASSWORD'),
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false]);

@@ -90,6 +90,12 @@ public class DemoPortal {
         service.approve(authorized(session, Role.MANAGER), id);
     }
 
+    @PostMapping("/api/claims/{id}/cancel")
+    @ResponseBody
+    public void cancel(HttpSession session, @PathVariable String id, @RequestParam boolean releaseApproval) {
+        service.cancel(authorized(session, Role.EMPLOYEE), id, releaseApproval);
+    }
+
     @GetMapping("/api/statement")
     @ResponseBody
     public PeriodClosing.Statement statement(HttpSession session) {

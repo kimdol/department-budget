@@ -20,6 +20,25 @@ abstract class PostingContract {
     @Autowired kr.budget.portal.PortalOutbox outbox;
 
     @Test
+    void cancellationReleasesOnlyAnExistingCommitmentOnce() {
+        String workspace = service.open();
+        for (boolean approved : List.of(false, true)) {
+            String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
+            if (approved) {
+                service.approve(workspace, id);
+                assertThrows(ResponseStatusException.class, () -> service.cancel(workspace, id, false));
+            }
+            service.cancel(workspace, id, approved);
+            service.cancel(workspace, id, approved);
+            assertThrows(ResponseStatusException.class, () -> service.approve(workspace, id));
+            assertEquals(approved ? 2 : 0, jdbc.queryForObject("select count(*) from budget_posting where claim_id=?", Integer.class, id));
+            assertEquals(1, jdbc.queryForObject("select count(*) from claim_review_event where claim_id=?", Integer.class, id));
+            assertEquals(1000000, mapper.balance(workspace).getAvailable());
+        }
+        assertTrue(periods.statement(workspace).pending().isEmpty());
+    }
+
+    @Test
     void deliveryCanResumeAfterReceiverCommitsButItsAcknowledgementIsLost() {
         String workspace = service.open();
         String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);

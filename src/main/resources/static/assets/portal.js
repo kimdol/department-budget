@@ -1,5 +1,5 @@
 const statusName = {SUBMITTED:"결재 대기", APPROVED:"약정 완료", IN_REVIEW:"정산 검토", SETTLED:"정산 완료",
-  INCREASE_REQUESTED:"증액 승인 대기", NEEDS_RECEIPT:"보완 요청"};
+  INCREASE_REQUESTED:"증액 승인 대기", NEEDS_RECEIPT:"보완 요청", CANCELLED:"취소 완료"};
 const money = value => new Intl.NumberFormat("ko-KR").format(value) + "원";
 const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
@@ -54,6 +54,10 @@ function render(state) {
       api(path + route, data()).then(refresh).fail(error => {reportError(error); $(this).prop("disabled",false);});
     }).appendTo(actions);
     if (state.role === "MANAGER" && claim.status === "SUBMITTED") action("사전승인","/approve",()=>({}));
+    if (state.role === "EMPLOYEE" && ["SUBMITTED","APPROVED"].includes(claim.status)) {
+      const approved = claim.status === "APPROVED";
+      action(approved ? "약정 취소" : "신청 철회", "/cancel", () => ({releaseApproval:approved}));
+    }
     if (state.role === "EMPLOYEE" && ["APPROVED","NEEDS_RECEIPT"].includes(claim.status)) {
       const amount = $("<input>").attr({type:"number",min:1,"aria-label":"실제 지출액(원)"}).val(225000).appendTo(actions);
       const type = $("<select>").attr("aria-label","증빙 종류").appendTo(actions);

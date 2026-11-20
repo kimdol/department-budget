@@ -41,6 +41,9 @@ public interface BudgetMapper {
     @Update("update expense_claim set status='APPROVED', approved=#{approved} where workspace_id=#{workspace} and claim_id=#{id}")
     void approve(String workspace, String id, long approved);
 
+    @Update("update expense_claim set status='CANCELLED' where workspace_id=#{workspace} and claim_id=#{id}")
+    void cancel(String workspace, String id);
+
     @Update("update expense_claim set status=#{status}, actual=#{actual}, review_round=review_round+1, review_note=null where workspace_id=#{workspace} and claim_id=#{id}")
     void review(String workspace, String id, long actual, String status);
 

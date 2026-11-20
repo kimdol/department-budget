@@ -50,9 +50,25 @@ public class ClaimService {
         return id;
     }
 
+    public void cancel(String workspace, String id, boolean releaseApproval) {
+        mapper.lockBalance(workspace);
+        Claim claim = locked(workspace, id);
+        if (claim.status().equals("CANCELLED")) return;
+        requireOpen(workspace);
+        require(claim, releaseApproval ? "APPROVED" : "SUBMITTED");
+        if (releaseApproval) {
+            post(workspace, id, "CANCELLATION", -claim.approved(), 0);
+            outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(), workspace, id, 2, "CANCELLATION", 0));
+        }
+        mapper.cancel(workspace, id);
+        mapper.event(workspace, id, claim.reviewRound(), releaseApproval ? "CANCEL_APPROVAL" : "WITHDRAW",
+                "EMPLOYEE", claim.approved(), null);
+    }
+
     public void approve(String workspace, String id) {
         Balance balance = mapper.lockBalance(workspace);
         Claim claim = locked(workspace, id);
+        if (claim.status().equals("CANCELLED")) throw new ResponseStatusException(HttpStatus.CONFLICT);
         if (!claim.status().equals("SUBMITTED")) return;
         requireOpen(workspace);
         long amount = amount(claim, claim.estimated());
