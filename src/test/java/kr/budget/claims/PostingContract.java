@@ -326,13 +326,14 @@ abstract class PostingContract {
         assertEquals(200000,estimate.supported());
         assertEquals(100000,estimate.employeeShare());
         UUID request = UUID.randomUUID();
-        String id = service.submit(workspace,request,"교육","EDUCATION",300000,1,estimate.generation());
+        var receipt = service.submitWithReceipt(workspace,request,"교육","EDUCATION",300000,1,estimate.generation());
+        assertEquals(estimate.generation(),receipt.policyGeneration());
         publishReviewed(workspace,policies.draft(workspace,"EDUCATION",0,"floor(eligible_cost * 0.5)"));
-        assertEquals(id,service.submit(workspace,request,"교육","EDUCATION",300000,1,estimate.generation()));
+        assertEquals(receipt,service.submitWithReceipt(workspace,request,"교육","EDUCATION",300000,1,estimate.generation()));
         assertEquals(409,assertThrows(ResponseStatusException.class, () ->
                 service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1,estimate.generation())).getStatusCode().value());
         assertEquals(150000,service.estimate(workspace,"EDUCATION",300000,1).supported());
-        service.approve(workspace,id);
+        service.approve(workspace,receipt.claimId());
         assertEquals(200000,mapper.balance(workspace).committed());
     }
 

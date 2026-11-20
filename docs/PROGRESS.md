@@ -1,5 +1,9 @@
 # 인수 현황
 
+실제 Oracle 원장 시험 27건의 개별 결과를 확인했다. 약정 200,000원 상태에서 서로 다른 입력 1,000건을 미리보고 각 계산값을 확인한 뒤, 기존 잔액·전표와 발행 세대 수가 유지됐다. [시험별 원자료](measurements/oracle-cases-44806827872.json) · [실행](https://github.com/kimdol/department-budget/actions/runs/44806827872)
+
+신청 접수 응답에 적용 비목·규정 세대·평가기 버전을 포함했다. 접수 직후 규정이 바뀐 경우 같은 요청 키로 재전송하면 저장된 신청의 세대와 평가기를 반환한다. 로컬 HTTP 시험에서 최초 응답과 재전송 응답 전체가 같았고, 원장 시험에서 새 규정 발행 후에도 기존 신청은 200,000원으로 승인됐다. [HTTP 시험](../src/test/java/kr/budget/web/PortalHttpTest.java) · [응답 계약](API.md)
+
 Oracle 원장 검증은 로컬과 Oracle에서 같은 이름의 시험들이 전부 실행됐는지 대조한다. 통과 시 개별 시험명·실행 시간을 `oracle-contract-results/oracle-cases.json`에 기록한다. 여기서 `oneThousandPolicyPreviewsLeaveCommittedBudgetAndPostingRowsUntouched`를 찾으면 교육비 1,000개 입력의 기존·후보 계산값과 전후 약정액·전표·발행 세대 수를 검사한 시험을 식별할 수 있다. 로컬에서 Oracle 전용 시험을 건너뛴 보고서는 검사기가 거절했다. [시험 소스](../src/test/java/kr/budget/claims/PostingContract.java) · [결과 생성기](../ops/check_oracle_contract.py)
 
 결재함에 상태 필터를 추가했다. 로컬 HTTPS Chrome에서 51건 중 두 번째 페이지의 신청을 승인한 뒤 약정 완료로 필터링하자 해당 신청 1건이 나타났다. 키보드로 결재 이력을 열고 닫아 선택한 상태와 포커스가 유지되는 것을 확인했다. 다른 상태 조회에 503을 반환하는 시험에서는 직전 필터·목록을 복원했고, 재시도하면 해당 상태의 빈 결과가 표시됐다. [조회 API](API.md) · [회귀 시험](../frontend/tests/inbox-pages.spec.ts)

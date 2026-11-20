@@ -114,10 +114,10 @@ public class DemoPortal {
 
     @PostMapping("/api/claims")
     @ResponseBody
-    public Map<String, String> submit(HttpSession session, @RequestParam UUID requestKey, @RequestParam String title,
+    public ClaimService.SubmissionReceipt submit(HttpSession session, @RequestParam UUID requestKey, @RequestParam String title,
             @RequestParam String category, @RequestParam long estimated, @RequestParam(defaultValue="1") int days,
             @RequestParam(required=false) Long expectedGeneration) {
-        return Map.of("claimId", service.submit(authorized(session, Role.EMPLOYEE), requestKey, title, category, estimated, days, expectedGeneration));
+        return service.submitWithReceipt(authorized(session, Role.EMPLOYEE), requestKey, title, category, estimated, days, expectedGeneration);
     }
 
     @PostMapping("/api/claims/{id}/approve")

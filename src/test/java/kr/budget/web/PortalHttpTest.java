@@ -86,8 +86,12 @@ class PortalHttpTest {
         assertEquals(403, first.request("/api/claims", form, false).statusCode());
         var created = first.post("/api/claims", form);
         assertEquals(200, created.statusCode());
-        String id = json.readTree(created.body()).get("claimId").asText();
-        assertEquals(id, json.readTree(first.post("/api/claims", form).body()).get("claimId").asText());
+        var submission = json.readTree(created.body());
+        String id = submission.get("claimId").asText();
+        assertEquals("EDUCATION",submission.get("category").asText());
+        assertEquals(0,submission.get("policyGeneration").longValue());
+        assertEquals("decimal-v1",submission.get("evaluatorVersion").asText());
+        assertEquals(submission,json.readTree(first.post("/api/claims", form).body()));
         String path = "/api/claims/" + id;
         assertEquals(403, first.post(path + "/approve", "").statusCode());
         second.role("MANAGER");

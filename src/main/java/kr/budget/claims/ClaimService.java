@@ -65,6 +65,13 @@ public class ClaimService {
     }
 
     public String submit(String workspace, UUID requestKey, String title, String category, long estimated, int days, Long expectedGeneration) {
+        return submitWithReceipt(workspace,requestKey,title,category,estimated,days,expectedGeneration).claimId();
+    }
+
+    public record SubmissionReceipt(String claimId,String category,long policyGeneration,String evaluatorVersion) {}
+
+    public SubmissionReceipt submitWithReceipt(String workspace, UUID requestKey, String title, String category,
+                                               long estimated, int days, Long expectedGeneration) {
         checkAmount(estimated);
         if (title == null || title.isBlank() || title.length() > 100 || days < 1 || days > 365)
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -73,7 +80,8 @@ public class ClaimService {
         Claim previous = mapper.previousSubmission(workspace, key);
         if (previous != null) {
             if (previous.title().equals(title.strip()) && previous.category().equals(category)
-                    && previous.estimated() == estimated && previous.days() == days) return previous.claimId();
+                    && previous.estimated() == estimated && previous.days() == days)
+                return new SubmissionReceipt(previous.claimId(),previous.category(),previous.policyGeneration(),previous.evaluatorVersion());
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         requireOpen(workspace);
@@ -85,7 +93,7 @@ public class ClaimService {
         mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation(),policy.evaluatorVersion(),route,policy.attendanceRule());
         mapper.rememberSubmission(workspace, key, id);
         mapper.event(workspace, id, 0, "SUBMIT", "EMPLOYEE", estimated, null);
-        return id;
+        return new SubmissionReceipt(id,category,policy.generation(),policy.evaluatorVersion());
     }
 
     public void cancel(String workspace, String id, boolean releaseApproval) {

@@ -1,0 +1,114 @@
+{
+  "suite": "kr.budget.claims.OraclePostingTest",
+  "passed": 27,
+  "cases": [
+    {
+      "name": "approvalRollsBackWhenTheFinalHistoryInsertFails",
+      "seconds": 0.046
+    },
+    {
+      "name": "attendancePolicyChangesAndRestorationPreserveEachSubmissionsEvidenceRequirements",
+      "seconds": 0.045
+    },
+    {
+      "name": "branchCanCommitWhileHeadOfficeBudgetIsLocked",
+      "seconds": 0.073
+    },
+    {
+      "name": "cancellationReleasesOnlyAnExistingCommitmentOnce",
+      "seconds": 0.023
+    },
+    {
+      "name": "categoryReplacementReleasesTheOriginalCommitmentAndStartsFreshApproval",
+      "seconds": 0.026
+    },
+    {
+      "name": "closingReportsLedgerDifferenceAndRefusesToArchiveUntilReconciled",
+      "seconds": 0.089
+    },
+    {
+      "name": "competingApprovalsCannotExceedAllocation",
+      "seconds": 0.023
+    },
+    {
+      "name": "competingBranchAllocationsConserveTheCombinedBudget",
+      "seconds": 0.039
+    },
+    {
+      "name": "conferenceRulesArePinnedAtSubmissionAndCanBeRestoredForNewClaims",
+      "seconds": 0.083
+    },
+    {
+      "name": "delegatedApplicantCannotApproveOrIncreaseTheirOwnClaim",
+      "seconds": 0.014
+    },
+    {
+      "name": "deliveryCanResumeAfterReceiverCommitsButItsAcknowledgementIsLost",
+      "seconds": 0.052
+    },
+    {
+      "name": "displayedEstimateDetectsPublicationBeforeSubmissionAndPreservesCommittedRetry",
+      "seconds": 0.016
+    },
+    {
+      "name": "failedSnapshotRestartsTheSameBatchInstance",
+      "seconds": 0.101
+    },
+    {
+      "name": "financeApprovalReservesTravelCostsOnlyAfterBothSteps",
+      "seconds": 0.019
+    },
+    {
+      "name": "headOfficeTransfersOnlyAvailableFundsAndKeepsBranchAllocationOnRetry",
+      "seconds": 0.062
+    },
+    {
+      "name": "historicalImpactUsesSubmittedRulesAndPaginatesWithinTheDepartmentAndCategory",
+      "seconds": 0.168
+    },
+    {
+      "name": "incompleteConferenceEvidenceBlocksPostingUntilTheEmployeeCorrectsIt",
+      "seconds": 0.062
+    },
+    {
+      "name": "increasesOnlyTheDifferenceAndRequiresTheLatestReviewRound",
+      "seconds": 0.026
+    },
+    {
+      "name": "laterPagesKeepTheirBoundaryWhenAnotherApplicationArrives",
+      "seconds": 0.172
+    },
+    {
+      "name": "lostSubmissionResponseReplaysOriginalClaimOnlyForSameInput",
+      "seconds": 0.023
+    },
+    {
+      "name": "oneThousandPolicyPreviewsLeaveCommittedBudgetAndPostingRowsUntouched",
+      "seconds": 0.28
+    },
+    {
+      "name": "publishingBindsTheExactComparisonReviewedByTheManager",
+      "seconds": 0.012
+    },
+    {
+      "name": "resumesAfterPreparingCloseAndFreezesExactlyOneStatement",
+      "seconds": 0.074
+    },
+    {
+      "name": "retriesLeaveOneSettlementAndTheExactLedgerBalance",
+      "seconds": 0.057
+    },
+    {
+      "name": "reversesClosedSettlementOnlyInAnOpenPeriodWithoutChangingOriginalStatement",
+      "seconds": 0.088
+    },
+    {
+      "name": "revisedScopeKeepsEveryVersionAndRequiresNewApproval",
+      "seconds": 0.076
+    },
+    {
+      "name": "scheduledRuleActivatesOnceWhenTheNextAccountingPeriodOpens",
+      "seconds": 0.33
+    }
+  ]
+}
