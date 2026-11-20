@@ -108,6 +108,12 @@ public class DemoPortal {
         return statements.postings(authorized(session, Role.FINANCE), id);
     }
 
+    @GetMapping("/api/statements/{period}")
+    @ResponseBody
+    public PeriodClosing.Statement archive(HttpSession session, @PathVariable String period) {
+        return periods.archive(authorized(session, Role.FINANCE), period);
+    }
+
     @PostMapping("/api/statement/close")
     @ResponseBody
     public PeriodClosing.Statement close(HttpSession session) {

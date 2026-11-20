@@ -26,6 +26,16 @@ public interface ClosingMapper {
     void setState(String workspace, String state);
 
     @Insert("""
+        insert into budget_statement_balance (workspace_id,period_key,allocation,committed,spent)
+        select workspace_id,period_key,allocation,committed,spent from budget_workspace
+        where workspace_id=#{workspace} and period_key=#{period}
+        """)
+    void freezeBalance(String workspace, String period);
+
+    @Select("select allocation,committed,spent from budget_statement_balance where workspace_id=#{workspace} and period_key=#{period}")
+    kr.budget.claims.Balance archivedBalance(String workspace, String period);
+
+    @Insert("""
         insert into budget_statement_line (workspace_id,period_key,category,claim_count,spent)
         select c.workspace_id,#{period},c.category,count(*),sum(p.spent_delta)
         from expense_claim c join budget_posting p on p.claim_id=c.claim_id and p.workspace_id=c.workspace_id

@@ -80,6 +80,10 @@ abstract class PostingContract {
         assertEquals(1, statement.lines().size());
         assertEquals(180000, statement.lines().getFirst().spent());
         assertEquals(statement, closing.close(workspace));
+        jdbc.update("update budget_workspace set allocation=allocation+1000 where workspace_id=?", workspace);
+        assertEquals(statement, periods.archive(workspace, statement.period()));
+        assertEquals(statement, periods.statement(workspace));
+        assertThrows(ResponseStatusException.class, () -> periods.archive(service.open(), statement.period()));
     }
 
     @Test

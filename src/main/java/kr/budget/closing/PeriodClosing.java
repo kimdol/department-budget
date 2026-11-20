@@ -24,9 +24,15 @@ public class PeriodClosing {
         Balance balance = budgets.lockBalance(workspace);
         var period = ledger.period(workspace);
         boolean closed = period.periodState().equals("CLOSED");
-        return new Statement(period.periodKey(), period.periodState(), balance,
-                closed ? ledger.lines(workspace, period.periodKey()) : ledger.currentLines(workspace),
+        if (closed) return archive(workspace, period.periodKey());
+        return new Statement(period.periodKey(), period.periodState(), balance, ledger.currentLines(workspace),
                 ledger.pending(workspace));
+    }
+
+    public Statement archive(String workspace, String period) {
+        Balance frozen = ledger.archivedBalance(workspace, period);
+        if (frozen == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return new Statement(period, "CLOSED", frozen, ledger.lines(workspace, period), List.of());
     }
 
     @Transactional
@@ -49,6 +55,7 @@ public class PeriodClosing {
         if (!period.periodState().equals("CLOSING")) throw new IllegalStateException("마감 준비가 필요합니다.");
         verify(workspace, balance);
         ledger.freezeLines(workspace, expectedPeriod);
+        ledger.freezeBalance(workspace, expectedPeriod);
         long snapshot = ledger.lines(workspace, expectedPeriod).stream().mapToLong(ClosingMapper.Line::spent).sum();
         if (snapshot != balance.spent()) throw new IllegalStateException("보고서와 집행액이 일치하지 않습니다.");
         ledger.setState(workspace, "CLOSED");
