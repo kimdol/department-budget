@@ -5,7 +5,11 @@ import path from "node:path";
 const root = path.resolve(__dirname, "..");
 const tls = process.env.TEST_TLS_SPKI;
 const port = tls ? "18754" : "18753";
-const baseURL = (tls ? "https" : "http") + "://127.0.0.1:" + port;
+const deployment = process.env.TEST_DEPLOYMENT_URL ? new URL(process.env.TEST_DEPLOYMENT_URL) : undefined;
+if (deployment && (deployment.protocol !== "https:" || deployment.href !== deployment.origin + "/" || tls)) {
+  throw new Error("공개 배포 시험에는 인증서 예외 없는 HTTPS 원점 주소가 필요합니다.");
+}
+const baseURL = deployment?.origin ?? ((tls ? "https" : "http") + "://127.0.0.1:" + port);
 const schemas = readdirSync(path.join(root, "src/main/resources/db"))
   .filter(name => name.endsWith(".sql")).sort().map(name => "classpath:db/" + name);
 const maven = process.env.TEST_MAVEN || "mvn";
@@ -15,7 +19,7 @@ export default defineConfig({
   workers: 1,
   use: { baseURL, channel: "chrome", viewport: { width: 1280, height: 900 },
     launchOptions: { args: tls ? ["--ignore-certificate-errors-spki-list=" + tls] : [] } },
-  webServer: process.env.TEST_EXTERNAL_RELEASE === "1" ? undefined : {
+  webServer: deployment || process.env.TEST_EXTERNAL_RELEASE === "1" ? undefined : {
     cwd: root,
     command: `"${maven}" ${process.env.TEST_MAVEN_OPTIONS || ""} -B -ntp spring-boot:run -Dspring-boot.run.useTestClasspath=true`,
     url: baseURL,

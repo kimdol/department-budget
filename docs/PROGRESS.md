@@ -1,5 +1,7 @@
 # 인수 현황
 
+배포 후 외부 네트워크의 Chrome에서 다음 명령을 실행한다. `frontend` 디렉터리에서 `npm ci`를 실행한 뒤 환경 변수 `TEST_DEPLOYMENT_URL`에 실제 데모의 HTTPS 원점 주소를 설정하고 `RECORD_TLS=1`을 설정한다. `npx --no-install playwright test --reporter=list`는 방문자별 업무 처리와 초기화, TLS·세션·캐시를 확인한다. 응답 측정값은 `docs/measurements/deployment-https.json`에 기록한다. 배포 주소를 지정하면 시험용 서버를 기동하지 않는다. 루프백 HTTPS에서 Chrome 시험 6건을 통과했고, 공개 시험 설정이 HTTP 주소를 거부하는 것을 확인했다. 공개 호스트 검증은 대기 중이다.
+
 배포용 WAR에서 생성한 설치 SQL을 빈 Oracle 스키마에 적용하고 같은 SQL의 재실행이 ORA-20001로 차단됨을 확인했다. 이 스키마에 WAR를 연결해 Chrome에서 두 방문자의 교육비 처리와 월마감, 병원 학회비 규정 발행·복구, 출장 사전승인, 결재함 페이지 이동 시험 4건을 통과했다. [실행 결과](https://github.com/kimdol/department-budget/actions/runs/44765732583) CI 접속 범위는 루프백 HTTP이며 외부 HTTPS 검증은 OCI 배포 후 진행한다.
 
 75f463d에서 Oracle CI 전체 성공. 실제 Oracle 계약 14건 통과, 누락 0건. Data Pump 복원 후 두 대사 파일의 SHA-256은 A7330105D1E199A95CD1563812C9D1683582426590BCA36650E59167F077E175로 일치했다. [실행](https://github.com/kimdol/department-budget/actions/runs/44764720608) · [보관한 원자료](measurements/oracle-44764720608). 공개 앱 호스팅은 OCI 무료 계정 가입 진행 중이다.

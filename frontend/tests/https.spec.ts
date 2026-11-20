@@ -5,7 +5,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 
 test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, baseURL }) => {
-  test.skip(!process.env.TEST_TLS_SPKI);
+  test.skip(!baseURL?.startsWith("https://"));
   const transport = await new Promise<{ trusted: boolean, protocol: string | null }>((resolve,reject) => {
     get(baseURL!, response => {
       const socket = response.socket as TLSSocket;
@@ -37,9 +37,11 @@ test("TLS 인증서와 세션·캐시 응답을 검증한다", async ({ page, ba
   expect(reused.transferSize).toBe(0);
   expect(reused.encodedBodySize).toBeGreaterThan(0);
   if (process.env.RECORD_TLS === "1") {
-    const result = { environment:"loopback", transport, hsts:await landing!.headerValue("strict-transport-security"),
+    const deployment = Boolean(process.env.TEST_DEPLOYMENT_URL);
+    const result = { environment:deployment ? "deployment" : "loopback", origin:baseURL, transport, hsts:await landing!.headerValue("strict-transport-security"),
       cookie:{ secure:cookie!.secure,httpOnly:cookie!.httpOnly,sameSite:cookie!.sameSite },
       workspaceCache:snapshot.headers()["cache-control"], libraryCache:library.headers()["cache-control"], reused };
-    await writeFile(path.resolve(__dirname,"../../docs/measurements/loopback-https.json"),JSON.stringify(result,null,2)+"\n");
+    const file = deployment ? "deployment-https.json" : "loopback-https.json";
+    await writeFile(path.resolve(__dirname,"../../docs/measurements",file),JSON.stringify(result,null,2)+"\n");
   }
 });
