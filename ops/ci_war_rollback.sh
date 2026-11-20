@@ -43,6 +43,6 @@ for attempt in {1..60}; do
     if curl -fsS --max-time 2 "http://127.0.0.1:$SERVER_PORT/" > /dev/null 2>&1; then break; fi
     sleep 1
 done
-(cd frontend && TEST_EXTERNAL_RELEASE=1 npx --no-install playwright test travel-approval.spec.ts --reporter=list)
+(cd "$previous/frontend" && TEST_EXTERNAL_RELEASE=1 npx --no-install playwright test travel-approval.spec.ts --reporter=list)
 read_claim > "$work/after.txt"
 diff -u "$work/before.txt" "$work/after.txt"
