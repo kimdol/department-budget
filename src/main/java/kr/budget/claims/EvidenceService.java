@@ -40,22 +40,27 @@ public class EvidenceService {
 
     @Transactional
     public List<String> outstanding(String workspace,String id) {
+        return assessment(workspace,id).issues();
+    }
+
+    @Transactional
+    public EvidencePolicy.Evaluation assessment(String workspace,String id) {
         Claim claim = budgets.lockClaim(workspace,id);
         if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        return outstanding(workspace,claim);
+        return assessment(workspace,claim);
     }
 
     public List<String> outstanding(String workspace,Claim claim) {
+        return assessment(workspace,claim).issues();
+    }
+
+    private EvidencePolicy.Evaluation assessment(String workspace,Claim claim) {
         var documents = list(workspace,claim.claimId());
-        var issues = new java.util.ArrayList<String>();
-        var receipt = documents.stream().filter(d -> d.evidenceType().equals("RECEIPT")).findFirst();
-        if (receipt.isEmpty()) issues.add("지출 영수증이 필요합니다.");
-        else if (claim.actual() != null && receipt.get().receiptAmount() != claim.actual().longValue())
-            issues.add("영수증 금액과 실제 지출액이 다릅니다.");
-        if (claim.category().equals("CONFERENCE") && budgets.organization(workspace) == OrganizationType.HOSPITAL
-                && documents.stream().noneMatch(d -> d.evidenceType().equals("ATTENDANCE")))
-            issues.add("병원 학회비는 참석 확인서가 필요합니다.");
-        return List.copyOf(issues);
+        var receipt = documents.stream().filter(d -> d.evidenceType().equals("RECEIPT"))
+                .map(EvidenceMapper.Document::receiptAmount).findFirst().orElse(null);
+        boolean attendance = documents.stream().anyMatch(d -> d.evidenceType().equals("ATTENDANCE"));
+        return EvidencePolicy.evaluate(new EvidencePolicy.Inputs(budgets.organization(workspace),claim.category(),
+                claim.actual(),receipt,attendance));
     }
 
     public List<EvidenceMapper.Document> list(String workspace, String id) {

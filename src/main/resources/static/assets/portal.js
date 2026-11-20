@@ -64,8 +64,16 @@ function render(state) {
     }
     const documents = $("<div>").appendTo(row);
     $("<button>").text("증빙 요건 확인").on("click",() =>
-      $.getJSON(path + "/evidence/issues").done(issues => documents.text(issues.length ?
-        issues.join(" ") : "필요한 증빙을 모두 제출했습니다.")).fail(reportError)).appendTo(actions);
+      $.getJSON(path + "/evidence/assessment").done(result => {
+        documents.text(result.issues.length ? result.issues.join(" ") : "필요한 증빙을 모두 제출했습니다.");
+        const detail = $("<details>").appendTo(documents);
+        $("<summary>").text("판정 근거").appendTo(detail);
+        for (const rule of [result.receipt,result.attendance]) {
+          for (const step of rule.evaluated) $("<p>").text(step.name + " · " +
+            ({PASS:"충족",FAIL:"미충족",MISSING:"자료 부족"})[step.verdict]).appendTo(detail);
+          for (const name of rule.skipped) $("<p>").text(name + " · 앞선 조건으로 판정되어 생략").appendTo(detail);
+        }
+      }).fail(reportError)).appendTo(actions);
     $("<button>").text("증빙 조회").on("click", () => {
       $.getJSON(path + "/evidence").done(items => {
         documents.empty();
