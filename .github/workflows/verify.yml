@@ -119,4 +119,5 @@ jobs:
           path: |
             target/https-proxy/transport.json
             target/https-proxy/settlement-proof.json
+            target/https-proxy/portal-replay.csv
           if-no-files-found: error

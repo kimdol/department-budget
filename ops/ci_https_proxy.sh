@@ -103,9 +103,13 @@ java -jar "$jar" json < "$work/settlement.json" > "$work/replay.json"
 cmp "$work/settlement.json" "$work/replay.json"
 event_id=$(python3 -c 'import json,sys,uuid; print(uuid.UUID(json.load(open(sys.argv[1]))["eventId"]))' "$work/replay.json")
 receipt_count() { mysql_query "select count(*) from budget_event_receipt where event_id='$event_id'"; }
-[[ "$(receipt_count)" == 1 ]]
+before_count=$(receipt_count)
+[[ "$before_count" == 1 ]]
 http_status=$(curl --cacert "$NODE_EXTRA_CA_CERTS" -sS -o /dev/null -w '%{http_code}' \
     -H "Authorization: Bearer $BUDGET_PORTAL_TOKEN" -H 'Content-Type: application/json' \
     --data-binary "@$work/replay.json" "$BUDGET_PORTAL_URL")
-[[ "$http_status" == 204 && "$(receipt_count)" == 1 ]]
-[[ "$(mysql_query "select amount from budget_claim_summary where claim_id='$claim' and sequence_no=2")" == 180000 ]]
+after_count=$(receipt_count)
+settled=$(mysql_query "select amount from budget_claim_summary where claim_id='$claim' and sequence_no=2")
+[[ "$http_status" == 204 && "$after_count" == 1 && "$settled" == 180000 ]]
+printf 'claim,event,http_status,mysql_receipts_before,mysql_receipts_after,mysql_settled\n%s,%s,%s,%s,%s,%s\n' \
+    "$claim" "$event_id" "$http_status" "$before_count" "$after_count" "$settled" > "$work/portal-replay.csv"
