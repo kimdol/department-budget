@@ -30,6 +30,14 @@ class ExpenseFormulaTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings={"eligible_cost + days", "min(eligible_cost, days)"})
+    void locatesIncompatibleOperand(String expression) {
+        var error = assertThrows(IllegalArgumentException.class,
+                () -> ExpenseFormula.calculate(expression, inputs(225000)));
+        assertEquals((expression.indexOf("days") + 1) + "번째 문자: 단위가 일치하지 않습니다.", error.getMessage());
+    }
+
+    @ParameterizedTest
     @ValueSource(strings={"eligible_cost + days", "eligible_cost / 0", "unknown", "eligible_cost * 2",
         "1.2.3 * eligible_cost", "floor(eligible_cost", "daily_cap", "eligible_cost garbage"})
     void rejectsInvalidAmounts(String expr) {

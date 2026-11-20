@@ -21,9 +21,9 @@ public final class ExpenseFormula {
             if (amount.precision() > 38 || Math.abs(amount.scale()) > 38)
                 throw new IllegalArgumentException("계산 범위를 초과했습니다.");
         }
-        Value compatible(Value other) {
+        Value compatible(Value other, int position) {
             if (money != other.money || days != other.days)
-                throw new IllegalArgumentException("단위가 일치하지 않습니다.");
+                throw new IllegalArgumentException((position + 1) + "번째 문자: 단위가 일치하지 않습니다.");
             return other;
         }
     }
@@ -59,7 +59,9 @@ public final class ExpenseFormula {
         for (;;) {
             boolean plus = take('+');
             if (!plus && !take('-')) return left;
-            Value right = left.compatible(product(depth));
+            skipSpace();
+            int operandStart = pos;
+            Value right = left.compatible(product(depth), operandStart);
             left = new Value(plus ? left.amount.add(right.amount) : left.amount.subtract(right.amount), left.money, left.days);
         }
     }
@@ -99,7 +101,9 @@ public final class ExpenseFormula {
                 result = a.amount.setScale(0, RoundingMode.FLOOR);
             } else {
                 require(',');
-                Value b = a.compatible(sum(depth + 1));
+                skipSpace();
+                int argumentStart = pos;
+                Value b = a.compatible(sum(depth + 1), argumentStart);
                 result = name.equals("min") ? a.amount.min(b.amount) : a.amount.max(b.amount);
             }
             require(')');
