@@ -1,5 +1,7 @@
 # 인수 현황
 
+ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서장이 승인했다. Chrome 재무 화면에서 원신청과 HTTP 404를 확인하고 수신기 복원 후 같은 이벤트를 다시 보냈다. MySQL의 1차 수신액과 Oracle 약정은 모두 200,000원이었고 송신 실패 목록은 비었다. 별도 응답 유실 계약 시험에서는 수신 완료 뒤 재전송돼도 정산 2차가 한 번만 반영되고 다른 공간은 재처리 대상을 조회할 수 없음을 확인했다. [실제 Oracle·MySQL 장애 복구 실행](https://github.com/kimdol/department-budget/actions/runs/44775611695/job/136424489990) · [구현과 재현](ARCHITECTURE.md#포털-장애-중-승인-처리)
+
 6da84c9에서 Oracle을 포함한 Java 시험 49건이 누락·실패 없이 통과했다. CI Chrome에서 Caddy를 거쳐 재무팀이 합성 신청 51cb5571-acfd-48b5-805d-2ef6c2f74359를 정산한 뒤, 서버가 PHP 포털에서 조회한 수신 차수 2와 180,000원을 확인했다. Oracle 전표·송신함 SQL과 MySQL 수신 요약 SQL이 같은 공간·신청·차수·종류·금액을 반환했다. 공개 호스트 접속은 OCI 배포 후 검증한다. [직접 대사한 실행](https://github.com/kimdol/department-budget/actions/runs/44774362675/job/136420076607)
 
 재무 화면의 마감 완료 결산표에서 기간·비목·건수·집행액 형식의 합성 CSV를 확정 스냅샷과 비교한다. Chrome에서 180,000원 일치와 누락 금액을 확인했다. 단위 시험 2건에서 음수 정정액, 양쪽 비목 누락, 중복 비목과 다른 기간을 검증했다. H2 루프백 HTTPS 브라우저 시험 6건 통과. 실습 범위는 월 집계 대조이며 상용 원본 검수와 포털 CSV 메시지 변환은 별도 항목이다. [대조 구현](../src/main/java/kr/budget/closing/StatementComparison.java) · [경계 사례](../src/test/java/kr/budget/closing/StatementComparisonTest.java)

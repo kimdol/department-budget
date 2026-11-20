@@ -22,11 +22,17 @@ flowchart LR
 
 | 추적 단계 | 읽을 곳 | 같은 신청번호에서 확인할 값 |
 | --- | --- | --- |
-| 신청 버튼 | [JSP](../src/main/webapp/WEB-INF/views/portal.jsp), [제출 이벤트](../src/main/resources/static/assets/portal.js#L226) | 화면이 요청 키를 보관한다. 서버가 만든 신청번호를 응답으로 받는다. |
-| 신청 접수 | [DemoPortal.submit](../src/main/java/kr/budget/web/DemoPortal.java#L97), [ClaimService](../src/main/java/kr/budget/claims/ClaimService.java) | 비목·예정액·일수·수식·발행 세대·평가기·결재 경로를 고정한다. 이 시점의 약정은 0원이다. |
+| 신청 버튼 | [JSP](../src/main/webapp/WEB-INF/views/portal.jsp), [제출 이벤트](../src/main/resources/static/assets/portal.js#L245) | 화면이 요청 키를 보관한다. 서버가 만든 신청번호를 응답으로 받는다. |
+| 신청 접수 | [DemoPortal.submit](../src/main/java/kr/budget/web/DemoPortal.java#L103), [ClaimService](../src/main/java/kr/budget/claims/ClaimService.java) | 비목·예정액·일수·수식·발행 세대·평가기·결재 경로를 고정한다. 이 시점의 약정은 0원이다. |
 | 부서장 승인 | [commitApproval](../src/main/java/kr/budget/claims/ClaimService.java#L119), [전표 INSERT](../src/main/java/kr/budget/claims/BudgetMapper.java#L82) | 예산 행과 신청을 잠그고 가용액을 검사한다. APPROVAL의 약정 증감은 +200,000원이다. |
 | 실비 정산 | [settle](../src/main/java/kr/budget/claims/ClaimService.java#L174), [증빙 판정](../src/main/java/kr/budget/claims/EvidencePolicy.java) | 영수증과 실비 225,000원을 대조한다. SETTLEMENT의 약정 증감은 −200,000원, 집행 증감은 +180,000원이다. |
 | 원장 대사 | [결산 SQL](../src/main/java/kr/budget/closing/ClosingMapper.java), [정산 브라우저 시험](../frontend/tests/claims.spec.ts) | 배정 1,000,000원에서 약정 잔액 0원과 누적 집행 180,000원을 차감하면 가용액은 820,000원이다. |
+
+## 포털 장애 중 승인 처리
+
+포털이 중단돼도 부서장은 교육비를 승인할 수 있다. 약정과 송신함이 함께 커밋된 뒤 HTTP 전송이 시작된다. 전송 실패 시 재무 담당자는 **포털 송신 실패 조회**에서 자기 업무 공간의 신청번호, 시도 횟수, 수신 HTTP 상태나 연결 오류를 읽을 수 있다. 자동 재시도는 계속된다. 복구를 확인한 담당자가 **다시 보내기**를 누르면 같은 이벤트 식별자와 금액을 사용한다. 앞선 차수가 수신 확인을 받기 전에는 다음 차수를 보낼 수 없다.
+
+응답이 유실되면 원격 수신이 먼저 성공했을 수도 있다. PHP 수신기는 같은 이벤트의 내용 해시를 검사하고 같은 메시지에 204를 반환한다. Java는 이 응답을 받은 뒤 송신 완료를 기록한다. 수신 실패 화면의 금액은 송신할 메시지의 원래 금액이다. 원장 잔액과 수신측 최종 금액은 원신청의 전표 조회와 사내 포털 수신 결과로 각각 확인한다. [송신함 SQL](../src/main/java/kr/budget/portal/PortalOutbox.java) · [PHP 수신 트랜잭션](../portal/receive.php) · [장애 복구 브라우저 시험](../frontend/tests/portal-retry.spec.ts)
 
 ## 핵심 테이블 관계
 
