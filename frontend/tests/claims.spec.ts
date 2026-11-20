@@ -112,6 +112,7 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await claim.getByRole("button", { name: "전표 조회" }).click();
     await claim.getByRole("button", { name: "원래 기간 결산표" }).click();
     await expect(claim).toContainText("마감 당시 가용 예산 820,000원");
+    if (process.env.RECORD_ROLLBACK_CLAIM) await writeFile(process.env.RECORD_ROLLBACK_CLAIM,number.trim());
     await other.reload();
     await expect(other.locator("#available")).toHaveText("1,000,000원");
     await expect(other.locator("#claims")).toHaveText("아직 신청한 비용이 없습니다.");

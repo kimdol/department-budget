@@ -18,6 +18,8 @@ jobs:
         options: --health-cmd healthcheck.sh --health-interval 10s --health-timeout 5s --health-retries 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -54,6 +56,18 @@ jobs:
         env:
           ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
           BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
+          RECORD_ROLLBACK_CLAIM: ${{ runner.temp }}/rollback-claim.txt
+      - name: Roll back WAR and compare original claim postings
+        run: bash ops/ci_war_rollback.sh
+        env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+          BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
+          RECORD_ROLLBACK_CLAIM: ${{ runner.temp }}/rollback-claim.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: war-rollback
+          path: target/war-rollback/*.txt
+          if-no-files-found: error
       - name: Measure deep inbox queries in Oracle
         run: python3 ops/measure_oracle_inbox.py
         env:
