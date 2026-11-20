@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={
         "spring.datasource.url=jdbc:h2:mem:portal;MODE=Oracle","spring.datasource.username=sa",
         "spring.datasource.password=","spring.sql.init.mode=always",
-        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql,classpath:db/V003__policy_versions.sql,classpath:db/V004__claim_review.sql,classpath:db/V005__claim_evidence.sql",
+        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql,classpath:db/V003__policy_versions.sql,classpath:db/V004__claim_review.sql,classpath:db/V005__claim_evidence.sql,classpath:db/V006__closing_period.sql","spring.batch.jdbc.initialize-schema=always",
         "server.address=127.0.0.1","server.servlet.session.cookie.secure=false"})
 class PortalHttpTest {
     @LocalServerPort int port;
@@ -95,6 +95,10 @@ class PortalHttpTest {
         assertEquals(180000, state.at("/balance/spent").longValue());
         assertEquals(820000, state.at("/balance/available").longValue());
         assertEquals(1, state.get("claims").size());
+        JsonNode report = json.readTree(first.post("/api/statement/close", "").body());
+        assertEquals("CLOSED", report.get("state").asText());
+        assertEquals(180000, report.at("/lines/0/spent").longValue());
+        assertEquals(820000, report.at("/balance/available").longValue());
         assertEquals(302, first.post("/api/demo/end", "").statusCode());
         assertEquals(401, first.request("/api/workspace", null, false).statusCode());
         assertEquals(1000000, second.state().at("/balance/available").longValue());

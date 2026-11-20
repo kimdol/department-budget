@@ -7,6 +7,9 @@ import kr.budget.claims.BudgetMapper;
 import kr.budget.claims.ClaimService;
 import kr.budget.claims.EvidenceService;
 import kr.budget.claims.EvidenceMapper;
+import kr.budget.closing.PeriodClosing;
+import kr.budget.closing.ClosingService;
+import kr.budget.closing.ClosingMapper;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import kr.budget.policy.PolicyService;
@@ -25,13 +28,20 @@ public class DemoPortal {
     private final PolicyService policies;
     private final PolicyMapper policyMapper;
     private final EvidenceService evidence;
+    private final PeriodClosing periods;
+    private final ClosingService closing;
+    private final ClosingMapper statements;
 
-    public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper, EvidenceService evidence) {
+    public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper,
+            EvidenceService evidence, PeriodClosing periods, ClosingService closing, ClosingMapper statements) {
         this.service = service;
         this.mapper = mapper;
         this.policies = policies;
         this.policyMapper = policyMapper;
         this.evidence = evidence;
+        this.periods = periods;
+        this.closing = closing;
+        this.statements = statements;
     }
 
     @GetMapping("/")
@@ -78,6 +88,24 @@ public class DemoPortal {
     @ResponseBody
     public void approve(HttpSession session, @PathVariable String id) {
         service.approve(authorized(session, Role.MANAGER), id);
+    }
+
+    @GetMapping("/api/statement")
+    @ResponseBody
+    public PeriodClosing.Statement statement(HttpSession session) {
+        return periods.statement(authorized(session, Role.FINANCE));
+    }
+
+    @GetMapping("/api/claims/{id}/postings")
+    @ResponseBody
+    public List<ClosingMapper.Posting> postings(HttpSession session, @PathVariable String id) {
+        return statements.postings(authorized(session, Role.FINANCE), id);
+    }
+
+    @PostMapping("/api/statement/close")
+    @ResponseBody
+    public PeriodClosing.Statement close(HttpSession session) {
+        return closing.close(authorized(session, Role.FINANCE));
     }
 
     @PostMapping("/api/claims/{id}/review")

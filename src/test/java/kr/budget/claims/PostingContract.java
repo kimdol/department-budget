@@ -15,6 +15,56 @@ abstract class PostingContract {
     @Autowired BudgetMapper mapper;
     @Autowired JdbcTemplate jdbc;
     @Autowired kr.budget.policy.PolicyService policies;
+    @Autowired kr.budget.closing.PeriodClosing periods;
+    @Autowired kr.budget.closing.ClosingService closing;
+
+    @Test
+    void resumesAfterPreparingCloseAndFreezesExactlyOneStatement() {
+        String workspace = service.open();
+        String id = service.submit(workspace, UUID.randomUUID(), "교육", "EDUCATION", 300000, 1);
+        service.approve(workspace, id);
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> closing.close(workspace)).getStatusCode().value());
+        assertEquals(List.of(id), periods.statement(workspace).pending());
+        service.review(workspace, id, 225000);
+        service.settle(workspace, id);
+        periods.prepare(workspace);
+        assertEquals("CLOSING", periods.statement(workspace).state());
+        assertThrows(ResponseStatusException.class, () -> service.submit(workspace, UUID.randomUUID(), "추가", "EDUCATION", 1000, 1));
+        var statement = closing.close(workspace);
+        assertEquals("CLOSED", statement.state());
+        assertEquals(1, statement.lines().size());
+        assertEquals(180000, statement.lines().getFirst().spent());
+        assertEquals(statement, closing.close(workspace));
+    }
+
+    @Test
+    void failedSnapshotRestartsTheSameBatchInstance() {
+        String workspace = service.open();
+        String id = service.submit(workspace, UUID.randomUUID(), "출장", "TRAVEL", 50000, 1);
+        service.approve(workspace, id);
+        service.review(workspace, id, 45000);
+        service.settle(workspace, id);
+        String period = periods.prepare(workspace).periodKey();
+        jdbc.update("insert into budget_statement_line(workspace_id,period_key,category,claim_count,spent) values (?,?,?,0,0)",
+                workspace, period, "TRAVEL");
+        assertThrows(IllegalStateException.class, () -> closing.close(workspace));
+        assertEquals("CLOSING", periods.statement(workspace).state());
+        jdbc.update("delete from budget_statement_line where workspace_id=? and period_key=?", workspace, period);
+        var statement = closing.close(workspace);
+        assertEquals("CLOSED", statement.state());
+        assertEquals(45000, statement.lines().getFirst().spent());
+        var statuses = jdbc.queryForList("""
+            select e.status from batch_job_execution e
+            join batch_job_execution_params p on p.job_execution_id=e.job_execution_id
+            where p.parameter_name='workspace' and p.parameter_value=? order by e.job_execution_id
+            """, String.class, workspace);
+        assertEquals(List.of("FAILED","COMPLETED"), statuses);
+        assertEquals(1, jdbc.queryForObject("""
+            select count(distinct e.job_instance_id) from batch_job_execution e
+            join batch_job_execution_params p on p.job_execution_id=e.job_execution_id
+            where p.parameter_name='workspace' and p.parameter_value=?
+            """, Integer.class, workspace));
+    }
 
     @Test
     void increasesOnlyTheDifferenceAndRequiresTheLatestReviewRound() {

@@ -22,7 +22,7 @@ public class ClaimService {
 
     public String open() {
         String workspace = UUID.randomUUID().toString();
-        mapper.open(workspace);
+        mapper.open(workspace, java.time.YearMonth.now(java.time.ZoneId.of("Asia/Seoul")).toString());
         return workspace;
     }
 
@@ -38,6 +38,7 @@ public class ClaimService {
                     && previous.estimated() == estimated && previous.days() == days) return previous.claimId();
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
+        requireOpen(workspace);
         String id = UUID.randomUUID().toString();
         PolicyVersion policy = policies.active(workspace, category);
         policy.calculate(estimated, days);
@@ -50,6 +51,7 @@ public class ClaimService {
         Balance balance = mapper.lockBalance(workspace);
         Claim claim = locked(workspace, id);
         if (!claim.status().equals("SUBMITTED")) return;
+        requireOpen(workspace);
         long amount = amount(claim, claim.estimated());
         if (amount > balance.getAvailable()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         mapper.approve(workspace, id, amount);
@@ -119,6 +121,10 @@ public class ClaimService {
         Claim claim = mapper.lockClaim(workspace, id);
         if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         return claim;
+    }
+
+    private void requireOpen(String workspace) {
+        if (!"OPEN".equals(mapper.periodState(workspace))) throw new ResponseStatusException(HttpStatus.CONFLICT);
     }
 
     private void require(Claim claim, String status) {

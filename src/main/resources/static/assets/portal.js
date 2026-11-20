@@ -5,6 +5,9 @@ const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
 const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
 function render(state) {
+  $("#month-end").prop("hidden", state.role !== "FINANCE");
+  $("#statement").empty();
+  $("#close-period").prop("hidden",true);
   $("#start").prop("hidden", true);
   $("#desk").prop("hidden", false);
   for (const key of ["allocation","committed","spent","available"]) $("#" + key).text(money(state.balance[key]));
@@ -21,6 +24,16 @@ function render(state) {
     $("<p>").text("예정 " + money(claim.estimated) + " / 승인 " + money(claim.approved) + " / 정산 " + money(claim.settled)).appendTo(row);
     const actions = $("<div>").addClass("actions").appendTo(row);
     const path = "/api/claims/" + encodeURIComponent(claim.claimId);
+    if (state.role === "FINANCE") {
+      $("<button>").text("전표 조회").on("click", () => {
+        $.getJSON(path + "/postings").done(entries => {
+          documents.empty();
+          if (!entries.length) documents.text("기록된 전표가 없습니다.");
+          for (const item of entries) $("<p>").text(item.kind + " · 약정 증감 " + money(item.committedDelta) +
+              " · 집행 증감 " + money(item.spentDelta)).appendTo(documents);
+        }).fail(reportError);
+      }).appendTo(actions);
+    }
     const documents = $("<div>").appendTo(row);
     $("<button>").text("증빙 조회").on("click", () => {
       $.getJSON(path + "/evidence").done(items => {
@@ -56,6 +69,24 @@ function render(state) {
   }
 }
 function refresh() { return $.getJSON("/api/workspace").then(render); }
+function showStatement(report) {
+  if ($("#role").val() !== "FINANCE") return;
+  const box = $("#statement").empty();
+  $("<strong>").text(report.period + " · " + ({OPEN:"마감 전",CLOSING:"마감 진행 중",CLOSED:"마감 완료"})[report.state]).appendTo(box);
+  for (const line of report.lines) {
+    const label = ({EDUCATION:"교육비",TRAVEL:"출장비",CONFERENCE:"학회 참가비"})[line.category];
+    $("<p>").text(label + " · " + line.claimCount + "건 · " + money(line.spent)).appendTo(box);
+  }
+  $("<p>").text("누적 집행 " + money(report.balance.spent) + " / 가용 예산 " + money(report.balance.available)).appendTo(box);
+  if (report.pending.length) $("<p>").text("진행 중인 신청 " + report.pending.join(", ")).appendTo(box);
+  $("#close-period").prop("hidden", report.state === "CLOSED" || report.pending.length > 0);
+}
+$("#view-statement").on("click",()=>$.getJSON("/api/statement").done(showStatement).fail(reportError));
+$("#close-period").on("click",function() {
+  if (!window.confirm("마감하면 이 기간의 신규 신청과 집행을 종료합니다. 확정할까요?")) return;
+  $(this).prop("disabled",true);
+  api("/api/statement/close",{}).done(showStatement).fail(reportError).always(()=>$(this).prop("disabled",false));
+});
 $("#start").on("click",()=>api("/api/demo").then(render).fail(reportError));
 $("#role").on("change",event=>api("/api/demo/role",{role:event.target.value}).then(refresh).fail(reportError));
 $("#submit").on("submit",event=>{

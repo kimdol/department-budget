@@ -9,4 +9,9 @@
 <div id="desk" hidden><div class="metrics"><article>배정액<strong id="allocation"></strong></article><article>약정 잔액<strong id="committed"></strong></article><article>누적 집행<strong id="spent"></strong></article><article>가용 예산<strong id="available"></strong></article></div>
 <nav aria-label="시연 역할"><label>시연 역할 <select id="role"><option value="EMPLOYEE">직원</option><option value="MANAGER">부서장</option><option value="FINANCE">재무 담당자</option></select></label></nav>
 <section id="entry"><h2>비용 신청</h2><form id="submit"><label>신청명<input name="title" maxlength="100" required value="직무 교육 참가"></label><label>비목<select name="category"><option value="EDUCATION">교육비</option><option value="CONFERENCE">학회 참가비</option><option value="TRAVEL">출장비</option></select></label><label>예정 금액(원)<input type="number" name="estimated" min="1" required value="300000"></label><label>기간(일)<input type="number" name="days" min="1" max="365" required value="1"></label><button>신청 제출</button></form></section>
-<details id="policy-panel"><summary>지원 규정 비교 및 발행</summary><div id="policy-editor"></div></details><section><h2>신청 내역</h2><div id="claims"></div></section></div></main></body></html>
+<details id="policy-panel"><summary>지원 규정 비교 및 발행</summary><div id="policy-editor"></div></details>
+<section id="month-end" hidden><h2>월 결산표</h2>
+<button id="view-statement">결산표 조회</button>
+<div id="statement" aria-live="polite"></div>
+<button id="close-period" hidden>이 기간 마감 확정</button></section>
+<section><h2>신청 내역</h2><div id="claims"></div></section></div></main></body></html>
