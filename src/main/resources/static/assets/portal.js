@@ -152,7 +152,12 @@ function render(state) {
     }).appendTo(actions);
     const send = (button, route, data) => {
       button.prop("disabled",true);
-      api(path + route,data).then(refreshClaim).fail(error=>{reportError(error); button.prop("disabled",false).trigger("focus");});
+      row.prop("inert",true).attr("aria-busy","true");
+      api(path + route,data).then(refreshClaim).fail(error=>{
+        row.prop("inert",false).removeAttr("aria-busy");
+        reportError(error);
+        button.prop("disabled",false).trigger("focus");
+      });
     };
     const action = (label, route, data) => $("<button>").text(label).on("click", function() {
       send($(this),route,data());
