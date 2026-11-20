@@ -122,6 +122,11 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     expect((await other.request.get("/api/claims/"+number.trim()+"/history")).status()).toBe(404);
     await claim.getByRole("button", { name: "신청 당시 계산 근거" }).click();
     await expect(claim).toContainText("평가기 decimal-v1");
+    await claim.getByText("예정액 계산 과정",{exact:true}).click();
+    const estimate = claim.locator("details").filter({has:page.getByText("예정액 계산 과정",{exact:true})});
+    await expect(estimate.getByRole("listitem")).toHaveText(["인정 대상 비용 · 300000","지원율 · 0.8","곱셈 · 240000","행사 한도 · 200000","작은 값 · 200000","내림 · 200000"]);
+    await claim.getByText("실비 계산 과정",{exact:true}).click();
+    await expect(claim.getByText("곱셈 · 180000",{exact:true})).toBeVisible();
     await expect(claim).toContainText("실제 지출 225,000원 → 인정 180,000원");
     await page.getByRole("button", { name: "결산표 조회" }).click();
     await expect(page.locator("#statement")).toContainText("교육비 · 1건 · 180,000원");

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import kr.budget.policy.PolicyService;
 import kr.budget.policy.PolicyVersion;
+import kr.budget.policy.ExpenseFormula;
 import kr.budget.portal.PortalOutbox;
 
 @Service
@@ -306,12 +307,19 @@ public class ClaimService {
     }
 
     public record Calculation(String evaluatorVersion,long generation,String formula,int days,long estimated,
-                              long initialSupport,Long actual,Long actualSupport) {}
+                              long initialSupport,Long actual,Long actualSupport,
+                              java.util.List<ExpenseFormula.Step> initialSteps,java.util.List<ExpenseFormula.Step> actualSteps) {}
 
+    @Transactional(readOnly=true)
     public Calculation replay(String workspace,String id) {
-        Claim claim = locked(workspace,id);
+        Claim claim = mapper.findClaim(workspace,id);
+        if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        var policy = new PolicyVersion(claim.policyGeneration(),claim.formula(),claim.evaluatorVersion());
+        var initial = policy.explain(claim.estimated(),claim.days());
+        var actual = claim.actual() == null ? null : policy.explain(claim.actual(),claim.days());
         return new Calculation(claim.evaluatorVersion(),claim.policyGeneration(),claim.formula(),claim.days(),claim.estimated(),
-                amount(claim,claim.estimated()),claim.actual(),claim.actual() == null ? null : amount(claim,claim.actual()));
+                initial.amount(),claim.actual(),actual == null ? null : actual.amount(),initial.steps(),
+                actual == null ? java.util.List.of() : actual.steps());
     }
 
     private long amount(Claim claim, long cost) {

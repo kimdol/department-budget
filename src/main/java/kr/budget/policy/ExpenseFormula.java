@@ -8,6 +8,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.function.Function;
 
 public final class ExpenseFormula {
@@ -29,9 +31,15 @@ public final class ExpenseFormula {
         return value;
     }
 
-    private record Node(int money, int days, int height, Function<Inputs,BigDecimal> operation) {
-        BigDecimal evaluate(Inputs input) {
-            return checked(operation.apply(input));
+    public record Step(String operation,String value) {}
+    public record Explanation(long amount,List<Step> steps) {}
+    private record Evaluation(Inputs inputs,List<Step> steps) {}
+
+    private record Node(int money, int days, int height, String label, Function<Evaluation,BigDecimal> operation) {
+        BigDecimal evaluate(Evaluation evaluation) {
+            BigDecimal result = checked(operation.apply(evaluation));
+            if (evaluation.steps != null) evaluation.steps.add(new Step(label,result.stripTrailingZeros().toPlainString()));
+            return result;
         }
 
         void requireCompatible(Node other, int position) {
@@ -41,11 +49,11 @@ public final class ExpenseFormula {
     }
 
     private static final Map<String,Node> VARIABLES = Map.of(
-            "eligible_cost", new Node(1,0,1,i -> BigDecimal.valueOf(i.cost())),
-            "event_cap", new Node(1,0,1,i -> BigDecimal.valueOf(i.cap())),
-            "support_rate", new Node(0,0,1,Inputs::rate),
-            "days", new Node(0,1,1,i -> BigDecimal.valueOf(i.days())),
-            "daily_cap", new Node(1,-1,1,i -> BigDecimal.valueOf(i.dailyCap())));
+            "eligible_cost", new Node(1,0,1,"eligible_cost",i -> BigDecimal.valueOf(i.inputs.cost())),
+            "event_cap", new Node(1,0,1,"event_cap",i -> BigDecimal.valueOf(i.inputs.cap())),
+            "support_rate", new Node(0,0,1,"support_rate",i -> i.inputs.rate()),
+            "days", new Node(0,1,1,"days",i -> BigDecimal.valueOf(i.inputs.days())),
+            "daily_cap", new Node(1,-1,1,"daily_cap",i -> BigDecimal.valueOf(i.inputs.dailyCap())));
 
     private record CacheKey(String digest, String evaluator) {}
     private static final int CACHE_LIMIT = 256;
@@ -61,7 +69,17 @@ public final class ExpenseFormula {
         }
 
         long calculate(Inputs input) {
-            BigDecimal value = root.evaluate(input);
+            return calculate(input,null);
+        }
+
+        Explanation explain(Inputs input) {
+            var steps = new ArrayList<Step>();
+            long amount = calculate(input,steps);
+            return new Explanation(amount,List.copyOf(steps));
+        }
+
+        private long calculate(Inputs input,List<Step> steps) {
+            BigDecimal value = root.evaluate(new Evaluation(input,steps));
             if (value.signum() < 0 || value.compareTo(BigDecimal.valueOf(input.cost())) > 0)
                 throw diagnostic(end,"인정액은 실비 이하의 원 단위 금액이어야 합니다.");
             return value.setScale(0, RoundingMode.FLOOR).longValueExact();
@@ -131,7 +149,7 @@ public final class ExpenseFormula {
             Node left = result;
             Node right = product(depth);
             left.requireCompatible(right,start);
-            result = node(new Node(left.money,left.days,1 + Math.max(left.height,right.height),
+            result = node(new Node(left.money,left.days,1 + Math.max(left.height,right.height),plus ? "+" : "-",
                     plus ? i -> left.evaluate(i).add(right.evaluate(i)) : i -> left.evaluate(i).subtract(right.evaluate(i))));
         }
     }
@@ -145,9 +163,9 @@ public final class ExpenseFormula {
             Node right = atom(depth);
             int end = pos;
             int height = 1 + Math.max(left.height,right.height);
-            result = multiply ? node(new Node(left.money + right.money,left.days + right.days,height,
+            result = multiply ? node(new Node(left.money + right.money,left.days + right.days,height,"*",
                     i -> left.evaluate(i).multiply(right.evaluate(i)))) :
-                    node(new Node(left.money - right.money,left.days - right.days,height,
+                    node(new Node(left.money - right.money,left.days - right.days,height,"/",
                             i -> divide(left.evaluate(i),right.evaluate(i),end)));
         }
     }
@@ -176,14 +194,14 @@ public final class ExpenseFormula {
             Node left = sum(depth + 1);
             Node result;
             if (name.equals("floor")) {
-                result = new Node(left.money,left.days,1 + left.height,i -> left.evaluate(i).setScale(0,RoundingMode.FLOOR));
+                result = new Node(left.money,left.days,1 + left.height,name,i -> left.evaluate(i).setScale(0,RoundingMode.FLOOR));
             } else {
                 require(',');
                 skipSpace();
                 int argumentStart = pos;
                 Node right = sum(depth + 1);
                 left.requireCompatible(right,argumentStart);
-                result = new Node(left.money,left.days,1 + Math.max(left.height,right.height),
+                result = new Node(left.money,left.days,1 + Math.max(left.height,right.height),name,
                         name.equals("min") ? i -> left.evaluate(i).min(right.evaluate(i)) :
                                 i -> left.evaluate(i).max(right.evaluate(i)));
             }
@@ -193,7 +211,7 @@ public final class ExpenseFormula {
         while (pos < source.length() && (Character.isDigit(source.charAt(pos)) || source.charAt(pos) == '.')) pos++;
         try {
             BigDecimal number = checked(new BigDecimal(source.substring(start,pos)));
-            return node(new Node(0,0,1,i -> number));
+            return node(new Node(0,0,1,"literal",i -> number));
         } catch (NumberFormatException e) {
             throw diagnostic(pos,"숫자 또는 변수가 필요합니다.");
         }

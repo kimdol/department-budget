@@ -11,6 +11,25 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class PostingContract {
+    @Test
+    void calculationReadsCommittedInputsWhileAnotherSessionEditsTheClaim() throws Exception {
+        String workspace = service.open();
+        String id = service.submit(workspace,UUID.randomUUID(),"학습 세미나","EDUCATION",300000,1);
+        try (var worker = Executors.newSingleThreadExecutor(); var writer = jdbc.getDataSource().getConnection()) {
+            writer.setAutoCommit(false);
+            try (var change = writer.prepareStatement("update expense_claim set estimated=50000 where workspace_id=? and claim_id=?")) {
+                change.setString(1,workspace);
+                change.setString(2,id);
+                assertEquals(1,change.executeUpdate());
+                var calculation = worker.submit(()->service.replay(workspace,id)).get(5,TimeUnit.SECONDS);
+                assertEquals(300000,calculation.estimated());
+                assertEquals(200000,calculation.initialSupport());
+                assertTrue(calculation.initialSteps().contains(new kr.budget.policy.ExpenseFormula.Step("*","240000")));
+            } finally {
+                writer.rollback();
+            }
+        }
+    }
     @Autowired ClaimService service;
     @Autowired BudgetMapper mapper;
     @Autowired BranchAllocation allocations;

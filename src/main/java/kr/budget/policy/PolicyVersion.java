@@ -18,11 +18,22 @@ public record PolicyVersion(long generation, String formula,String evaluatorVers
         },DECIMAL_V1);
     }
 
-    public long calculate(long cost, int days) {
+    private ExpenseFormula.Compiled compiled() {
         return switch (evaluatorVersion) {
-            case DECIMAL_V1, DECIMAL_V2 -> ExpenseFormula.calculate(formula, new ExpenseFormula.Inputs(cost,
-                    new BigDecimal("0.80"), 200000, days, 50000), DECIMAL_V2.equals(evaluatorVersion));
+            case DECIMAL_V1, DECIMAL_V2 -> ExpenseFormula.compile(formula, DECIMAL_V2.equals(evaluatorVersion));
             default -> throw new IllegalStateException("저장된 수식 평가기 버전을 사용할 수 없습니다.");
         };
+    }
+
+    private ExpenseFormula.Inputs inputs(long cost,int days) {
+        return new ExpenseFormula.Inputs(cost,new BigDecimal("0.80"),200000,days,50000);
+    }
+
+    public long calculate(long cost,int days) {
+        return compiled().calculate(inputs(cost,days));
+    }
+
+    public ExpenseFormula.Explanation explain(long cost,int days) {
+        return compiled().explain(inputs(cost,days));
     }
 }

@@ -166,6 +166,15 @@ function render(state) {
         $("<p>").text("발행 버전 " + calc.generation + " · 평가기 " + calc.evaluatorVersion + " · " + calc.formula).appendTo(documents);
         $("<p>").text(calc.days + "일 · 예정 " + money(calc.estimated) + " → 인정 " + money(calc.initialSupport)).appendTo(documents);
         if (calc.actual !== null) $("<p>").text("실제 지출 " + money(calc.actual) + " → 인정 " + money(calc.actualSupport)).appendTo(documents);
+          const labels = {eligible_cost:"인정 대상 비용",event_cap:"행사 한도",support_rate:"지원율",days:"기간",
+            daily_cap:"일 한도",literal:"상수","*":"곱셈","+":"덧셈","-":"뺄셈","/":"나눗셈",min:"작은 값",max:"큰 값",floor:"내림"};
+          for (const [title,steps] of [["예정액 계산 과정",calc.initialSteps],["실비 계산 과정",calc.actualSteps]]) {
+            if (!steps.length) continue;
+            const detail = $("<details>").appendTo(documents);
+            $("<summary>").text(title).appendTo(detail);
+            const list = $("<ol>").appendTo(detail);
+            for (const step of steps) $("<li>").text(labels[step.operation]+" · "+step.value).appendTo(list);
+          }
       }).fail(reportError)).appendTo(actions);
     $("<button>").text("증빙 요건 확인").on("click",() =>
       $.getJSON(path + "/evidence/assessment").done(result => {

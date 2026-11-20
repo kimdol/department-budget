@@ -1,5 +1,7 @@
 # 인수 현황
 
+‘신청 당시 계산 근거’에 실제 평가 순서와 중간값을 표시한다. Chrome에서 예정액 300,000원에 지원율 0.8을 곱한 240,000원, 행사 한도 200,000원, 최종 200,000원과 실비 인정액 180,000원을 확인했다. 구문 트리는 평가기 버전별로 재사용하며 단계 목록은 근거 조회에서만 생성한다. 조회의 두 연결 회귀 시험에서 기존 SELECT FOR UPDATE가 H2의 미커밋 신청 수정과 충돌해 잠금 시간 초과가 발생했다. 같은 업무 공간의 일반 SELECT로 변경해 수정 중에도 직전 커밋의 예정액과 계산 단계를 읽도록 했다. [평가기](../src/main/java/kr/budget/policy/ExpenseFormula.java) · [두 연결 회귀 시험](../src/test/java/kr/budget/claims/PostingContract.java)
+
 실제 Oracle·배포 WAR에서 동시 승인 22쌍의 응답과 전표를 확인했다. 매 쌍의 잔액은 20,000원, 약정 전표는 1건이었다. 예열 2쌍 제외 후 상태별 20개 표본에서 승인 HTTP p95 13.844ms, 예산 부족 HTTP p95 19.678ms였다. [원자료](measurements/oracle-approval-contention-44807797272.json)
 
 정산 후 신청 내역에 직원의 본인 부담과 미집행 약정 차액을 표시한다. 대표 신청에서 225,000원 실비와 180,000원 정산액의 차이는 본인 부담 45,000원이고, 200,000원 약정과 정산액의 차이는 부서 예산으로 돌아간 20,000원이다. 로컬 HTTPS Chrome에서 두 금액을 확인하고 README의 실제 화면을 갱신했다. [대표 업무 회귀 시험](../frontend/tests/claims.spec.ts)
@@ -198,7 +200,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 | 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교, 버전별 불변 구문 트리 캐시, 다음 달 예약 발행 | 예약 발행의 외부 배포 검증 |
 | 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis·Oracle PL/SQL 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조, Apache Camel JSON·CSV 공통 변환, 그누보드 설치본 로그인·회원별 정산 조회 | 공개 환경 대사 |
 | UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
-| 성능 | 100만 신청의 깊은 목록, 100만 전표의 월별 집계·논리 읽기·DB p95, 인덱스 쓰기 비용, 승인 시 부서 행 잠금, 결재함 본문·정적 자산·수식 입력 측정 | 공개 환경에서의 브라우저 측정, 동시 승인 HTTP 전체 응답 시간 |
+| 성능 | 100만 신청의 깊은 목록, 100만 전표의 월별 집계·DB p95, 인덱스 쓰기 비용, 승인 시 부서 행 잠금, 실제 Oracle 동시 승인 HTTP 응답, 결재함 본문·정적 자산·수식 입력 측정 | 공개 환경에서의 브라우저 측정 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
 
