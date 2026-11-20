@@ -1,6 +1,6 @@
 # 부서예산
 
-직원이 교육비와 출장비를 신청하고 부서장이 예산을 약정하면, 재무 담당자가 실제 지출을 기준으로 정산하는 경영지원 웹 애플리케이션이다. 같은 신청번호로 승인 수량이 아닌 **승인 금액과 실제 집행액의 차이**를 추적한다.
+직원이 교육비와 출장비를 신청하고 부서장이 예산을 약정하면, 재무 담당자가 실제 지출을 기준으로 정산하는 경영지원 웹 애플리케이션이다. 같은 신청번호로 **승인 금액과 실제 집행액의 차이**를 추적한다.
 
 ## 대표 업무
 
@@ -15,7 +15,7 @@
 
 Java 21과 Maven을 사용한다. `mvn test`는 계산 규칙과 로컬 H2 계약 시험을 실행한다. 실제 Oracle 통합 시험은 **비어 있는 전용 시험 스키마**를 준비하고 `BUDGET_TEST_EMPTY_SCHEMA=yes`, `BUDGET_DB_URL`, `BUDGET_DB_USER`, `BUDGET_DB_PASSWORD`를 환경 변수로 설정한 뒤 같은 명령으로 실행한다. 이 모드는 시험 시작 시 스키마를 생성한다.
 
-애플리케이션용 Oracle 스키마에 [원장 스키마](src/main/resources/db/V001__budget.sql)와 [신청 접수 키](src/main/resources/db/V002__submission_receipt.sql)를 버전 순서대로 적용한다. 애플리케이션 DB 접속 환경 변수를 설정하고 `mvn package`, `java -jar target/department-budget-0.1.0.war`를 실행한다. 로컬 HTTP 시험에 한해 `HTTPS_ONLY=false`를 지정한다. 공개 배포와 실측 성능은 [검증 현황](docs/PROGRESS.md)에서 확인할 수 있다.
+애플리케이션용 Oracle 스키마에 [원장 스키마](src/main/resources/db/V001__budget.sql), [신청 접수 키](src/main/resources/db/V002__submission_receipt.sql), [규정 버전](src/main/resources/db/V003__policy_versions.sql)를 버전 순서대로 적용한다. frontend 디렉터리에서 npm ci와 npm run build를 실행한다. 저장소 루트로 돌아와 애플리케이션 DB 접속 환경 변수를 설정하고 `mvn package`, `java -jar target/department-budget-0.1.0.war`를 실행한다. 로컬 HTTP 시험에 한해 `HTTPS_ONLY=false`를 지정한다. 공개 배포와 실측 성능은 [검증 현황](docs/PROGRESS.md)에서 확인할 수 있다.
 
 ## 소스 따라가기
 
@@ -23,4 +23,4 @@ Java 21과 Maven을 사용한다. `mvn test`는 계산 규칙과 로컬 H2 계�
 2. [DemoPortal](src/main/java/kr/budget/web/DemoPortal.java)은 세션에서 방문자 공간과 역할을 결정한다.
 3. [ClaimService](src/main/java/kr/budget/claims/ClaimService.java)는 신청 재전송을 판별하고 승인·정산 단계에서 잠금, 상태 변경, 전표, 잔액을 한 트랜잭션으로 처리한다.
 4. [BudgetMapper](src/main/java/kr/budget/claims/BudgetMapper.java)의 바인딩 SQL이 같은 공간의 신청과 전표를 연결한다. [원장 계약 시험](src/test/java/kr/budget/claims/PostingContract.java)은 중복 요청·재시도와 경합 후 금액을 검사한다.
-5. [지원액 계산기](src/main/java/kr/budget/policy/ExpenseFormula.java)의 입력은 원 단위 금액·지원율·한도·일수다. [비교 사례](src/test/java/kr/budget/policy/ExpenseFormulaTest.java)에서 학회비 후보 수식만 바꾸고 일반 교육비의 기존 결과를 대조한다. 부서별 정책 발행 화면은 개발 중이다.
+5. [지원액 계산기](src/main/java/kr/budget/policy/ExpenseFormula.java)의 입력은 원 단위 금액·지원율·한도·일수다. [비교 사례](src/test/java/kr/budget/policy/ExpenseFormulaTest.java)에서 학회비 후보 수식만 바꾸고 일반 교육비의 기존 결과를 대조한다. [규정 편집기](frontend/src/policy.tsx)에서 학회 참가비를 선택하고 재무 담당자로 검토 요청, 부서장으로 발행한다. [PolicyService](src/main/java/kr/budget/policy/PolicyService.java)에서 기존 규정의 세대와 비교한다. 원래 수식 복구도 같은 절차를 거친다.
