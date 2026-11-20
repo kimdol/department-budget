@@ -48,7 +48,10 @@ function render(state) {
   if (!state.claims.length) list.text("아직 신청한 비용이 없습니다.");
   for (const claim of state.claims) {
     const row = $("<article>").addClass("claim").appendTo(list);
-    $("<strong>").text(claim.title + " · " + statusName[claim.status]).appendTo(row);
+    const headingId = "claim-title-" + claim.claimId;
+    $("<strong>").attr({id:headingId,tabindex:-1}).text(claim.title + " · " + statusName[claim.status]).appendTo(row);
+    row.attr("aria-labelledby",headingId);
+    const refreshClaim = () => refresh().then(()=>document.getElementById(headingId)?.focus());
     $("<small>").text(claim.claimId).appendTo(row);
     if (claim.reviewNote) $("<p>").text("보완 사유 · " + claim.reviewNote).appendTo(row);
     $("<p>").text("예정 " + money(claim.estimated) + " / 승인 " + money(claim.approved) + " / 정산 " + money(claim.settled)).appendTo(row);
@@ -133,9 +136,12 @@ function render(state) {
         }
       }).fail(reportError);
     }).appendTo(actions);
+    const send = (button, route, data) => {
+      button.prop("disabled",true);
+      api(path + route,data).then(refreshClaim).fail(error=>{reportError(error); button.prop("disabled",false).trigger("focus");});
+    };
     const action = (label, route, data) => $("<button>").text(label).on("click", function() {
-      $(this).prop("disabled", true);
-      api(path + route, data()).then(refresh).fail(error => {reportError(error); $(this).prop("disabled",false);});
+      send($(this),route,data());
     }).appendTo(actions);
     if (state.role === "MANAGER" && claim.status === "SUBMITTED") action(claim.approvalRoute === "MANAGER_FINANCE" ? "재무로 결재 요청" : "사전승인","/approve",()=>({}));
     if (state.role === "FINANCE" && claim.status === "FINANCE_PENDING") action("최종 사전승인","/finance-approval",()=>({}));
@@ -156,7 +162,7 @@ function render(state) {
     if (managerReview) action("증액 승인","/increase",()=>({round:claim.reviewRound}));
     if (financeReview) $("<button>").text("정산 확정").on("click",function() {
       const button = $(this).prop("disabled",true);
-      api(path+"/settle",{round:claim.reviewRound}).then(refresh).fail(error => {
+      api(path+"/settle",{round:claim.reviewRound}).then(refreshClaim).fail(error => {
         if (error.status === 422) $.getJSON(path+"/evidence/issues").done(issues =>
           issues.length ? documents.text(issues.join(" ")) : reportError(error)).fail(reportError);
         else reportError(error);
@@ -164,8 +170,20 @@ function render(state) {
       });
     }).appendTo(actions);
     if (managerReview || financeReview) {
-      const reason = $("<input>").attr({"aria-label":"보완 사유",maxlength:240,placeholder:"보완 사유"}).appendTo(actions);
-      action("보완 요청","/return",()=>({round:claim.reviewRound,reason:reason.val()}));
+      const form = $("<form>").appendTo(actions);
+      const reason = $("<input>").attr({"aria-label":"보완 사유",required:true,maxlength:240,placeholder:"보완 사유"}).appendTo(form);
+      const button = $("<button>").text("보완 요청").appendTo(form);
+      reason.on("input",()=>reason[0].setCustomValidity(""));
+      form.on("submit",event=>{
+        event.preventDefault();
+        const note = reason.val().trim();
+        if (!note) {
+          reason[0].setCustomValidity("보완 사유를 입력하세요.");
+          reason[0].reportValidity();
+          return;
+        }
+        send(button,"/return",{round:claim.reviewRound,reason:note});
+      });
     }
   }
 }

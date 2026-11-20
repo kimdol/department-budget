@@ -1,5 +1,7 @@
 # 인수 현황
 
+키보드로 교육비를 신청하고 역할을 바꿔 승인·보완·재제출·정산했다. 보완 사유가 비거나 공백뿐이면 입력란으로 포커스가 돌아간다. 승인·보완 후에는 갱신된 같은 신청의 제목으로 이동한다. Chrome에서 최종 가용액 820,000원까지 확인했고 로컬 HTTPS 브라우저 시험 8건이 통과했다. [키보드 인수 시험](../frontend/tests/keyboard-review.spec.ts)
+
 재무 담당자가 규정 작업실에서 같은 부서·비목의 실제 신청을 50건씩 열어 사전승인 영향을 비교할 수 있다. 신청별 당시 수식·평가기·결재 경로를 사용하며 후보의 입력별 오류는 해당 행에 표시한다. 51건 계약 시험에서 이전 규정 신청 1건의 당시 인정액은 200,000원, 이후 50건은 150,000원, 후보는 모두 300,000원이었다. 타 부서·타 비목 제외와 원장 잔액·전표 수 보존을 확인했다. [규정 서비스](../src/main/java/kr/budget/policy/PolicyService.java) · [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java)
 
 직원이 지원 예정액을 확인하면 정산 때 필요한 증빙도 표시된다. 병원 학회비는 참석 확인서와 영수증, 같은 부서의 일반 교육비는 영수증을 안내했다. 계약 시험에서 일반 교육비에 참석 조건을 발행하고 복구하자 사전 안내도 함께 변경됐다. 로컬 Java 43건 및 HTTPS 브라우저 7건 통과. [병원 시연](../frontend/tests/hospital-policy.spec.ts)
@@ -99,7 +101,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 | 조직별 승인 주체 | 세션별 직원·부서장·재무 역할과 부서별 서버 인가 | 독립된 구성원 신원에 기반한 자기 승인 차단, 본부의 지점별 배정 변경 |
 | 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교 | 다음 달 예약 발행, 불변 구문 트리 캐시 |
 | 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조 | Oracle PL/SQL 대사, Apache Camel 기반 JSON·CSV 공통 변환, 그누보드 연동 |
-| UI·운영 검수 | JSP·jQuery 업무 처리와 React 규정 작업실, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | React 직원 신청 화면의 동일 계약 검증, 키보드·오류 포커스와 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
+| UI·운영 검수 | JSP·jQuery 업무 처리와 React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | React 직원 신청 화면의 동일 계약 검증, 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
 | 성능 | 100만 신청의 깊은 목록 조회·논리 읽기·DB p95, 결재함 본문·정적 자산·수식 입력 측정 | 같은 데이터 규모의 월별 집계와 동시 승인 쓰기 지연, 공개 환경에서의 브라우저 측정 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
