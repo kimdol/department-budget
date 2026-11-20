@@ -1,0 +1,42 @@
+{
+  "revision": "9c94447794219b43f1234714ad7ada6506ab6c41",
+  "chromium": "157.0.8103.79",
+  "platform": "win32",
+  "cpu": "AMD Ryzen 5 3600 6-Core Processor              ",
+  "memoryBytes": 17107628032,
+  "input": " * 0.9",
+  "keyDelayMs": 40,
+  "warmupRuns": 1,
+  "samples": [
+    {
+      "run": 0,
+      "requests": 1,
+      "milliseconds": 265.90000000596046
+    },
+    {
+      "run": 1,
+      "requests": 1,
+      "milliseconds": 264.40000000596046
+    },
+    {
+      "run": 2,
+      "requests": 1,
+      "milliseconds": 263.09999999403954
+    },
+    {
+      "run": 3,
+      "requests": 1,
+      "milliseconds": 265.2999999821186
+    },
+    {
+      "run": 4,
+      "requests": 1,
+      "milliseconds": 264.69999998807907
+    },
+    {
+      "run": 5,
+      "requests": 1,
+      "milliseconds": 266.59999999403954
+    }
+  ]
+}
