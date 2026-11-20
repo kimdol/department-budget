@@ -40,7 +40,7 @@ public class ClaimService {
         return submit(workspace, requestKey, title, category, estimated, days, null);
     }
 
-    public record Estimate(long generation, long supported, long employeeShare, String formula) {}
+    public record Estimate(long generation, long supported, long employeeShare, String formula,ApprovalRoute route) {}
 
     @Transactional(readOnly=true)
     public Estimate estimate(String workspace,String category,long estimated,int days) {
@@ -48,7 +48,7 @@ public class ClaimService {
         if (days < 1 || days > 365) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         var rule = policies.active(workspace, category);
         long supported = rule.calculate(estimated, days);
-        return new Estimate(rule.generation(),supported,estimated-supported,rule.formula());
+        return new Estimate(rule.generation(),supported,estimated-supported,rule.formula(),ApprovalRoute.forSupport(supported));
     }
 
     public String submit(String workspace, UUID requestKey, String title, String category, long estimated, int days, Long expectedGeneration) {
@@ -68,8 +68,8 @@ public class ClaimService {
         PolicyVersion policy = policies.active(workspace, category);
         if (expectedGeneration != null && expectedGeneration != policy.generation())
             throw new ResponseStatusException(HttpStatus.CONFLICT);
-        policy.calculate(estimated, days);
-        mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation(),policy.evaluatorVersion());
+        var route = ApprovalRoute.forSupport(policy.calculate(estimated, days));
+        mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation(),policy.evaluatorVersion(),route);
         mapper.rememberSubmission(workspace, key, id);
         return id;
     }
@@ -79,7 +79,7 @@ public class ClaimService {
         Claim claim = locked(workspace, id);
         if (claim.status().equals("CANCELLED")) return;
         requireOpen(workspace);
-        require(claim, releaseApproval ? "APPROVED" : "SUBMITTED");
+        if (releaseApproval || !claim.status().equals("FINANCE_PENDING")) require(claim, releaseApproval ? "APPROVED" : "SUBMITTED");
         if (releaseApproval) {
             post(workspace, id, "CANCELLATION", -claim.approved(), 0);
             outbox.append(new PortalOutbox.Event(UUID.randomUUID().toString(), workspace, id, 2, "CANCELLATION", 0));
@@ -96,6 +96,27 @@ public class ClaimService {
         if (!claim.status().equals("SUBMITTED")) return;
         requireOpen(workspace);
         long amount = amount(claim, claim.estimated());
+        if (claim.approvalRoute() == ApprovalRoute.MANAGER_FINANCE) {
+            mapper.forwardToFinance(workspace,id);
+            mapper.event(workspace,id,0,"FORWARD_FINANCE","MANAGER",amount,null);
+            return;
+        }
+        commitApproval(workspace,id,balance,amount);
+    }
+
+    public void financeApproval(String workspace,String id) {
+        Balance balance = mapper.lockBalance(workspace);
+        Claim claim = locked(workspace,id);
+        if (claim.approvalRoute() != ApprovalRoute.MANAGER_FINANCE) throw new ResponseStatusException(HttpStatus.CONFLICT);
+        if (claim.status().equals("APPROVED")) return;
+        require(claim,"FINANCE_PENDING");
+        requireOpen(workspace);
+        long amount = amount(claim,claim.estimated());
+        commitApproval(workspace,id,balance,amount);
+        mapper.event(workspace,id,0,"FINAL_APPROVAL","FINANCE",amount,null);
+    }
+
+    private void commitApproval(String workspace,String id,Balance balance,long amount) {
         if (amount > balance.getAvailable()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         mapper.approve(workspace, id, amount);
         post(workspace, id, "APPROVAL", amount, 0);

@@ -105,6 +105,12 @@ public class DemoPortal {
         service.cancel(authorized(session, Role.EMPLOYEE), id, releaseApproval);
     }
 
+    @PostMapping("/api/claims/{id}/finance-approval")
+    @ResponseBody
+    public void financeApproval(HttpSession session,@PathVariable String id) {
+        service.financeApproval(authorized(session, Role.FINANCE),id);
+    }
+
     @GetMapping("/api/statement")
     @ResponseBody
     public PeriodClosing.Statement statement(HttpSession session) {

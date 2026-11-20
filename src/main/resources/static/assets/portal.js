@@ -1,4 +1,4 @@
-const statusName = {SUBMITTED:"결재 대기", APPROVED:"약정 완료", IN_REVIEW:"정산 검토", SETTLED:"정산 완료",
+const statusName = {SUBMITTED:"결재 대기", FINANCE_PENDING:"재무 사전승인 대기", APPROVED:"약정 완료", IN_REVIEW:"정산 검토", SETTLED:"정산 완료",
   INCREASE_REQUESTED:"증액 승인 대기", NEEDS_RECEIPT:"보완 요청", CANCELLED:"취소 완료"};
 const money = value => new Intl.NumberFormat("ko-KR").format(value) + "원";
 const notice = message => $("#notice").text(message);
@@ -95,8 +95,9 @@ function render(state) {
       $(this).prop("disabled", true);
       api(path + route, data()).then(refresh).fail(error => {reportError(error); $(this).prop("disabled",false);});
     }).appendTo(actions);
-    if (state.role === "MANAGER" && claim.status === "SUBMITTED") action("사전승인","/approve",()=>({}));
-    if (state.role === "EMPLOYEE" && ["SUBMITTED","APPROVED"].includes(claim.status)) {
+    if (state.role === "MANAGER" && claim.status === "SUBMITTED") action(claim.approvalRoute === "MANAGER_FINANCE" ? "재무로 결재 요청" : "사전승인","/approve",()=>({}));
+    if (state.role === "FINANCE" && claim.status === "FINANCE_PENDING") action("최종 사전승인","/finance-approval",()=>({}));
+    if (state.role === "EMPLOYEE" && ["SUBMITTED","FINANCE_PENDING","APPROVED"].includes(claim.status)) {
       const approved = claim.status === "APPROVED";
       action(approved ? "약정 취소" : "신청 철회", "/cancel", () => ({releaseApproval:approved}));
     }
@@ -173,6 +174,7 @@ $("#estimate").on("click", () => {
     if (revision !== estimateRevision) return;
     expectedGeneration = result.generation;
     $("#estimate-result").text("지원 예정 " + money(result.supported) + " · 본인 부담 " + money(result.employeeShare) +
+      " · 결재 경로 " + (result.route === "MANAGER_FINANCE" ? "부서장 → 재무" : "부서장") +
       " · 적용 규정 " + result.generation + " · " + result.formula);
   }).fail(error => {if (revision === estimateRevision) reportError(error);});
 });

@@ -1,0 +1,1 @@
+ALTER TABLE expense_claim ADD approval_route VARCHAR2(16) DEFAULT 'MANAGER' NOT NULL;

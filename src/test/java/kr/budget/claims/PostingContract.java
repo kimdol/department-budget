@@ -276,6 +276,24 @@ abstract class PostingContract {
     }
 
     @Test
+    void financeApprovalReservesTravelCostsOnlyAfterBothSteps() {
+        String workspace = service.open();
+        assertEquals(ApprovalRoute.MANAGER,service.estimate(workspace,"TRAVEL",299999,6).route());
+        assertEquals(ApprovalRoute.MANAGER_FINANCE,service.estimate(workspace,"TRAVEL",300000,6).route());
+        String id = service.submit(workspace,UUID.randomUUID(),"학술 출장","TRAVEL",300000,6);
+        assertThrows(ResponseStatusException.class,() -> service.financeApproval(workspace,id));
+        service.approve(workspace,id);
+        service.approve(workspace,id);
+        assertEquals("FINANCE_PENDING",mapper.lockClaim(workspace,id).status());
+        assertEquals(0,mapper.balance(workspace).committed());
+        service.financeApproval(workspace,id);
+        service.financeApproval(workspace,id);
+        assertEquals(300000,mapper.balance(workspace).committed());
+        assertEquals(1,jdbc.queryForObject("select count(*) from budget_posting where claim_id=?",Integer.class,id));
+        assertEquals(2,jdbc.queryForObject("select count(*) from claim_review_event where claim_id=?",Integer.class,id));
+    }
+
+    @Test
     void competingApprovalsCannotExceedAllocation() throws Exception {
         String workspace = service.open();
         jdbc.update("update budget_workspace set allocation=100000 where workspace_id=?", workspace);
