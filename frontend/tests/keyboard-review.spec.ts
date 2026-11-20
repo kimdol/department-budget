@@ -56,7 +56,7 @@ test("키보드로 결재하고 보완 사유 입력 후 같은 신청에서 재
   await expect(heading).toBeFocused();
   await expect(page.locator("#available")).toHaveText("820,000원");
 });
-test("보완 요청에서 비목을 바꾸면 두 신청의 이력이 서로 연결된다",async ({page})=>{
+for (const revise of [false,true]) test(revise ? "같은 비목의 변경 전후 금액과 기간을 최초 번호로 조회한다" : "보완 요청에서 비목을 바꾸면 두 신청의 이력이 서로 연결된다",async ({page})=>{
   await page.goto("/");
   await page.locator("#start").click();
   await page.getByRole("button",{name:"신청 제출"}).click();
@@ -73,11 +73,12 @@ test("보완 요청에서 비목을 바꾸면 두 신청의 이력이 서로 연
   await first.getByRole("button",{name:"보완 요청"}).click();
   await expect(first).toContainText("출장비로 재신청하세요.");
   await page.locator("#role").selectOption("EMPLOYEE");
-  await first.getByText("비목을 변경해 다시 신청",{exact:true}).click();
-  await first.getByLabel("변경 비목").selectOption("TRAVEL");
+  await first.getByText("신청 내용 변경",{exact:true}).click();
+  if (revise) await first.getByLabel("변경 신청명").fill("심화 교육");
+  else await first.getByLabel("변경 비목").selectOption("TRAVEL");
   await first.getByLabel("변경 예정 금액(원)").fill("225000");
   await first.getByLabel("변경 기간(일)").fill("3");
-  await first.getByRole("button",{name:"원신청 철회 후 재신청"}).click();
+  await first.getByRole("button",{name:revise ? "변경 버전 재상신" : "원신청 철회 후 재신청"}).click();
   await expect(page.locator(".claim")).toHaveCount(2);
   await expect(page.locator("#committed")).toHaveText("0원");
   const replacement = await first.locator("small").innerText();
@@ -87,7 +88,13 @@ test("보완 요청에서 비목을 바꾸면 두 신청의 이력이 서로 연
   const previous = page.locator(".claim").last();
   await previous.getByRole("button",{name:"결재 이력"}).click();
   await expect(previous).toContainText("새 신청 "+replacement);
+  if (revise) {
+    await previous.getByRole("button",{name:"신청 버전 조회"}).click();
+    await expect(previous).toContainText("최초 신청번호 "+original);
+    await expect(previous).toContainText("버전 1 · 직무 교육 참가 · 300,000원 · 1일");
+    await expect(previous).toContainText("버전 2 · 심화 교육 · 225,000원 · 3일");
+  }
   await page.locator("#role").selectOption("MANAGER");
   await first.getByRole("button",{name:"사전승인"}).click();
-  await expect(page.locator("#available")).toHaveText("850,000원");
+  await expect(page.locator("#available")).toHaveText(revise ? "820,000원" : "850,000원");
 });

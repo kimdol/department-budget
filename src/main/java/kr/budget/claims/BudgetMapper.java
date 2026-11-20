@@ -46,6 +46,22 @@ public interface BudgetMapper {
     @Insert("insert into claim_replacement(workspace_id,original_id,replacement_id) values(#{workspace},#{id},#{replacement})")
     void linkReplacement(String workspace,String id,String replacement);
 
+    record VersionKey(String seriesId,int versionNo) {}
+    record VersionRow(String seriesId,int versionNo,String claimId,String title,long estimated,int days,String status) {}
+
+    @Select("select series_id,version_no from claim_version where workspace_id=#{workspace} and claim_id=#{id}")
+    VersionKey versionKey(String workspace,String id);
+
+    @Insert("insert into claim_version(workspace_id,series_id,version_no,claim_id) values(#{workspace},#{series},#{version},#{id})")
+    void addVersion(String workspace,String series,int version,String id);
+
+    @Select("""
+        select v.series_id,v.version_no,c.claim_id,c.title,c.estimated,c.days,c.status
+        from claim_version v join expense_claim c on c.workspace_id=v.workspace_id and c.claim_id=v.claim_id
+        where v.workspace_id=#{workspace} and v.series_id=#{series} order by v.version_no
+        """)
+    List<VersionRow> versions(String workspace,String series);
+
     @Select("select " + COLUMNS + " from expense_claim where workspace_id=#{workspace} and claim_id=#{id} for update")
     Claim lockClaim(String workspace, String id);
 

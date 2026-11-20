@@ -108,11 +108,19 @@ function render(state) {
       }).appendTo(actions);
     }
     const documents = $("<div>").appendTo(row);
+    $("<button>").text("신청 버전 조회").on("click",()=>
+      $.getJSON(path+"/versions").done(versions=>{
+        documents.empty();
+        $("<strong>").text("최초 신청번호 "+versions[0].seriesId).appendTo(documents);
+        for (const v of versions) $("<p>").text("버전 "+v.versionNo+" · "+v.title+" · "+money(v.estimated)+" · "+
+          v.days+"일 · "+statusName[v.status]+" · "+v.claimId).appendTo(documents);
+      }).fail(reportError)).appendTo(actions);
     $("<button>").text("결재 이력").on("click", () =>
       $.getJSON(path+"/history").done(events => {
         const names = {SUBMIT:"신청 접수",FORWARD_FINANCE:"재무로 결재 요청",FINAL_APPROVAL:"최종 사전승인",
           SUBMIT_ACTUAL:"실제 지출 제출",APPROVE_INCREASE:"증액 승인",RETURN:"보완 요청",SETTLE:"정산 확정",
-          WITHDRAW:"신청 철회",CANCEL_APPROVAL:"약정 취소",REPLACED:"비목 변경으로 철회",REPLACES:"비목 변경 재신청"};
+          WITHDRAW:"신청 철회",CANCEL_APPROVAL:"약정 취소",REPLACED:"비목 변경으로 철회",REPLACES:"비목 변경 재신청",
+          REVISED:"이전 버전 승인 해제",REVISION:"변경 버전 재상신"};
         const roles = {EMPLOYEE:"직원",MANAGER:"부서장",FINANCE:"재무"};
         documents.empty();
         if (!events.length) documents.text("저장된 결재 이력이 없습니다.");
@@ -185,28 +193,38 @@ function render(state) {
     const managerReview = state.role === "MANAGER" && claim.status === "INCREASE_REQUESTED";
     if (state.role === "EMPLOYEE" && claim.status === "NEEDS_RECEIPT") {
       const details = $("<details>").appendTo(row);
-      $("<summary>").text("비목을 변경해 다시 신청").appendTo(details);
-      $("<p>").text("원신청의 약정을 해제하고 새 비목의 규정으로 사전승인을 다시 요청합니다.").appendTo(details);
+      $("<summary>").text("신청 내용 변경").appendTo(details);
+      $("<p>").text("기존 약정을 해제하고 사전승인을 다시 요청합니다. 비목을 유지하면 같은 신청의 다음 버전으로 기록됩니다.").appendTo(details);
       const form = $("<form>").appendTo(details);
       const category = $("<select>").appendTo($("<label>").text("변경 비목").appendTo(form));
       for (const [code,label] of Object.entries(categories)) {
-        if (code !== claim.category) category.append(new Option(label,code));
+        category.append(new Option(label,code));
       }
+      category.val(claim.category);
+      const title = $("<input>").attr({required:true,maxlength:100}).val(claim.title)
+        .appendTo($("<label>").text("변경 신청명").appendTo(form));
       const estimated = $("<input>").attr({type:"number",min:1,required:true}).val(claim.estimated)
         .appendTo($("<label>").text("변경 예정 금액(원)").appendTo(form));
       const days = $("<input>").attr({type:"number",min:1,max:365,required:true})
         .appendTo($("<label>").text("변경 기간(일)").appendTo(form));
-      const button = $("<button>").text("원신청 철회 후 재신청").appendTo(form);
+      const button = $("<button>").text("변경 버전 재상신").appendTo(form);
+      category.on("change",()=>{
+        const same = category.val() === claim.category;
+        title.prop("disabled",!same);
+        button.text(same ? "변경 버전 재상신" : "원신청 철회 후 재신청");
+      });
       form.on("submit",event=>{
         event.preventDefault();
         const data = {round:claim.reviewRound,category:category.val(),estimated:estimated.val(),days:days.val()};
+        const same = data.category === claim.category;
+        if (same) data.title = title.val();
         const storageKey = "replace-"+claim.claimId;
         const fields = JSON.stringify(data);
         const previous = JSON.parse(sessionStorage.getItem(storageKey) || "null");
         const key = previous?.fields === fields ? previous.key : crypto.randomUUID();
         sessionStorage.setItem(storageKey,JSON.stringify({fields,key}));
         button.prop("disabled",true);
-        api(path+"/replace-category",{...data,requestKey:key}).then(result=>{
+        api(path+(same ? "/revise" : "/replace-category"),{...data,requestKey:key}).then(result=>{
           sessionStorage.removeItem(storageKey);
           cursors.splice(0,cursors.length,null);
           return refresh().then(()=>document.getElementById("claim-title-"+result.claimId)?.focus());

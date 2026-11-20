@@ -27,6 +27,8 @@ select 'SCHEDULED|' || workspace_id || '|' || category || '|' || source_period |
 from scheduled_policy order by workspace_id,category;
 select 'REPLACEMENT|' || workspace_id || '|' || original_id || '|' || replacement_id
 from claim_replacement order by workspace_id,original_id;
+select 'VERSION|' || workspace_id || '|' || series_id || '|' || version_no || '|' || claim_id
+from claim_version order by workspace_id,series_id,version_no;
 select 'CLAIM|' || workspace_id || '|' || claim_id || '|' || category || '|' || policy_generation ||
        '|' || evaluator_version || '|' || rawtohex(standard_hash(formula,'SHA256')) ||
        '|' || rawtohex(standard_hash(attendance_rule,'SHA256')) || '|' || approval_route ||

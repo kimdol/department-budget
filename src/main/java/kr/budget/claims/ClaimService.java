@@ -108,24 +108,58 @@ public class ClaimService {
     }
 
     public String replaceCategory(String workspace,String originalId,int round,UUID key,String category,long estimated,int days) {
+        return replace(workspace,originalId,round,key,category,null,estimated,days,false);
+    }
+
+    public String revise(String workspace,String originalId,int round,UUID key,String title,long estimated,int days) {
+        return replace(workspace,originalId,round,key,null,title,estimated,days,true);
+    }
+
+    @Transactional(readOnly=true)
+    public java.util.List<BudgetMapper.VersionRow> versions(String workspace,String id) {
+        var claim = mapper.findClaim(workspace,id);
+        if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        var key = mapper.versionKey(workspace,id);
+        if (key == null) return java.util.List.of(new BudgetMapper.VersionRow(id,1,id,claim.title(),claim.estimated(),claim.days(),claim.status()));
+        return mapper.versions(workspace,key.seriesId());
+    }
+
+    private String replace(String workspace,String originalId,int round,UUID key,String category,String title,long estimated,int days,boolean revision) {
         mapper.lockBalance(workspace);
         Claim original = locked(workspace,originalId);
         if (original.reviewRound() != round) throw new ResponseStatusException(HttpStatus.CONFLICT);
+        if (revision) {
+            category = original.category();
+            if (title == null || title.isBlank()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+            title = title.strip();
+            if (title.equals(original.title()) && estimated == original.estimated() && days == original.days())
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        } else {
+            title = original.title();
+            if (original.category().equals(category)) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         String replacement = mapper.replacement(workspace,originalId);
         Claim previous = mapper.previousSubmission(workspace,key.toString());
         if (previous != null || replacement != null) {
             if (previous != null && previous.claimId().equals(replacement) && previous.category().equals(category)
-                    && previous.estimated() == estimated && previous.days() == days) return replacement;
+                    && previous.title().equals(title) && previous.estimated() == estimated && previous.days() == days) return replacement;
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         require(original,"NEEDS_RECEIPT");
-        if (original.category().equals(category)) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
-        String id = submit(workspace,key,original.title(),category,estimated,days);
+        String id = submit(workspace,key,title,category,estimated,days);
         releaseCommitment(workspace,original);
         mapper.cancel(workspace,originalId);
         mapper.linkReplacement(workspace,originalId,id);
-        mapper.event(workspace,originalId,round,"REPLACED","EMPLOYEE",original.approved(),"새 신청 "+id);
-        mapper.event(workspace,id,0,"REPLACES","EMPLOYEE",estimated,"원신청 "+originalId);
+        if (revision) {
+            var version = mapper.versionKey(workspace,originalId);
+            if (version == null) {
+                version = new BudgetMapper.VersionKey(originalId,1);
+                mapper.addVersion(workspace,originalId,1,originalId);
+            }
+            mapper.addVersion(workspace,version.seriesId(),version.versionNo()+1,id);
+        }
+        mapper.event(workspace,originalId,round,revision ? "REVISED" : "REPLACED","EMPLOYEE",original.approved(),"새 신청 "+id);
+        mapper.event(workspace,id,0,revision ? "REVISION" : "REPLACES","EMPLOYEE",estimated,"원신청 "+originalId);
         return id;
     }
 

@@ -130,6 +130,19 @@ public class DemoPortal {
         return Map.of("claimId",service.replaceCategory(authorized(session,Role.EMPLOYEE),id,round,requestKey,category,estimated,days));
     }
 
+    @PostMapping("/api/claims/{id}/revise")
+    @ResponseBody
+    public Map<String,String> revise(HttpSession session,@PathVariable String id,@RequestParam int round,
+            @RequestParam UUID requestKey,@RequestParam String title,@RequestParam long estimated,@RequestParam int days) {
+        return Map.of("claimId",service.revise(authorized(session,Role.EMPLOYEE),id,round,requestKey,title,estimated,days));
+    }
+
+    @GetMapping("/api/claims/{id}/versions")
+    @ResponseBody
+    public java.util.List<BudgetMapper.VersionRow> versions(HttpSession session,@PathVariable String id) {
+        return service.versions(workspace(session),id);
+    }
+
     @PostMapping("/api/claims/{id}/cancel")
     @ResponseBody
     public void cancel(HttpSession session, @PathVariable String id, @RequestParam boolean releaseApproval) {

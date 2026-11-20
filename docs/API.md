@@ -29,7 +29,11 @@
 재무가 초안을 제출하면 부서장은 `GET /api/policies?category=CONFERENCE`의 `drafts[].reviewHash`와 `nextPeriod`를 확인한다. 검토한 값으로 `POST /api/policies/drafts/{id}/schedule`에 `reviewHash`와 `targetPeriod`를 보낸다. 조회 결과의 `scheduled`에 예약이 나타나며 현재 적용 버전은 그대로다. 같은 초안·해시·기간을 재전송할 수 있다. 다른 초안을 즉시 발행하거나 예약하려면 기존 예약을 `POST /api/policies/drafts/{id}/unschedule`로 취소한다. 취소 요청에도 검토한 `targetPeriod`가 필요하다.
 
 재무가 마감을 확정한 뒤 **다음 달 열기**를 누르면 해당 기간의 예약들이 같은 트랜잭션에서 발행된다. 검토 해시가 달라지면 서버가 409를 반환하고 기존 마감 상태와 예약을 보존한다. [기간 개시](../src/main/java/kr/budget/closing/PeriodClosing.java) · [검토 해시와 발행](../src/main/java/kr/budget/policy/PolicyService.java)
-## 보완 중 비목 변경
+## 보완 중 신청 수정
+
+동일 비목에서 제목·예정 금액·일수를 수정할 때 직원은 `POST /api/claims/{id}/revise`에 `round`, `requestKey`, `title`, `estimated`, `days`를 보낸다. 서버는 이전 약정을 해제하고 새 버전을 첫 결재 단계에 접수한다. 이전 입력, 증빙, 전표는 이전 버전의 신청번호로 계속 조회한다. 동일 차수·요청 키·내용의 재전송은 이미 생성한 신청번호를 반환한다.
+
+현재 방문자의 업무 공간에서 `GET /api/claims/{id}/versions`를 호출하면 어느 버전의 신청번호를 사용해도 같은 비목의 버전들이 오름차순으로 반환된다. `seriesId`는 최초 신청번호, `versionNo`는 1부터 시작하는 버전, `claimId`는 해당 버전의 결재와 전표를 찾는 키다. 각 행에는 `title`, `estimated`, `days`, `status`도 포함된다. 비목을 바꾸면 새 신청번호로 별도 계열을 시작한다.
 
 직원은 `POST /api/claims/{id}/replace-category`에 보완 차수 `round`, 새 비목 `category`, 예정 금액 `estimated`, 일수 `days`, 요청 식별자 `requestKey`를 보낸다. 성공 응답의 `claimId`는 새 신청번호다. 두 신청의 결재 이력에 상대 신청번호가 남는다. 같은 내용과 식별자로 재전송하면 같은 결과를 받는다. 같은 원신청에서 서로 다른 대체 신청을 만들려 하면 409가 반환된다. [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java)
 ## 신청자가 결재 대행을 맡은 경우

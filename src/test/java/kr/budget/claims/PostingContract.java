@@ -41,6 +41,32 @@ abstract class PostingContract {
     }
 
     @Test
+    void revisedScopeKeepsEveryVersionAndRequiresNewApproval() {
+        String workspace = service.open();
+        String root = service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1);
+        String current = root;
+        for (int version=2; version<=3; version++) {
+            service.approve(workspace,current);
+            service.review(workspace,current,100000);
+            service.returnReview(workspace,current,1,"일정 변경",false);
+            UUID key = UUID.randomUUID();
+            String title = "교육 "+version;
+            String next = service.revise(workspace,current,1,key,title,180000,version);
+            assertEquals(next,service.revise(workspace,current,1,key,title,180000,version));
+            assertEquals(0,mapper.balance(workspace).committed());
+            assertEquals("SUBMITTED",mapper.findClaim(workspace,next).status());
+            assertEquals("CANCELLED",mapper.findClaim(workspace,current).status());
+            current = next;
+        }
+        var rows = service.versions(workspace,current);
+        assertEquals(rows,service.versions(workspace,root));
+        assertEquals(java.util.List.of(1,2,3),rows.stream().map(BudgetMapper.VersionRow::versionNo).toList());
+        assertEquals(java.util.List.of(300000L,180000L,180000L),rows.stream().map(BudgetMapper.VersionRow::estimated).toList());
+        assertEquals(java.util.List.of(1,2,3),rows.stream().map(BudgetMapper.VersionRow::days).toList());
+        assertThrows(ResponseStatusException.class,()->service.versions(service.open(),root));
+    }
+
+    @Test
     void categoryReplacementReleasesTheOriginalCommitmentAndStartsFreshApproval() {
         String workspace = service.open();
         String original = service.submit(workspace,UUID.randomUUID(),"학회 교육","EDUCATION",300000,1);
