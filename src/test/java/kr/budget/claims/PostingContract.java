@@ -14,6 +14,35 @@ abstract class PostingContract {
     @Autowired ClaimService service;
     @Autowired BudgetMapper mapper;
     @Autowired JdbcTemplate jdbc;
+    @Autowired kr.budget.policy.PolicyService policies;
+
+    @Test
+    void conferenceRulesArePinnedAtSubmissionAndCanBeRestoredForNewClaims() {
+        String workspace = service.open();
+        String original = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
+        String expression = "min(eligible_cost * 0.90, event_cap)";
+        var preview = policies.preview(workspace, "CONFERENCE", expression, 180000, 1);
+        assertEquals(144000, preview.original());
+        assertEquals(162000, preview.candidate());
+        String draft = policies.draft(workspace, "CONFERENCE", 0, expression);
+        assertEquals(1, policies.publish(workspace, draft));
+        assertEquals(409, assertThrows(ResponseStatusException.class,
+                () -> policies.publish(workspace, draft)).getStatusCode().value());
+        String preferred = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
+        String regular = service.submit(workspace, UUID.randomUUID(), "일반", "EDUCATION", 180000, 1);
+        String restore = policies.draft(workspace, "CONFERENCE", 1, policies.history(workspace, "CONFERENCE").getLast().formula());
+        policies.publish(workspace, restore);
+        String restored = service.submit(workspace, UUID.randomUUID(), "학회", "CONFERENCE", 180000, 1);
+        for (String id : List.of(original, regular, preferred, restored)) service.approve(workspace, id);
+        assertEquals(144000, mapper.lockClaim(workspace, original).approved());
+        assertEquals(144000, mapper.lockClaim(workspace, regular).approved());
+        assertEquals(162000, mapper.lockClaim(workspace, preferred).approved());
+        assertEquals(1, mapper.lockClaim(workspace, preferred).policyGeneration());
+        assertEquals(144000, mapper.lockClaim(workspace, restored).approved());
+        service.review(workspace, preferred, 100000);
+        service.settle(workspace, preferred);
+        assertEquals(90000, mapper.balance(workspace).spent());
+    }
 
     @Test
     void lostSubmissionResponseReplaysOriginalClaimOnlyForSameInput() {

@@ -1,20 +1,23 @@
 package kr.budget.claims;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import kr.budget.policy.ExpenseFormula;
+import kr.budget.policy.PolicyService;
+import kr.budget.policy.PolicyVersion;
 
 @Service
 @Transactional
 public class ClaimService {
     private final BudgetMapper mapper;
 
-    public ClaimService(BudgetMapper mapper) {
+    private final PolicyService policies;
+
+    public ClaimService(BudgetMapper mapper, PolicyService policies) {
         this.mapper = mapper;
+        this.policies = policies;
     }
 
     public String open() {
@@ -27,11 +30,6 @@ public class ClaimService {
         checkAmount(estimated);
         if (title == null || title.isBlank() || title.length() > 100 || days < 1 || days > 365)
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
-        String formula = switch (category) {
-            case "EDUCATION" -> ExpenseFormula.EDUCATION;
-            case "TRAVEL" -> ExpenseFormula.TRAVEL;
-            default -> throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
-        };
         mapper.lockBalance(workspace);
         String key = requestKey.toString();
         Claim previous = mapper.previousSubmission(workspace, key);
@@ -41,7 +39,9 @@ public class ClaimService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         String id = UUID.randomUUID().toString();
-        mapper.submit(id, workspace, title.strip(), category, estimated, days, formula);
+        PolicyVersion policy = policies.active(workspace, category);
+        policy.calculate(estimated, days);
+        mapper.submit(id, workspace, title.strip(), category, estimated, days, policy.formula(), policy.generation());
         mapper.rememberSubmission(workspace, key, id);
         return id;
     }
@@ -91,8 +91,7 @@ public class ClaimService {
     }
 
     private long amount(Claim claim, long cost) {
-        return ExpenseFormula.calculate(claim.formula(), new ExpenseFormula.Inputs(cost,
-                new BigDecimal("0.80"), 200000, claim.days(), 50000));
+        return new PolicyVersion(claim.policyGeneration(), claim.formula()).calculate(cost, claim.days());
     }
 
     private void checkAmount(long amount) {

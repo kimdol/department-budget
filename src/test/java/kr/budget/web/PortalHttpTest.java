@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={
         "spring.datasource.url=jdbc:h2:mem:portal;MODE=Oracle","spring.datasource.username=sa",
         "spring.datasource.password=","spring.sql.init.mode=always",
-        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql",
+        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql,classpath:db/V003__policy_versions.sql",
         "server.address=127.0.0.1","server.servlet.session.cookie.secure=false"})
 class PortalHttpTest {
     @LocalServerPort int port;

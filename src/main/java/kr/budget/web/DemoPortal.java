@@ -5,6 +5,8 @@ import java.util.UUID;
 import jakarta.servlet.http.HttpSession;
 import kr.budget.claims.BudgetMapper;
 import kr.budget.claims.ClaimService;
+import kr.budget.policy.PolicyService;
+import kr.budget.policy.PolicyMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
@@ -16,10 +18,14 @@ public class DemoPortal {
     public enum Role { EMPLOYEE, MANAGER, FINANCE }
     private final ClaimService service;
     private final BudgetMapper mapper;
+    private final PolicyService policies;
+    private final PolicyMapper policyMapper;
 
-    public DemoPortal(ClaimService service, BudgetMapper mapper) {
+    public DemoPortal(ClaimService service, BudgetMapper mapper, PolicyService policies, PolicyMapper policyMapper) {
         this.service = service;
         this.mapper = mapper;
+        this.policies = policies;
+        this.policyMapper = policyMapper;
     }
 
     @GetMapping("/")
@@ -78,6 +84,40 @@ public class DemoPortal {
     @ResponseBody
     public void settle(HttpSession session, @PathVariable String id) {
         service.settle(authorized(session, Role.FINANCE), id);
+    }
+
+    @GetMapping("/api/policies")
+    @ResponseBody
+    public Map<String, Object> policyHistory(HttpSession session, @RequestParam String category) {
+        String workspace = workspace(session);
+        return Map.of("versions", policies.history(workspace, category), "drafts", policyMapper.drafts(workspace, category));
+    }
+
+    @PostMapping("/api/policies/preview")
+    @ResponseBody
+    public PolicyService.Preview preview(HttpSession session, @RequestParam String category,
+            @RequestParam String formula, @RequestParam long cost, @RequestParam int days) {
+        return policies.preview(workspace(session), category, formula, cost, days);
+    }
+
+    @PostMapping("/api/policies/drafts")
+    @ResponseBody
+    public Map<String, String> draft(HttpSession session, @RequestParam String category,
+            @RequestParam long generation, @RequestParam String formula) {
+        return Map.of("draftId", policies.draft(authorized(session, Role.FINANCE), category, generation, formula));
+    }
+
+    @PostMapping("/api/policies/drafts/{id}/publish")
+    @ResponseBody
+    public Map<String, Long> publish(HttpSession session, @PathVariable String id) {
+        return Map.of("generation", policies.publish(authorized(session, Role.MANAGER), id));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseBody
+    public Map<String, String> invalidInput(IllegalArgumentException error) {
+        return Map.of("message", error.getMessage());
     }
 
     private String authorized(HttpSession session, Role required) {
