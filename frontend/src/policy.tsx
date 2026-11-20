@@ -59,7 +59,7 @@ function PolicyEditor() {
       request<Preview>("/api/policies/preview",{category,formula,cost,days},controller.signal)
         .then(result=>{if (!controller.signal.aborted) setPreview(result);})
         .catch(error=>{if (!controller.signal.aborted) setDiagnostic(error.message);});
-    },250);
+    },150);
     return ()=>{window.clearTimeout(timer);controller.abort();};
   },[category,formula,cost,days,history]);
   async function change(url:string,data:Record<string,string>,message:string) {
