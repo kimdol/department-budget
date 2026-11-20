@@ -1,5 +1,9 @@
 # 인수 현황
 
+신청 버전을 도입한 [9279a68](https://github.com/kimdol/department-budget/commit/9279a68)은 실제 Oracle 원장 시험 27건을 모두 통과했다. [시험 보고서](measurements/oracle-contracts-44800719035.txt) · [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44800719035)
+
+변경 폼에 원래 기간을 채우기 위해 결재함 전체에 일수를 추가한 첫 구현에서는 51건을 접수하는 브라우저 시험이 실패했다. 결재함 요약에는 일수가 없어야 하지만 50행 모두에 포함됐기 때문이다. 변경 폼을 펼칠 때 해당 신청의 계산 상세에서 일수를 읽도록 바꿨다. 응답을 기다리는 동안 사용자가 직접 입력한 기간은 유지한다. [목록 계약](../frontend/tests/inbox-pages.spec.ts) · [변경 폼 시험](../frontend/tests/keyboard-review.spec.ts)
+
 V025는 동일 비목으로 보완할 때 변경 전후 제목·금액·기간과 전표를 버전별로 보존한다. 로컬 Maven 검증에서 54건 통과, 실제 Oracle 전용 27건은 건너뛰었다. [변경 API](API.md) · [복수 버전·재시도·격리 시험](../src/test/java/kr/budget/claims/PostingContract.java)
 
 실제 Oracle V017→V024 업그레이드 후 스키마 상태 READY, 기존 정산 신청의 전표 2건·약정 잔액 0원·집행액 180,000원·가용액 820,000원을 확인했다. 같은 차이 SQL은 첫 DDL 전에 재실행을 거절했다. [원자료](measurements/oracle-upgrade-44799267812.txt) · [재현 절차](ORACLE.md)

@@ -74,6 +74,7 @@ for (const revise of [false,true]) test(revise ? "같은 비목의 변경 전후
   await expect(first).toContainText("출장비로 재신청하세요.");
   await page.locator("#role").selectOption("EMPLOYEE");
   await first.getByText("신청 내용 변경",{exact:true}).click();
+  await expect(first.getByLabel("변경 기간(일)")).toHaveValue("1");
   if (revise) await first.getByLabel("변경 신청명").fill("심화 교육");
   else await first.getByLabel("변경 비목").selectOption("TRAVEL");
   await first.getByLabel("변경 예정 금액(원)").fill("225000");

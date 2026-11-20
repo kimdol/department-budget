@@ -207,6 +207,15 @@ function render(state) {
         .appendTo($("<label>").text("변경 예정 금액(원)").appendTo(form));
       const days = $("<input>").attr({type:"number",min:1,max:365,required:true})
         .appendTo($("<label>").text("변경 기간(일)").appendTo(form));
+      let periodEdited = false;
+      days.on("input",()=>{ periodEdited = true; });
+      details.on("toggle",()=>{
+        if (details.prop("open") && !periodEdited && !days.val()) {
+          $.getJSON(path+"/calculation").done(calculation=>{
+            if (!periodEdited) days.val(calculation.days);
+          }).fail(reportError);
+        }
+      });
       const button = $("<button>").text("변경 버전 재상신").appendTo(form);
       category.on("change",()=>{
         const same = category.val() === claim.category;
