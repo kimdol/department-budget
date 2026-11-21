@@ -547,6 +547,15 @@ $("#employee-view").on("click",()=>{
   history.replaceState(null,"",url);
   loadEmployee();
 });
+function renderEstimate(result) {
+  const route = result.route === "MANAGER_FINANCE" ? "부서장 → 재무" : "부서장";
+  const panel = $("#estimate-result").text("지원 예정 " + money(result.supported) + " · 본인 부담 " +
+    money(result.employeeShare) + " · 결재 경로 " + route + " · 적용 규정 " + result.generation + " · " + result.formula);
+  $("<span>").text(" 정산 준비 · " + result.evidenceRequirements.join(" ")).appendTo(panel);
+  if (typeof result.ruleExplanation === "string" && result.ruleExplanation.trim()) {
+    $("<span>").text(" 규정 설명 · " + result.ruleExplanation.trim()).appendTo(panel);
+  }
+}
 $("#estimate").on("click", () => {
   const form = document.querySelector("#employee-submit") || document.querySelector("#submit");
   if (!form.reportValidity()) return;
@@ -556,10 +565,7 @@ $("#estimate").on("click", () => {
   $.getJSON("/api/claims/estimate",data).done(result => {
     if (revision !== estimateRevision) return;
     expectedGeneration = result.generation;
-    $("#estimate-result").text("지원 예정 " + money(result.supported) + " · 본인 부담 " + money(result.employeeShare) +
-      " · 결재 경로 " + (result.route === "MANAGER_FINANCE" ? "부서장 → 재무" : "부서장") +
-      " · 적용 규정 " + result.generation + " · " + result.formula);
-    $("<span>").text(" 정산 준비 · " + result.evidenceRequirements.join(" ")).appendTo("#estimate-result");
+    renderEstimate(result);
   }).fail(error => {if (revision === estimateRevision) reportError(error);});
 });
 $("#entry").on("submit","form",event=>{

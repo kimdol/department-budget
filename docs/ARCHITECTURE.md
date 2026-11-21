@@ -80,3 +80,9 @@ erDiagram
 [직원 신청함](../frontend/src/inbox/EmployeeInbox.tsx)은 선택한 신청과 목록 복귀 위치를 관리한다. [목록](../frontend/src/inbox/ClaimList.tsx)은 상태 필터와 페이지 이동을 맡고, [상세](../frontend/src/inbox/ClaimDetail.tsx)는 서버가 계산한 금액과 다음 담당자를 표시한다. [증빙 폼](../frontend/src/inbox/SettlementForm.tsx)은 제출한 종류·금액이 서버 목록과 일치할 때 첨부 완료를 표시한다. 첨부 응답을 잃으면 목록에서 확인하고, 정산 제출 응답을 잃으면 업무 상태를 다시 읽는다. 기존 신청 변경·철회와 전체 이력은 같은 부서의 JSP 화면으로 이어진다.
 
 재무 담당자의 보완 사유는 확정된 검토 문구로 저장된다. 향후 문장 초안을 생성하는 기능은 재무 입력란에 제안하는 단계에 연결할 수 있다. 증빙 판정과 회계 처리는 서버 규칙이 담당하며 현재 배포의 실행 의존성은 Java·Oracle과 포털 연계 서비스다. [증빙 판정](../src/main/java/kr/budget/claims/EvidencePolicy.java) · [보완 사유 저장과 정산](../src/main/java/kr/budget/claims/ClaimService.java)
+
+### 지원 예정액과 규정 설명
+
+JSP와 React 신청서는 동일한 견적 응답을 사용한다. 금액, 결재 경로, 규정 버전, 수식, 필요 증빙은 서버의 `ClaimService.estimate`에서 결정하고 `renderEstimate`가 표시한다. 화면은 응답의 선택 필드 `ruleExplanation`을 일반 텍스트로 덧붙일 수 있다. 현재 서버는 이 필드를 생략한다. 입력이 바뀌면 기존 견적과 설명을 함께 지운다. [견적 계산](../src/main/java/kr/budget/claims/ClaimService.java) · [화면 표시](../src/main/resources/static/assets/portal.js) · [설명 유무에 따른 시험](../frontend/tests/employee-form.spec.ts)
+
+설명 작성 기능을 도입할 때는 규정 발행 단계에서 수식과 변수의 의미로 초안을 만들고, 재무 담당자가 확인한 문장을 해당 부서·비목·규정 버전에 연결한다. 견적 조회 시 같은 버전의 문장을 선택 필드로 전달하면 신청 한 건마다 문장을 생성할 필요가 없다. 금액·결재자·제출 서류는 견적의 각 필드로 표시하고, 원본 수식은 계산 근거로 조회할 수 있게 한다. 문장 작성에는 신청자 정보나 영수증 파일이 필요하지 않다.

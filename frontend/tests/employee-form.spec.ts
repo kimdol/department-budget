@@ -1,5 +1,31 @@
 import {expect,test} from "@playwright/test";
 
+test("규정 설명이 있는 견적도 기존 금액과 증빙을 유지하고 입력을 바꾸면 함께 지운다",async ({page})=>{
+  await page.goto("/");
+  await page.locator("#start").click();
+  const estimate = page.locator("#estimate");
+  const result = page.locator("#estimate-result");
+  await estimate.click();
+  await expect(result).toContainText("지출 영수증이 필요합니다.");
+  const original = await result.innerText();
+  await expect(result).not.toContainText("규정 설명");
+
+  const explanation = "교육비에는 행사별 한도가 적용돼요. <b>계산 근거</b>";
+  await page.route("**/api/claims/estimate?*",async route=>{
+    const response = await route.fetch();
+    expect(response.ok()).toBe(true);
+    await route.fulfill({response,json:{...await response.json(),ruleExplanation:explanation}});
+  },{times:1});
+  await estimate.click();
+  await expect(result).toHaveText(original + " 규정 설명 · " + explanation);
+  await expect(result.locator("b")).toHaveCount(0);
+  await page.locator('#submit [name="estimated"]').fill("150000");
+  await expect(result).toBeEmpty();
+  await estimate.click();
+  await expect(result).toContainText("지원 예정 120,000원");
+  await expect(result).not.toContainText("규정 설명");
+});
+
 test("역할 전환의 응답을 기다리는 동안 이전 업무 버튼을 잠근다",async ({page})=>{
   await page.goto("/");
   await page.locator("#start").click();
