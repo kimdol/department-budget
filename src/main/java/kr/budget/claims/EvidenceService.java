@@ -24,9 +24,16 @@ public class EvidenceService {
 
     @Transactional
     public void attach(String workspace, String id, Type type, long amount) {
+        attach(workspace,id,type,amount,null);
+    }
+
+    @Transactional
+    public void attach(String workspace, String id, Type type, long amount, Integer correctionRound) {
         if (amount < 1 || amount > 999999999999L) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         Claim claim = budgets.lockClaim(workspace, id);
         if (claim == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if (correctionRound != null && (!"NEEDS_RECEIPT".equals(claim.status()) || claim.reviewRound()!=correctionRound.intValue()
+                || !java.util.Objects.equals(claim.actual(),amount))) throw new ResponseStatusException(HttpStatus.CONFLICT);
         var previous = evidence.find(workspace, id, type.name());
         if (previous != null && previous.receiptAmount() == amount) return;
         if (!List.of("APPROVED","NEEDS_RECEIPT").contains(claim.status())) throw new ResponseStatusException(HttpStatus.CONFLICT);

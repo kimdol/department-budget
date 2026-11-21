@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={
         "spring.datasource.url=jdbc:h2:mem:portal;MODE=Oracle","spring.datasource.username=sa",
         "spring.datasource.password=","spring.sql.init.mode=always",
-        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql,classpath:db/V003__policy_versions.sql,classpath:db/V004__claim_review.sql,classpath:db/V005__claim_evidence.sql,classpath:db/V006__closing_period.sql,classpath:db/V007__portal_outbox.sql,classpath:db/V008__statement_balances.sql,classpath:db/V009__posting_period.sql,classpath:db/V010__organization_type.sql,classpath:db/V011__evidence_history.sql,classpath:db/V012__formula_evaluator.sql,classpath:db/V013__approval_route.sql,classpath:db/V014__claim_inbox_order.sql,classpath:db/V015__draft_comparison.sql,classpath:db/V016__demo_departments.sql,classpath:db/V017__attendance_policy.sql,classpath:db/V018__publication_review.sql,classpath:db/V019__branch_allocation.sql,classpath:db/V020__scheduled_policy.sql,classpath:db/V021__scheduled_period_reference.sql,classpath:db/V022__claim_replacement.sql,classpath:db/V023__posting_month_index.sql,classpath:db/V024__claim_applicant.sql,classpath:db/V025__claim_versions.sql","spring.batch.jdbc.initialize-schema=always",
+        "spring.sql.init.schema-locations=classpath:db/V001__budget.sql,classpath:db/V002__submission_receipt.sql,classpath:db/V003__policy_versions.sql,classpath:db/V004__claim_review.sql,classpath:db/V005__claim_evidence.sql,classpath:db/V006__closing_period.sql,classpath:db/V007__portal_outbox.sql,classpath:db/V008__statement_balances.sql,classpath:db/V009__posting_period.sql,classpath:db/V010__organization_type.sql,classpath:db/V011__evidence_history.sql,classpath:db/V012__formula_evaluator.sql,classpath:db/V013__approval_route.sql,classpath:db/V014__claim_inbox_order.sql,classpath:db/V015__draft_comparison.sql,classpath:db/V016__demo_departments.sql,classpath:db/V017__attendance_policy.sql,classpath:db/V018__publication_review.sql,classpath:db/V019__branch_allocation.sql,classpath:db/V020__scheduled_policy.sql,classpath:db/V021__scheduled_period_reference.sql,classpath:db/V022__claim_replacement.sql,classpath:db/V023__posting_month_index.sql,classpath:db/V024__claim_applicant.sql,classpath:db/V025__claim_versions.sql,classpath:db/V026__demo_retention.sql","spring.batch.jdbc.initialize-schema=always",
         "server.address=127.0.0.1","server.servlet.session.cookie.secure=false"})
 class PortalHttpTest {
     @LocalServerPort int port;
@@ -61,6 +61,22 @@ class PortalHttpTest {
             assertEquals(200, post("/api/demo/role", "role=" + name).statusCode());
         }
     }
+
+    @Test
+    void openingSecondaryDepartmentRenewsTheEntireVisitorsRetentionPeriod() throws Exception {
+        var visitor=new Visitor();
+        var create=visitor.post("/api/claims","title=Activity&category=EDUCATION&estimated=3000&days=1&requestKey="+UUID.randomUUID());
+        assertEquals(200,create.statusCode());
+        String id=json.readTree(create.body()).get("claimId").asText();
+        String parent=activityDb.queryForObject("select workspace_id from expense_claim where claim_id=?",String.class,id);
+        activityDb.update("update budget_workspace set last_active_at=current_timestamp - interval '31' day where workspace_id=?",parent);
+        assertTrue(retention.candidates().contains(parent));
+        assertEquals(200,visitor.request("/api/workspace?department=SECONDARY",null,false).statusCode());
+        assertFalse(retention.removeIfExpired(parent));
+        assertFalse(retention.candidates().contains(parent));
+    }
+    @org.springframework.beans.factory.annotation.Autowired org.springframework.jdbc.core.JdbcTemplate activityDb;
+    @org.springframework.beans.factory.annotation.Autowired kr.budget.retention.DemoRetention retention;
 
     @Test
     void onlyVersionedLibraryCanBeReusedAcrossSessions() throws Exception {

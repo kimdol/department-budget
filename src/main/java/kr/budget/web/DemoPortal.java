@@ -297,8 +297,9 @@ public class DemoPortal {
 
     @PostMapping("/api/claims/{id}/evidence")
     @ResponseBody
-    public void attach(HttpSession session, @PathVariable String id, @RequestParam EvidenceService.Type type, @RequestParam long amount) {
-        evidence.attach(authorized(session, Role.EMPLOYEE), id, type, amount);
+    public void attach(HttpSession session, @PathVariable String id, @RequestParam EvidenceService.Type type, @RequestParam long amount,
+            @RequestParam(required=false) Integer correctionRound) {
+        evidence.attach(authorized(session, Role.EMPLOYEE), id, type, amount, correctionRound);
     }
 
     @GetMapping("/api/claims/{id}/evidence/assessment")

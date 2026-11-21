@@ -11,6 +11,44 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class PostingContract {
+    @Autowired kr.budget.retention.DemoRetention retention;
+
+    @Test
+    void confirmedReceiptRequiresTheReviewedAmountAndCurrentCorrectionRound() {
+        String workspace=service.open();
+        String id=service.submit(workspace,UUID.randomUUID(),"교육","EDUCATION",300000,1);
+        service.approve(workspace,id);
+        service.review(workspace,id,225000);
+        service.returnReview(workspace,id,1,"영수증",false);
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->evidence.attach(workspace,id,EvidenceService.Type.RECEIPT,225000,0)).getStatusCode().value());
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->evidence.attach(workspace,id,EvidenceService.Type.RECEIPT,220000,1)).getStatusCode().value());
+        assertTrue(evidence.list(workspace,id).isEmpty());
+        evidence.attach(workspace,id,EvidenceService.Type.RECEIPT,225000,1);
+        assertEquals(1,evidence.list(workspace,id).size());
+    }
+
+    @Test
+    void expiryRechecksRecentActivityAndDeliveryBeforeRemovingBothDepartments() {
+        var pair=service.openDepartments(OrganizationType.COMPANY);
+        var other=service.openDepartments(OrganizationType.COMPANY);
+        String id=service.submit(pair.secondaryId(),UUID.randomUUID(),"교육","EDUCATION",300000,1);
+        service.approve(pair.secondaryId(),id);
+        String expire="update budget_workspace set last_active_at=current_timestamp - interval '31' day where workspace_id=?";
+        jdbc.update(expire,pair.primaryId());
+        assertFalse(retention.candidates().contains(pair.primaryId()));
+        assertFalse(retention.removeIfExpired(pair.primaryId()));
+        jdbc.update("update portal_outbox set delivered=1 where workspace_id=?",pair.secondaryId());
+        assertTrue(retention.candidates().contains(pair.primaryId()));
+        jdbc.update("update budget_workspace set last_active_at=current_timestamp where workspace_id=?",pair.primaryId());
+        assertFalse(retention.removeIfExpired(pair.primaryId()));
+        jdbc.update(expire,pair.primaryId());
+        assertTrue(retention.removeIfExpired(pair.primaryId()));
+        assertFalse(retention.removeIfExpired(pair.primaryId()));
+        assertEquals(0,jdbc.queryForObject("select count(*) from budget_workspace where workspace_id in (?,?)",Integer.class,pair.primaryId(),pair.secondaryId()));
+        assertEquals(1,jdbc.queryForObject("select count(*) from demo_receipt_cleanup where workspace_id=?",Integer.class,pair.secondaryId()));
+        assertFalse(retention.removeIfExpired(other.primaryId()));
+        assertNotNull(mapper.balance(other.secondaryId()));
+    }
     @Test
     void calculationReadsCommittedInputsWhileAnotherSessionEditsTheClaim() throws Exception {
         String workspace = service.open();

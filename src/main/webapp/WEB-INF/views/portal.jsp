@@ -6,6 +6,7 @@
 <body><header><strong>부서예산</strong><span>교육비 · 출장비</span><a href="/personal">내 자격시험·교육·도서 장부</a></header><main>
 <h1>부서 결재함</h1>
 <section class="workspace-settings" aria-labelledby="settings-title"><h2 id="settings-title">체험 설정</h2>
+<p>체험 업무 데이터는 마지막 이용 후 30일이 지나면 매일 정리합니다. 개인 장부는 이 브라우저에 보관됩니다.</p>
 <div class="settings-fields"><label id="organization-choice">체험 조직<select id="organization"><option value="COMPANY">일반 기업 경영지원팀</option><option value="HOSPITAL">병원 행정부서</option><option value="BANK">은행 경영지원팀</option></select></label>
 <div id="workspace-organization" hidden></div>
 <label id="department-choice" hidden>체험 부서<select id="department"><option value="PRIMARY">제1부서</option><option value="SECONDARY">제2부서</option></select></label>
