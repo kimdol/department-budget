@@ -212,12 +212,21 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 
 1. git status, git log -1과 git ls-remote origin refs/heads/main을 대조한다.
 2. 다음 기능 변경에서도 Verify Oracle Ledger의 계약 시험과 복원 산출물 일치를 확인한다. 수식 평가기 교체를 포함한 [Oracle 기준 실행](https://github.com/kimdol/department-budget/actions/runs/44771763566)은 80ac4c6에 해당한다.
-3. OCI 접근 권한이 확보되면 무료 자원 할당 가능 여부와 Oracle 연결을 확인하고 공개 URL에서 새 브라우저 두 개로 대표 업무와 격리를 재현한다. 그동안에는 위 세부 인수 항목에서 남은 구현과 검증을 이어간다.
+3. OCI 콘솔의 Japan Central (Osaka)에서 배포 전용 VM을 생성한 뒤 설치 묶음의 SHA-256을 확인하고 Oracle과 MySQL을 연결한다. 공개 URL에서 새 브라우저 두 개로 대표 업무와 방문자 격리를 재현한다.
 4. 로컬 재현은 frontend에서 npm ci와 npm run build, 루트에서 mvn package, python ops/test_https.py 순서다. 포털 수신 시험은 python ops/test_portal.py로 실행한다.
 
 ## 외부 환경
 
-공개 Oracle·Java 호스팅 계정은 아직 없다. 배포 후보는 OCI Always Free 컴퓨트와 Autonomous Database다. 무료 자원 할당이 가능한 리전·규격·사용량에 한해 예상 인프라 비용은 월 0원이다. 할당 용량이 부족할 수 있고 도메인은 별도다. DB는 7일 비활동 시 데이터가 보존된 상태로 정지되며 장기간 비활동 시 회수될 수 있다. 콘솔에서 재시작하고 별도 백업을 복원 검증한다. 유료 전환에는 사전 승인이 필요하다. [Oracle 무료 자원](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm) · [DB 중지와 재시작](https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/autonomous-always-free.html)
+OCI 무료 계정의 Japan Central (Osaka) 콘솔에 접속했다. Oracle Linux 9, 상시 무료 대상 VM.Standard.A1.Flex, 2 OCPU·12GB, 기본 부팅 볼륨을 생성 화면에서 확인했다. 예상 비용 화면은 부팅 볼륨 정가 월 미화 2.76달러를 표시했다. 홈 리전의 상시 무료 볼륨 합계 200GB 및 컴퓨트 한도 내 예상 인프라 비용은 월 0원이다. VM 생성, 리전의 실제 할당 용량, 공개 주소는 확인 전이다. [OCI 상시 무료 자원](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
+
+ARM VM 안에서 Oracle Database Free와 MySQL을 실행하는 구성을 우선 검토한다. CI에서 검증한 Oracle 설치·원장 복원 방식과 MySQL 수신 스키마를 적용하고, 데이터베이스 포트는 VM 내부에 둔다. 레지스트리에서 배포에 사용할 계열의 linux/arm64 자식 매니페스트를 확인했다.
+
+| 이미지 | linux/arm64 매니페스트 |
+| --- | --- |
+| ghcr.io/gvenzl/oracle-free:23-slim-faststart | `sha256:80a93426507ad712f6920949aebbfdb6e651832bc17631c6e49a864651d6cc6b` |
+| docker.io/library/mysql:8.4 | `sha256:f4539b86c82f2c168fc95b439448bde3b9f48e8460344ce41e39081867d2b58e` |
+
+ARM VM에서의 실제 기동과 스키마 설치는 VM 할당 후 확인한다. 검증한 Java 배포 묶음은 5075c18의 WAR, Oracle 설치 SQL, PHP 수신기와 MySQL 수신 스키마를 포함한다. [전체 CI](https://github.com/kimdol/department-budget/actions/runs/44810504579) · [Oracle 이미지](https://github.com/gvenzl/oci-oracle-free#how-to-use-these-images)
 
 ## 단계별 검증 기록
 
