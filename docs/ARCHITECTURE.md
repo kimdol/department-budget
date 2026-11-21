@@ -72,3 +72,11 @@ erDiagram
 병원 행정부서로 시작해 재무 담당자로 학회 참가비를 선택하고 인정액 수식에 `min(eligible_cost * 0.90, event_cap)`을 입력한다. 실비 180,000원에서 기존 144,000원과 후보 162,000원을 대조하고 검토를 요청한다. 부서장으로 바꿔 발행하면 이후 접수하는 학회 신청에 적용된다. 이전 수식을 복구하면 새 발행 세대가 생긴다. [규정 작업실](../frontend/src/policy.tsx) · [후보 저장](https://github.com/kimdol/department-budget/blob/65e12691c4576bfc32bab924a784c241a0bdb6a4/src/main/java/kr/budget/policy/PolicyService.java#L92) · [발행](https://github.com/kimdol/department-budget/blob/65e12691c4576bfc32bab924a784c241a0bdb6a4/src/main/java/kr/budget/policy/PolicyService.java#L117)
 
 이 변경에는 컨트롤러나 전표 SQL 수정이 필요하지 않다. 제출 시 복사한 수식과 평가기 식별자로 과거 신청을 계산하기 때문이다. 은행 학회비·병원 일반 교육비가 그대로인지와 복구 후에도 이전 우대 신청이 162,000원인지 검증한다. [원장 계약 시험](https://github.com/kimdol/department-budget/blob/65e12691c4576bfc32bab924a784c241a0bdb6a4/src/test/java/kr/budget/claims/PostingContract.java#L543) · [발행·복구 화면 시험](../frontend/tests/hospital-policy.spec.ts)
+
+## 직원 신청함
+
+공개 화면의 **내 신청함 시작**은 React 신청서와 직원 목록을 연다. 부서장과 재무 담당자는 같은 세션의 JSP 결재함에서 처리한다. 직원 목록 조회는 서버가 세션에서 결정한 부서와 신청자 식별자를 함께 사용한다. 상태 조건을 적용한 뒤 접수 순번 커서로 페이지를 나눈다. 부서장의 결재함은 부서 단위 조회를 사용한다. [조회와 역할](../src/main/java/kr/budget/web/DemoPortal.java) · [MyBatis 조회](../src/main/java/kr/budget/claims/BudgetMapper.java)
+
+[직원 신청함](../frontend/src/inbox/EmployeeInbox.tsx)은 선택한 신청과 목록 복귀 위치를 관리한다. [목록](../frontend/src/inbox/ClaimList.tsx)은 상태 필터와 페이지 이동을 맡고, [상세](../frontend/src/inbox/ClaimDetail.tsx)는 서버가 계산한 금액과 다음 담당자를 표시한다. [증빙 폼](../frontend/src/inbox/SettlementForm.tsx)은 제출한 종류·금액이 서버 목록과 일치할 때 첨부 완료를 표시한다. 첨부 응답을 잃으면 목록에서 확인하고, 정산 제출 응답을 잃으면 업무 상태를 다시 읽는다. 기존 신청 변경·철회와 전체 이력은 같은 부서의 JSP 화면으로 이어진다.
+
+재무 담당자의 보완 사유는 확정된 검토 문구로 저장된다. 향후 문장 초안을 생성하는 기능은 재무 입력란에 제안하는 단계에 연결할 수 있다. 증빙 판정과 회계 처리는 서버 규칙이 담당하며 현재 배포의 실행 의존성은 Java·Oracle과 포털 연계 서비스다. [증빙 판정](../src/main/java/kr/budget/claims/EvidencePolicy.java) · [보완 사유 저장과 정산](../src/main/java/kr/budget/claims/ClaimService.java)
