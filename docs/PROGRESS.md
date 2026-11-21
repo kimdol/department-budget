@@ -203,7 +203,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 | 조직별 승인 주체 | 부서별 합성 구성원 신원과 서버 인가, 직원의 부서장 대행 시 자기 승인·증액 차단, 은행 본부 재무의 지점 예산 배정 | 공개 Chrome으로 자기 결재 차단과 지점 가용액 확인 |
 | 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교, 버전별 불변 구문 트리 캐시, 다음 달 예약 발행 | 공개 Chrome으로 예약·월마감·다음 달 적용 확인 |
 | 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis·Oracle PL/SQL 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조, Apache Camel JSON·CSV 공통 변환, 그누보드 설치본 로그인·회원별 정산 조회 | 공개 VM에서 정산 후 같은 신청번호의 Oracle 집행액, 결산표와 MySQL 수신액 대조 |
-| UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 별도 PDB 복원 | 최초 사용자의 관찰 시험 대기 |
+| UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 별도 PDB 복원 | 첫 방문자 1명이 안내를 받아 신청·보완·정산을 마쳤다. 접수 안내, 실제 지출액 입력명, 증빙 보완 후 재제출 순서를 개선 |
 | 성능 | 100만 신청의 깊은 목록, 100만 전표의 월별 집계·DB p95, 인덱스 쓰기 비용, 승인 시 부서 행 잠금, 실제 Oracle 동시 승인 HTTP 응답, 결재함 본문·정적 자산·수식 입력 측정 | 공개 Chrome에서 [정적 자산 재사용](measurements/deployment-https.json)과 [새 세션의 첫 신청 시간](measurements/deployment-first-claim.json) 확인 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
@@ -238,6 +238,16 @@ OCI VM의 부팅 식별값이 바뀐 뒤 Java·PHP-FPM·Caddy가 모두 자동 �
 예열된 공개 서버에서 Chrome 157의 새 브라우저 컨텍스트 5개를 순차 실행했다. `개인 데모 시작` 클릭부터 가용 예산 표시까지 254.0~880.9ms, `신청 제출` 클릭부터 결재 대기 표시까지 215.5~848.8ms였다. 두 구간 모두 첫 화면 로딩 뒤의 자동 조작을 계측했다. [표본 5개](measurements/deployment-first-claim.json) · [같은 조작의 브라우저 시험](../frontend/tests/claims.spec.ts)
 
 공개 Chrome에서 최초 정산 요청을 서버에 전달한 뒤 HTTP 200 응답만 브라우저에 전달하지 않았다. 화면에 결과 확인 안내가 표시됐고, 다시 누르기 전의 Oracle 전표 조회에는 이미 약정·정산 전표 두 건이 있었다. 같은 신청·검토 차수로 화면에서 다시 확정한 뒤 API에서도 재전송했다. 전표는 그대로였으며 결산표 가용액 820,000원과 MySQL 정산 수신액 180,000원을 확인했다. [장애 재현 시험](../frontend/tests/claims.spec.ts) · [응답 유실 전후 결과](measurements/deployment-settlement-response-loss.json)
+
+처음 방문한 참가자 1명은 신청 버튼을 스스로 찾았고 첫 신청까지 약 20~30초가 걸렸다고 답했다. 접수 안내를 알아차리기 어려워 신청 내역에서 ‘결재 대기’를 확인했다. 별도 Chrome 세션에서 신청 API는 200이었지만 화면 위쪽 안내는 전후가 같았고 신청 폼 주변에는 접수 결과가 표시되지 않았다. JSP와 React가 공유하는 상태 영역에서 접수 중·완료·오류를 표시하고, 접수 후 목록만 불러오지 못한 경우에도 접수 완료를 알리도록 수정했다. [수정 커밋](https://github.com/kimdol/department-budget/commit/b64b24e) · [신청·목록 오류 시험](../frontend/tests/employee-form.spec.ts)
+
+같은 참가자는 약정 200,000원·가용 예산 800,000원을 확인했다. 실제 지출 단계에서는 225,000원이 표시된 입력칸의 용도를 바로 확인하기 어려웠다. 별도 공개 모바일 뷰포트에서 이 입력칸은 `aria-label`로 읽혔고 화면에 표시되는 입력명은 없었다. 화면에 보이고 입력칸과 연결되는 HTML `label`을 추가했다. 보완 뒤 금액을 편집하고 키보드로 재제출하는 시험으로 검증했다. [수정 커밋](https://github.com/kimdol/department-budget/commit/2f6ba56) · [키보드와 보완 시험](../frontend/tests/keyboard-review.spec.ts)
+
+영수증 없이 정산을 요청한 참가자는 재무 화면의 차단 사유와 직원 화면에 전달된 보완 사유를 확인했다. 직원 화면에서 증빙 종류를 찾았지만 첨부와 재제출 순서를 바로 고르기 어려웠고, 이름 없이 표시된 신청번호의 용도도 알기 어려웠다. 조작 순서를 안내한 후 참가자는 약정 잔액 0원·누적 집행 180,000원·가용 예산 820,000원을 확인했다. 정산 입력과 버튼을 한 영역에 배치하고 증빙 종류, 신청번호, 재제출 순서를 표시했다. 키보드로 보완 사유 입력부터 영수증 첨부와 재정산까지 도달하는 기존 시험에 표시 항목 검사를 추가했다. [수정 커밋](https://github.com/kimdol/department-budget/commit/94a15ee) · [보완과 재제출 시험](../frontend/tests/keyboard-review.spec.ts)
+
+공개 HTTPS의 독립 Chrome 세션에서 390×844 뷰포트로 배포 전후를 대조했다. 같은 신청 응답 200에서 접수 결과가 신청 폼에 표시됐고, 실제 지출액 입력칸과 보완 후 제출 순서를 화면에서 읽을 수 있었다. 영수증이 없는 정산을 차단한 뒤 보완·첨부·재제출·확정을 거쳐 가용 예산 820,000원을 확인했다. 공개 페이지의 JavaScript 주소와 응답 본문 해시는 배포 WAR와 일치했다. 사용자 소요 시간은 개선 전 참가자 한 명의 추정치다. [배포 전후 원자료](measurements/deployment-claim-ux.json)
+
+배포 `94a15ee`에서 공개 Chrome 시험 19건이 통과했다. 별도 조건에서만 실행하는 승인 경합 측정, 수식 입력 측정과 포털 장애 시험 각 1건은 이 실행에서 건너뛰었다. 정산 응답 유실 뒤 같은 요청을 재전송했으며, Oracle 전표 2건과 결산표 가용액 820,000원, 포털 수신액 180,000원을 다시 확인했다. TLS·세션과 두 방문자의 신청·증빙 격리도 통과했다. 새 WAR와 직전 WAR의 Oracle 스키마는 V025로 일치했다. [최종 배포와 정산 원자료](measurements/deployment-claim-ux.json) · [전송 결과](measurements/deployment-https.json)
 
 배포 후보 `517cf8f`의 Oracle CI가 성공했다. 배포 ZIP을 내려받아 GitHub에 게시된 ZIP SHA-256, 내부 파일 13개의 개별 SHA-256과 커밋 식별값을 확인했다. 포털·서비스·DB 검사 파일 10개는 저장소 내용과 대조했다. [배포 묶음을 생성한 실행](https://github.com/kimdol/department-budget/actions/runs/44884197218) · [묶음 검증 절차](HTTPS.md#검증한-war-받기)
 

@@ -1,0 +1,172 @@
+{
+  "origin": "https://129-225-133-96.sslip.io",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "chrome": "157.0.8103.79",
+  "beforeCommit": "579c0b1275d4ed3a220c9d15762ad2d6aa2d0149",
+  "afterCommit": "94a15eed7634edf8e4eb02841f66a0b8fd58c398",
+  "submission": {
+    "before": {
+      "status": 200,
+      "messageBefore": "교육비를 신청한 뒤 시연 역할을 부서장으로 바꾸세요. 약정 완료 후에는 실제 지출액으로 정산을 신청할 수 있습니다.",
+      "messageAfter": "교육비를 신청한 뒤 시연 역할을 부서장으로 바꾸세요. 약정 완료 후에는 실제 지출액으로 정산을 신청할 수 있습니다.",
+      "inlineConfirmationCount": 0,
+      "claimsVisibleWithoutScrolling": true,
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    "after": {
+      "status": 200,
+      "inlineConfirmation": "신청이 접수됐습니다. 아래 신청 내역에서 확인하세요.",
+      "liveRegionRole": "status",
+      "visible": true
+    }
+  },
+  "actualExpense": {
+    "before": {
+      "value": "225000",
+      "accessibleNameFrom": "실제 지출액(원)",
+      "visibleLabelCount": 0,
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    "after": {
+      "visibleLabel": "실제 지출액(원)",
+      "value": "225000"
+    }
+  },
+  "script": {
+    "before": {
+      "path": "/assets/a46f9f9dbd8620fd8482470af0763ca62b3e662fb01d6951acbf115200795690/portal.js",
+      "status": 200,
+      "cache": "public, max-age=31536000, immutable"
+    },
+    "after": {
+      "path": "/assets/f951a1c005c143176d346bd4de80dd08507d2414fbb5af20dc4846445f2e0214/portal.js",
+      "status": 200,
+      "cache": "max-age=31536000, public, immutable",
+      "sha256": "f951a1c005c143176d346bd4de80dd08507d2414fbb5af20dc4846445f2e0214"
+    }
+  },
+  "revision": {
+    "before": {
+      "layout": {
+        "claimNumberNamed": false,
+        "evidenceHasVisibleLabel": false,
+        "guidanceVisible": false,
+        "groupVisible": false
+      }
+    },
+    "after": {
+      "layout": {
+        "claimNumberNamed": true,
+        "evidenceHasVisibleLabel": true,
+        "guidanceVisible": true,
+        "groupVisible": true
+      },
+      "available": "820,000원"
+    }
+  },
+  "deployment": {
+    "warSha256": "99b5dfb7516c69ad08003c2372d0fed047cb2190b375510b44d282c7067d7efa",
+    "oracleSchema": "25:b0be474d68785645b444b5346c9763f5759a7035d57e66738a5fdcf422e62eea",
+    "chromeSuite": {
+      "passed": 19,
+      "skipped": 3,
+      "failed": 0
+    },
+    "settlement": {
+      "origin": "https://129-225-133-96.sslip.io",
+      "claimId": "93835b07-ab77-4dbb-b499-9c69686472c6",
+      "droppedResponseStatus": 200,
+      "retryStatus": 200,
+      "afterDroppedResponse": [
+        {
+          "claimId": "93835b07-ab77-4dbb-b499-9c69686472c6",
+          "kind": "APPROVAL",
+          "committedDelta": 200000,
+          "spentDelta": 0,
+          "periodKey": "2026-11",
+          "originalKind": null
+        },
+        {
+          "claimId": "93835b07-ab77-4dbb-b499-9c69686472c6",
+          "kind": "SETTLEMENT",
+          "committedDelta": -200000,
+          "spentDelta": 180000,
+          "periodKey": "2026-11",
+          "originalKind": null
+        }
+      ],
+      "before": [
+        {
+          "claimId": "93835b07-ab77-4dbb-b499-9c69686472c6",
+          "kind": "APPROVAL",
+          "committedDelta": 200000,
+          "spentDelta": 0,
+          "periodKey": "2026-11",
+          "originalKind": null
+        },
+        {
+          "claimId": "93835b07-ab77-4dbb-b499-9c69686472c6",
+          "kind": "SETTLEMENT",
+          "committedDelta": -200000,
+          "spentDelta": 180000,
+          "periodKey": "2026-11",
+          "originalKind": null
+        }
+      ],
+      "after": [
+        {
+          "claimId": "93835b07-ab77-4dbb-b499-9c69686472c6",
+          "kind": "APPROVAL",
+          "committedDelta": 200000,
+          "spentDelta": 0,
+          "periodKey": "2026-11",
+          "originalKind": null
+        },
+        {
+          "claimId": "93835b07-ab77-4dbb-b499-9c69686472c6",
+          "kind": "SETTLEMENT",
+          "committedDelta": -200000,
+          "spentDelta": 180000,
+          "periodKey": "2026-11",
+          "originalKind": null
+        }
+      ],
+      "balance": {
+        "allocation": 1000000,
+        "committed": 0,
+        "spent": 180000,
+        "available": 820000
+      },
+      "portalReceipt": {
+        "sequence": 2,
+        "event": "SETTLEMENT",
+        "amount": 180000
+      },
+      "report": {
+        "period": "2026-11",
+        "balance": {
+          "allocation": 1000000,
+          "committed": 0,
+          "spent": 180000,
+          "available": 820000
+        },
+        "lines": [
+          {
+            "category": "EDUCATION",
+            "claimCount": 1,
+            "spent": 180000
+          }
+        ]
+      }
+    }
+  }
+}
