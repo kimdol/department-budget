@@ -226,7 +226,9 @@ ARM VM 안에서 Oracle Database Free와 MySQL을 실행하는 구성을 우선 
 | ghcr.io/gvenzl/oracle-free:23-slim-faststart | `sha256:80a93426507ad712f6920949aebbfdb6e651832bc17631c6e49a864651d6cc6b` |
 | docker.io/library/mysql:8.4 | `sha256:f4539b86c82f2c168fc95b439448bde3b9f48e8460344ce41e39081867d2b58e` |
 
-ARM VM에서의 실제 기동과 스키마 설치는 VM 할당 후 확인한다. 검증한 Java 배포 묶음은 5075c18의 WAR, Oracle 설치 SQL, PHP 수신기와 MySQL 수신 스키마를 포함한다. [전체 CI](https://github.com/kimdol/department-budget/actions/runs/44810504579) · [Oracle 이미지](https://github.com/gvenzl/oci-oracle-free#how-to-use-these-images)
+GitHub의 Ubuntu 24.04 ARM 러너에서 위 두 이미지로 Oracle 원장 시험 28건을 통과했다. WAR에서 추출한 스키마를 설치하고 Caddy의 시험용 HTTPS를 거쳐 200,000원 약정과 180,000원 정산을 완료했다. 요청을 재전송해도 Oracle 전표는 2건, 보고서 가용액은 820,000원, MySQL 정산 수신 이력은 1건이었다. OCI의 Oracle Linux에서 기동과 공개 인증서를 확인하는 단계가 남아 있다. [ARM 실행](https://github.com/kimdol/department-budget/actions/runs/44878152345) · [정산 원자료](measurements/arm-settlement-44878152345.json) · [포털 재전송 원자료](measurements/arm-portal-replay-44878152345.csv)
+
+검증한 Java 배포 묶음은 5075c18의 WAR, Oracle 설치 SQL, PHP 수신기와 MySQL 수신 스키마를 포함한다. [전체 CI](https://github.com/kimdol/department-budget/actions/runs/44810504579) · [Oracle 이미지](https://github.com/gvenzl/oci-oracle-free#how-to-use-these-images)
 
 ## 단계별 검증 기록
 
