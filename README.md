@@ -2,7 +2,7 @@
 
 은행 경영지원팀·병원 행정부서·일반 기업의 직원이 교육비와 출장비를 신청하고 부서장과 재무 담당자가 승인·정산하는 경영지원 웹 애플리케이션이다. 같은 신청번호로 **승인 금액과 실제 집행액의 차이**를 추적한다.
 
-**[공개 데모 열기](https://129-225-133-96.sslip.io/)** · [3분 체험 순서](#3분-체험)
+**[공개 데모 열기](https://129-225-133-96.sslip.io/)** · [3분 체험 순서](#3분-체험) · [직원 신청함 사용 안내와 무안내 체험 기록](docs/EMPLOYEE-INBOX.md)
 
 별도 가입 없이 방문자마다 독립된 부서 예산 1,000,000원이 배정된다. 교육비 300,000원을 신청하고 부서장과 재무 담당자로 역할을 바꿔 승인과 정산을 끝낼 수 있다. 아래는 공개 서비스에서 정산한 화면이다. 화면, Oracle 원장, 결산표의 가용 예산은 820,000원이었고 사내 포털은 MySQL에 정산액 180,000원을 기록했다. 체험에는 합성 증빙을 사용한다. [정산과 재전송](docs/measurements/deployment-settlement.json) · [Oracle·MySQL 대사](docs/measurements/deployment-ledger.txt)
 
@@ -46,6 +46,8 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 재무 담당자로 **전표 조회**와 **결산표 조회**를 열면 같은 신청의 약정 해제, 실제 집행액, 부서 가용액을 대조할 수 있다. [Chrome 회귀 시험](frontend/tests/claims.spec.ts)
 
 ## 브라우저 시험
+
+로컬 직원 신청함을 처음 사용한 참가자 1명이 중간 안내 없이 교육비 영수증을 첨부하고 다시 제출해 ‘정산 검토’까지 도달했다. 진행자가 보고한 소요 시간은 약 40초다. [과제·준비 절차·관찰 범위](docs/EMPLOYEE-INBOX.md)
 
 공개 HTTPS에서 Chrome 시험 24건을 통과했다. 직원 신청함은 390·768·1440px에서 영수증 보완 후 정산 결과까지 확인했다. 교육비 월마감, 출장 결재, 학회비 규정 발행·복구, 지점 예산 배정, 방문자·부서 격리도 점검했다. 별도 부하·장애 조건을 쓰는 3건은 이 실행에서 건너뛰었다. TLS 1.3, Secure·HttpOnly·SameSite=Lax 쿠키, 업무 응답의 no-store, 비목표의 ETag 재검증과 정적 파일 재사용을 확인했다. [직원 신청함과 정산 결과](docs/measurements/deployment-workspace-sections.json) · [공개 전송 원자료](docs/measurements/deployment-https.json) · [재현 명령](docs/HTTPS.md#java-서비스-설치와-중지)
 
