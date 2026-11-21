@@ -55,7 +55,7 @@ document.addEventListener("employee-inbox-ready",()=>{
 });
 function render(state) {
   claimFilter.dataset.applied = claimFilter.value;
-  $("#department-choice").prop("hidden",false);
+  $("#department-choice,#role-choice,#session-toolbar").prop("hidden",false);
   const departmentNames = {BANK:["본부 경영지원팀","지점 경영지원팀"],HOSPITAL:["총무팀","교육수련팀"],COMPANY:["인사팀","총무팀"]}[state.organization];
   $("#department option").each((index,option)=>$(option).text(departmentNames[index]));
   $("#department").val(department);
@@ -497,6 +497,7 @@ $("#employee-start").on("click",()=>{
 });
 $("#start").on("click",function() {
   const start = $("#start,#employee-start").prop("disabled",true);
+  notice("체험 업무 공간을 열고 있습니다.");
   loadCategories().then(()=>api("/api/demo",{organization:$("#organization").val()})).then(render)
     .fail(reportError).always(()=>start.prop("disabled",false));
 });

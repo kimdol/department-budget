@@ -46,16 +46,28 @@ async function refreshLedger() {
   document.getElementById("remaining").textContent = money(balance);
   const list = document.getElementById("expenses");
   list.replaceChildren();
+  document.getElementById("empty-expenses").hidden = expenses.result.length > 0;
   for (const item of expenses.result.sort((a,b)=>b.date.localeCompare(a.date) || b.id-a.id)) {
     const row = document.createElement("li");
-    row.textContent = item.date+" · "+item.category+" · "+item.title+" · 지출 "+money(item.amount)+" · 지원 "+money(item.support)+" ";
+    const entry = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+    const description = document.createElement("small");
+    description.textContent = item.date+" · "+item.category;
+    entry.append(title, description);
+    const amounts = document.createElement("div");
+    amounts.className = "entry-amount";
+    amounts.textContent = money(item.amount);
+    const support = document.createElement("small");
+    support.textContent = "지원 "+money(item.support);
+    amounts.append(support);
     const remove = document.createElement("button");
     remove.textContent = "삭제";
     remove.setAttribute("aria-label",item.title+" 삭제");
     remove.onclick = ()=>{
       if (window.confirm(item.title+" 기록을 삭제할까요?")) save(remove,"expenses",store=>store.delete(item.id),"지출을 삭제했습니다.");
     };
-    row.append(remove);
+    row.append(entry,amounts,remove);
     list.append(row);
   }
   if (projected && projection.checkValidity()) calculate();

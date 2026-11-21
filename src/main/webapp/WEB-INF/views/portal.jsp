@@ -3,17 +3,18 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="csrf-token" content="${_csrf.token}"><title>부서예산 · 결재함</title>
 <link rel="stylesheet" href="${assetPaths['portal.css']}"><script defer src="/webjars/jquery/3.7.1/jquery.min.js"></script><script defer src="${assetPaths['portal.js']}"></script></head>
-<body><header><strong>부서예산</strong><span>교육비 · 출장비</span></header><main>
-<div class="heading"><div><h1>부서 결재함</h1><p>신청부터 정산까지, 부서 예산을 확인하세요.</p></div><label id="organization-choice">체험 조직<select id="organization"><option value="COMPANY">일반 기업 경영지원팀</option><option value="HOSPITAL">병원 행정부서</option><option value="BANK">은행 경영지원팀</option></select></label><button id="employee-start">내 신청함 시작</button><button id="start">개인 데모 시작</button></div>
+<body><header><strong>부서예산</strong><span>교육비 · 출장비</span><a href="/personal">내 자격시험·교육·도서 장부</a></header><main>
+<h1>부서 결재함</h1>
+<section class="workspace-settings" aria-labelledby="settings-title"><h2 id="settings-title">체험 설정</h2>
+<div class="settings-fields"><label id="organization-choice">체험 조직<select id="organization"><option value="COMPANY">일반 기업 경영지원팀</option><option value="HOSPITAL">병원 행정부서</option><option value="BANK">은행 경영지원팀</option></select></label>
+<div id="workspace-organization" hidden></div>
+<label id="department-choice" hidden>체험 부서<select id="department"><option value="PRIMARY">제1부서</option><option value="SECONDARY">제2부서</option></select></label>
+<label id="role-choice" hidden>시연 역할<select id="role"><option value="EMPLOYEE">직원</option><option value="MANAGER">부서장</option><option value="FINANCE">재무 담당자</option></select></label>
+<div class="start-actions"><button id="employee-start" class="primary">내 신청함 시작</button><button id="start">개인 데모 시작</button></div></div>
+<div id="session-toolbar" hidden><span id="member-name"></span><button type="button" id="delegate" hidden></button>
+<form id="end-demo" method="post" action="/api/demo/end"><input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"><button>내 체험 종료</button></form></div></section>
 <p id="notice" role="status" aria-live="polite">데모를 시작하면 독립된 부서 예산 100만 원이 배정됩니다.</p>
-<p><a href="/personal">내 자격시험·교육·도서 장부</a></p>
-
-<p id="workspace-organization" hidden></p>
-<label id="department-choice" hidden>체험 부서 <select id="department"><option value="PRIMARY">제1부서</option><option value="SECONDARY">제2부서</option></select></label>
 <div id="desk" hidden><div class="metrics"><article>배정액<strong id="allocation"></strong></article><article>약정 잔액<strong id="committed"></strong></article><article>누적 집행<strong id="spent"></strong></article><article>가용 예산<strong id="available"></strong></article></div>
-<nav aria-label="체험 설정"><label for="role">시연 역할</label> <select id="role"><option value="EMPLOYEE">직원</option><option value="MANAGER">부서장</option><option value="FINANCE">재무 담당자</option></select>
-<span id="member-name"></span><button type="button" id="delegate" hidden></button>
-<form id="end-demo" method="post" action="/api/demo/end"><input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"><button>내 체험 종료</button></form></nav>
 <section id="entry"><h2>비용 신청</h2><form id="submit"><label>신청명<input name="title" maxlength="100" required value="직무 교육 참가"></label><label>비목<select name="category" required></select></label><label>예정 금액(원)<input type="number" name="estimated" min="1" required value="300000"></label><label>기간(일)<input type="number" name="days" min="1" max="365" required value="1"></label><button>신청 제출</button></form><div id="employee-root"></div><p id="submit-status" role="status"></p><button type="button" id="employee-view" data-module="${assetPaths['employee.js']}">직원용 신청 화면으로 전환</button></section>
 <div id="estimate-panel" hidden><button type="button" id="estimate">지원 예정액 확인</button><p id="estimate-result" role="status"></p></div>
 <details id="policy-panel" data-module="${assetPaths['policy-editor.js']}"><summary>지원 규정 비교 및 발행</summary><div id="policy-editor"></div></details>
