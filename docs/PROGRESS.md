@@ -212,21 +212,23 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 
 1. git status, git log -1과 git ls-remote origin refs/heads/main을 대조한다.
 2. 다음 기능 변경에서도 Verify Oracle Ledger의 계약 시험과 복원 산출물 일치를 확인한다. 수식 평가기 교체를 포함한 [Oracle 기준 실행](https://github.com/kimdol/department-budget/actions/runs/44771763566)은 80ac4c6에 해당한다.
-3. OCI 콘솔의 Japan Central (Osaka)에서 배포 전용 VM을 생성한 뒤 설치 묶음의 SHA-256을 확인하고 Oracle과 MySQL을 연결한다. 공개 URL에서 새 브라우저 두 개로 대표 업무와 방문자 격리를 재현한다.
+3. OCI의 Japan Central (Osaka)에서 생성한 배포용 VM에 Oracle Autonomous AI Database와 MySQL HeatWave의 상시 무료 연결을 확인한다. Java 서비스를 설치할 때 배포 묶음의 SHA-256을 확인한다. 공개 URL에서 새 브라우저 두 개로 대표 업무와 방문자 격리를 재현한다.
 4. 로컬 재현은 frontend에서 npm ci와 npm run build, 루트에서 mvn package, python ops/test_https.py 순서다. 포털 수신 시험은 python ops/test_portal.py로 실행한다.
 
 ## 외부 환경
 
-OCI 무료 계정의 Japan Central (Osaka) 콘솔에 접속했다. Oracle Linux 9, 상시 무료 대상 VM.Standard.A1.Flex, 2 OCPU·12GB, 기본 부팅 볼륨을 생성 화면에서 확인했다. 예상 비용 화면은 부팅 볼륨 정가 월 미화 2.76달러를 표시했다. 홈 리전의 상시 무료 볼륨 합계 200GB 및 컴퓨트 한도 내 예상 인프라 비용은 월 0원이다. VM 생성, 리전의 실제 할당 용량, 공개 주소는 확인 전이다. [OCI 상시 무료 자원](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
+OCI 오사카 AD-1에서 상시 무료 A1 Flex의 2 OCPU·12GB와 1 OCPU·6GB 생성 요청이 모두 호스트 용량 부족으로 거절됐다. 같은 리전에 상시 무료 대상인 AMD VM.Standard.E2.1.Micro 1GB와 기본 부팅 볼륨을 선택해 `department-budget-demo`를 생성했다. Oracle 콘솔에서 Running과 공인 IP 미할당을 확인했다. SSH 공개 키는 생성 요청에 포함했으며 실제 SSH 접속은 검증 전이다. 홈 리전의 상시 무료 한도 기준 예상 인프라 비용은 월 0원이다. [OCI 상시 무료 자원](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
 
-ARM VM 안에서 Oracle Database Free와 MySQL을 실행하는 구성을 우선 검토한다. CI에서 검증한 Oracle 설치·원장 복원 방식과 MySQL 수신 스키마를 적용하고, 데이터베이스 포트는 VM 내부에 둔다. 레지스트리에서 배포에 사용할 계열의 linux/arm64 자식 매니페스트를 확인했다.
+1GB VM은 Java 웹과 PHP 포털 수신기를 담당하고, 원장은 상시 무료 Autonomous AI Database, 포털 수신 데이터는 상시 무료 MySQL HeatWave에 저장하는 구성을 검토한다. 실제 DB 할당, Oracle 스키마 설치, Java 메모리 예산과 네트워크 연결은 배포 시 검사한다. [Oracle DB 연결 절차](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 상시 무료 서비스](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html)
+
+A1 단일 VM 후보에 대해서는 Oracle Database Free와 MySQL의 ARM 동작을 확인했다. CI에서 Oracle 설치 SQL과 MySQL 수신 스키마를 적용했고, 두 DB를 루프백에 연결했다. 레지스트리의 linux/arm64 자식 매니페스트는 아래와 같다.
 
 | 이미지 | linux/arm64 매니페스트 |
 | --- | --- |
 | ghcr.io/gvenzl/oracle-free:23-slim-faststart | `sha256:80a93426507ad712f6920949aebbfdb6e651832bc17631c6e49a864651d6cc6b` |
 | docker.io/library/mysql:8.4 | `sha256:f4539b86c82f2c168fc95b439448bde3b9f48e8460344ce41e39081867d2b58e` |
 
-GitHub의 Ubuntu 24.04 ARM 러너에서 위 두 이미지로 Oracle 원장 시험 28건을 통과했다. WAR에서 추출한 스키마를 설치하고 Caddy의 시험용 HTTPS를 거쳐 200,000원 약정과 180,000원 정산을 완료했다. 요청을 재전송해도 Oracle 전표는 2건, 보고서 가용액은 820,000원, MySQL 정산 수신 이력은 1건이었다. OCI의 Oracle Linux에서 기동과 공개 인증서를 확인하는 단계가 남아 있다. [ARM 실행](https://github.com/kimdol/department-budget/actions/runs/44878152345) · [정산 원자료](measurements/arm-settlement-44878152345.json) · [포털 재전송 원자료](measurements/arm-portal-replay-44878152345.csv)
+GitHub의 Ubuntu 24.04 ARM 러너에서 위 두 이미지로 Oracle 원장 시험 28건을 통과했다. WAR에서 추출한 스키마를 설치하고 Caddy의 시험용 HTTPS를 거쳐 200,000원 약정과 180,000원 정산을 완료했다. 요청을 재전송해도 Oracle 전표는 2건, 보고서 가용액은 820,000원, MySQL 정산 수신 이력은 1건이었다. 공개 환경은 할당받은 AMD Micro에서 별도로 검증한다. [ARM 실행](https://github.com/kimdol/department-budget/actions/runs/44878152345) · [정산 원자료](measurements/arm-settlement-44878152345.json) · [포털 재전송 원자료](measurements/arm-portal-replay-44878152345.csv)
 
 배포 후보 d5f3440의 묶음은 WAR, Oracle 설치 SQL, MySQL 수신 스키마, Caddy 수신 경로와 PHP-FPM 서비스를 포함한다. ARM·x64 CI에서 127.0.0.1에 열린 수신 포트 두 개를 확인했다. 인증 토큰 없이 전송하면 HTTP 403, 등록하지 않은 경로는 404였다. 브라우저 정산 결과와 MySQL 수신액을 대사했고, 로컬에 보관한 배포 ZIP의 파일 13개를 SHA-256으로 대조했다. [ARM CI](https://github.com/kimdol/department-budget/actions/runs/44878869051) · [x64 CI 및 배포 묶음](https://github.com/kimdol/department-budget/actions/runs/44878869078) · [PHP-FPM 설치](HTTPS.md#포털-수신-연결)
 
