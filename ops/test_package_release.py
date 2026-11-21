@@ -31,7 +31,8 @@ class ReleasePackageTest(unittest.TestCase):
             sql.write_text(installation_sql(war),encoding="utf-8")
             package(project,war,sql,report,commit,output)
             expected = {"department-budget.war","install.sql","commit.txt","Caddyfile",
-                        "department-budget.service","CheckRuntimeDatabase.java","oracle_install.py"}
+                        "department-budget.service","CheckRuntimeDatabase.java","oracle_install.py",
+                        "Caddyfile.portal","portal-fpm.conf","department-budget-portal.service"}
             portal_files = {"portal/receive.php","portal/status.php","portal/mysql/V001__projection.sql"}
             expected.update(portal_files)
             for name in portal_files:

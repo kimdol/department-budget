@@ -27,7 +27,8 @@ def package(project, war, tested_sql, rollback_report, commit, output):
         shutil.copyfile(tested_sql, bundle / "install.sql")
         if (bundle / "install.sql").read_text(encoding="utf-8") != installation_sql(bundle / "department-budget.war"):
             raise ValueError("Oracle에서 시험한 설치 SQL과 WAR의 정의가 다릅니다.")
-        for name in ["Caddyfile", "department-budget.service", "CheckRuntimeDatabase.java", "oracle_install.py"]:
+        for name in ["Caddyfile", "department-budget.service", "CheckRuntimeDatabase.java", "oracle_install.py",
+                     "Caddyfile.portal", "portal-fpm.conf", "department-budget-portal.service"]:
             shutil.copyfile(project / "ops" / name, bundle / name)
         for name in ["portal/receive.php", "portal/status.php", "portal/mysql/V001__projection.sql"]:
             target = bundle / name

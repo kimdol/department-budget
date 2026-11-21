@@ -34,17 +34,32 @@ export PORTAL_MYSQL_USER="$MYSQL_USER" PORTAL_MYSQL_PASSWORD="$MYSQL_PASSWORD"
 mkdir -p "$work/portal"
 cp portal/receive.php portal/status.php "$work/portal/"
 export TEST_PORTAL_RECEIVER="$PWD/$work/portal/receive.php"
-php -S 127.0.0.1:18760 -t "$work/portal" > "$work/php.log" 2>&1 &
+/usr/sbin/php-fpm8.3 --nodaemonize --fpm-config "$PWD/ops/portal-fpm.conf" > "$work/php.log" 2>&1 &
 php_server=$!
-cp ops/Caddyfile "$work/Caddyfile"
-printf '\n127.0.0.1:18759 {\n reverse_proxy 127.0.0.1:18760\n}\n' >> "$work/Caddyfile"
+{
+    cat ops/Caddyfile
+    printf '\n'
+    cat ops/Caddyfile.portal
+} > "$work/Caddyfile"
+portal_root="$PWD/$work/portal"
 proxy=$(docker run -d --network host -e BUDGET_PUBLIC_HOST=localhost:18758 \
+    -e "BUDGET_PORTAL_ROOT=$portal_root" -v "$portal_root:$portal_root:ro" \
     -v "$PWD/$work/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine)
 for attempt in {1..30}; do
     if docker cp "$proxy:/data/caddy/pki/authorities/local/root.crt" "$work/root.crt" 2>/dev/null; then break; fi
     sleep 1
 done
 export TEST_DEPLOYMENT_URL=https://localhost:18758 NODE_EXTRA_CA_CERTS="$PWD/$work/root.crt"
+kill -0 "$php_server" || { tail -20 "$work/php.log"; exit 1; }
+portal_status() {
+    curl --cacert "$NODE_EXTRA_CA_CERTS" -sS -o /dev/null -w '%{http_code}' "$@"
+}
+unauthenticated_status=$(portal_status -X POST https://127.0.0.1:18759/receive.php)
+unmapped_status=$(portal_status https://127.0.0.1:18759/unknown.php)
+listeners=$(ss -Hltn '( sport = :18759 or sport = :18760 )' | awk '{print $4}' | sort)
+[[ "$unauthenticated_status" == 403 && "$unmapped_status" == 404 ]]
+[[ "$listeners" == $'127.0.0.1:18759\n127.0.0.1:18760' ]]
+printf 'receive_without_token=%s\nunmapped_path=%s\n%s\n' "$unauthenticated_status" "$unmapped_status" "$listeners" > "$work/portal-listeners.txt"
 keytool -importcert -noprompt -alias portal -file "$NODE_EXTRA_CA_CERTS" -keystore "$work/trust.p12" \
     -storetype PKCS12 -storepass changeit
 export BUDGET_DB_URL=jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1 BUDGET_DB_USER=budget_release

@@ -1,0 +1,20 @@
+[Unit]
+Description=Department Budget Portal Receiver
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=department-budget-portal
+Group=department-budget-portal
+EnvironmentFile=/etc/department-budget/portal.env
+ExecStart=/usr/sbin/php-fpm --nodaemonize --fpm-config /etc/department-budget/portal-fpm.conf
+Restart=on-failure
+RestartSec=5
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

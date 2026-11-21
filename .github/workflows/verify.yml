@@ -4,7 +4,7 @@ permissions:
   contents: read
 jobs:
   oracle:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
       database:
@@ -110,11 +110,10 @@ jobs:
         with:
           name: oracle-month-plans
           path: target/oracle-month/
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: pdo_mysql
-          coverage: none
+      - name: Install PHP-FPM and MySQL driver
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y php8.3-fpm php8.3-mysql libnss3-tools
       - name: Verify Caddy HTTPS with Oracle and MySQL in Chrome
         run: bash ops/ci_https_proxy.sh
         env:
@@ -127,6 +126,7 @@ jobs:
             target/https-proxy/transport.json
             target/https-proxy/settlement-proof.json
             target/https-proxy/portal-replay.csv
+            target/https-proxy/portal-listeners.txt
           if-no-files-found: error
       - name: Package tested WAR and Oracle installation SQL
         if: github.ref == 'refs/heads/main'

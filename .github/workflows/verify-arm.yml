@@ -39,7 +39,7 @@ jobs:
           test "$(uname -m)" = aarch64
           printf 'PLAYWRIGHT_BROWSERS_PATH=%s/budget-browsers\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
           sudo apt-get update -qq
-          sudo apt-get install -y php8.3-cli php8.3-mysql libnss3-tools
+          sudo apt-get install -y php8.3-fpm php8.3-mysql libnss3-tools
           php -r 'exit(extension_loaded("pdo_mysql") ? 0 : 1);'
       - run: npm ci && npm run build && npx --no-install playwright install --with-deps chromium
         working-directory: frontend
@@ -68,4 +68,5 @@ jobs:
             target/https-proxy/transport.json
             target/https-proxy/settlement-proof.json
             target/https-proxy/portal-replay.csv
+            target/https-proxy/portal-listeners.txt
           if-no-files-found: error

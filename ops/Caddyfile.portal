@@ -1,0 +1,15 @@
+https://127.0.0.1:18759 {
+	bind 127.0.0.1
+	tls internal
+
+	@receiver {
+		path /receive.php /status.php
+		file
+	}
+
+	route {
+		root * {$BUDGET_PORTAL_ROOT}
+		php_fastcgi @receiver 127.0.0.1:18760
+		respond 404
+	}
+}

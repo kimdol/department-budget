@@ -30,9 +30,26 @@ Ubuntu CI에서 실제 Caddy가 시험 CA로 발급한 인증서를 신뢰 목�
 
 ## 포털 수신 연결
 
-배포 묶음의 `portal/mysql/V001__projection.sql`을 빈 MySQL 수신 스키마에 적용한다. PHP 8.1 이상과 PDO MySQL을 갖춘 HTTPS 서버의 같은 경로에 `portal/receive.php`와 `portal/status.php` 두 파일을 배치한다. SQL 파일은 웹 루트 밖에 보관한다. PHP 서비스 환경에 `PORTAL_MYSQL_DSN`, `PORTAL_MYSQL_USER`, `PORTAL_MYSQL_PASSWORD`를 설정한다.
+배포 묶음의 `portal/mysql/V001__projection.sql`을 빈 MySQL 수신 스키마에 적용한다. Java와 PHP-FPM에서 사용할 Oracle과 MySQL은 같은 VM의 루프백 주소로 연결한다. Oracle Linux에 PHP-FPM과 PDO MySQL을 설치하고, 로그인 셸이 없는 시스템 사용자와 그룹 `department-budget-portal`을 준비한다.
 
-Java 서비스의 `BUDGET_PORTAL_URL`에 수신기의 HTTPS 주소(경로 끝 `/receive.php`)를 지정한다. Java와 PHP 서비스의 `BUDGET_PORTAL_TOKEN`에는 동일한 비밀 값을 설정한다. Java는 수신 주소 기준 같은 디렉터리의 `status.php`에서 신청별 수신액을 읽는다. 서비스를 시작한 뒤 대표 신청을 정산하고 포털 수신 순서 2와 수신액 180,000원을 확인한다. [CI의 Oracle·MySQL 대사](../ops/ci_https_proxy.sh)
+```sh
+sudo install -d -m 0755 /opt/department-budget/portal
+sudo install -m 0644 portal/receive.php portal/status.php /opt/department-budget/portal/
+sudo install -m 0644 portal-fpm.conf /etc/department-budget/portal-fpm.conf
+sudo install -m 0644 department-budget-portal.service /etc/systemd/system/
+```
+
+root만 읽을 수 있는 `/etc/department-budget/portal.env`에 `PORTAL_MYSQL_DSN`, `PORTAL_MYSQL_USER`, `PORTAL_MYSQL_PASSWORD`, `BUDGET_PORTAL_TOKEN`을 설정한다. `sudo systemctl daemon-reload` 후 `sudo systemctl enable --now department-budget-portal`로 수신기를 기동한다. Caddy가 읽는 설정에 `Caddyfile.portal`을 가져오고 Caddy 서비스 환경에 `BUDGET_PORTAL_ROOT=/opt/department-budget/portal`을 설정한다. 이 설정은 127.0.0.1:18759에서 내부 인증서로 TLS를 종료하고 127.0.0.1:18760의 PHP-FPM으로 전달한다.
+
+Java 서비스에 `BUDGET_PORTAL_URL=https://127.0.0.1:18759/receive.php`와 PHP-FPM에 설정한 동일한 `BUDGET_PORTAL_TOKEN`을 지정한다. Caddy가 생성한 로컬 CA의 공개 인증서 `pki/authorities/local/root.crt`를 Java 학습용 신뢰 저장소에 등록한다. 전체 경로의 기준은 [Caddy 데이터 디렉터리](https://caddyserver.com/docs/conventions#data-directory)이며, CA 개인 키를 복사할 필요가 없다.
+
+```sh
+sudo keytool -importcert -alias budget-portal -file "$CADDY_ROOT_CERT" \
+  -keystore /etc/department-budget/portal-trust.p12 -storetype PKCS12 -storepass changeit
+sudo chmod 0644 /etc/department-budget/portal-trust.p12
+```
+
+Java 서비스 환경 파일에 `JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=/etc/department-budget/portal-trust.p12 -Djavax.net.ssl.trustStorePassword=changeit"`을 추가하고 재기동한다. 이 저장소에는 로컬 CA 공개 인증서만 담는다. Java는 수신 주소와 같은 디렉터리의 `status.php`에서 수신액을 읽는다. 대표 신청을 정산한 뒤 포털 수신 차수 2와 수신액 180,000원을 확인한다. [CI의 Oracle·MySQL 대사](../ops/ci_https_proxy.sh)
 
 ## Java 서비스 설치와 중지
 
