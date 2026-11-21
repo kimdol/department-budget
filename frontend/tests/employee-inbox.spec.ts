@@ -72,14 +72,20 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
     await inbox.getByLabel("상태로 찾기").selectOption("SETTLED");
     try {await expect(inbox.getByRole("button",{name:/직무 교육 참가/})).toBeDisabled();} finally {resumeFilter();}
     await expect(inbox.getByRole("button",{name:/직무 교육 참가.*정산 완료/})).toBeEnabled();
+    const compact=width<833;
+    const settledRow=inbox.getByRole("button",{name:/직무 교육 참가.*정산 완료/});
+    if(compact)await settledRow.scrollIntoViewIfNeeded();
+    const listPosition=await page.evaluate(()=>window.scrollY);
     await openClaim();
     await expect(detail).toContainText("180,000원");
     await expect(detail).toContainText("820,000원");
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    if(width<833){
+    if(compact){
+      expect(listPosition).toBeGreaterThan(0);
       await inbox.getByRole("button",{name:"목록으로 돌아가기"}).click();
       await expect(inbox.getByLabel("상태로 찾기")).toHaveValue("SETTLED");
       await expect(inbox.getByRole("button",{name:/직무 교육 참가/})).toBeFocused();
+      await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBe(listPosition);
     }
     const history=inbox.getByRole("link",{name:"신청 변경·철회 및 전체 이력"});
     await history.focus();
