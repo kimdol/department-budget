@@ -68,15 +68,17 @@ sudo install -m 0644 department-budget-portal.service /etc/systemd/system/
 
 root만 읽을 수 있는 `/etc/department-budget/portal.env`에 `PORTAL_MYSQL_DSN`, `PORTAL_MYSQL_USER`, `PORTAL_MYSQL_PASSWORD`, `BUDGET_PORTAL_TOKEN`을 설정한다. `sudo systemctl daemon-reload` 후 `sudo systemctl enable --now department-budget-portal`로 수신기를 기동한다. Caddy가 읽는 설정에 `Caddyfile.portal`을 가져오고 Caddy 서비스 환경에 `BUDGET_PORTAL_ROOT=/opt/department-budget/portal`을 설정한다. 이 설정은 127.0.0.1:18759에서 내부 인증서로 TLS를 종료하고 127.0.0.1:18760의 PHP-FPM으로 전달한다.
 
-Java 서비스에 `BUDGET_PORTAL_URL=https://127.0.0.1:18759/receive.php`와 PHP-FPM에 설정한 동일한 `BUDGET_PORTAL_TOKEN`을 지정한다. Caddy가 생성한 로컬 CA의 공개 인증서 `pki/authorities/local/root.crt`를 Java 학습용 신뢰 저장소에 등록한다. 전체 경로의 기준은 [Caddy 데이터 디렉터리](https://caddyserver.com/docs/conventions#data-directory)이며, CA 개인 키를 복사할 필요가 없다.
+Java 서비스에 `BUDGET_PORTAL_URL=https://127.0.0.1:18759/receive.php`와 PHP-FPM에 설정한 동일한 `BUDGET_PORTAL_TOKEN`을 지정한다. Oracle의 TCPS도 사용하는 Java에는 공개 CA와 내부 포털 CA가 모두 필요하다. 현재 Java의 기본 신뢰 저장소를 별도 PKCS#12 파일로 복사한 후 Caddy가 생성한 로컬 CA의 공개 인증서 `pki/authorities/local/root.crt`를 추가한다. `JAVA_HOME`에는 서비스가 쓰는 JDK의 경로를 지정한다. 전체 경로의 기준은 [Caddy 데이터 디렉터리](https://caddyserver.com/docs/conventions#data-directory)이며, CA 개인 키를 복사할 필요가 없다.
 
 ```sh
+sudo keytool -importkeystore -noprompt -srckeystore "$JAVA_HOME/lib/security/cacerts" -srcstorepass changeit \
+  -destkeystore /etc/department-budget/portal-trust.p12 -deststoretype PKCS12 -deststorepass changeit
 sudo keytool -importcert -alias budget-portal -file "$CADDY_ROOT_CERT" \
   -keystore /etc/department-budget/portal-trust.p12 -storetype PKCS12 -storepass changeit
 sudo chmod 0644 /etc/department-budget/portal-trust.p12
 ```
 
-Java 서비스 환경 파일에 `JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=/etc/department-budget/portal-trust.p12 -Djavax.net.ssl.trustStorePassword=changeit"`을 추가하고 재기동한다. 이 저장소에는 로컬 CA 공개 인증서만 담는다. Java는 수신 주소와 같은 디렉터리의 `status.php`에서 수신액을 읽는다. 대표 신청을 정산한 뒤 포털 수신 차수 2와 수신액 180,000원을 확인한다. [CI의 Oracle·MySQL 대사](../ops/ci_https_proxy.sh)
+Java 서비스 환경 파일에 `JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=/etc/department-budget/portal-trust.p12 -Djavax.net.ssl.trustStorePassword=changeit"`을 추가하고 재기동한다. Java 21에서 기본 CA 109개를 옮기고 포털 CA를 추가해 110개를 확인했다. 이 신뢰 저장소에는 인증서만 포함된다. Java는 수신 주소와 같은 디렉터리의 `status.php`에서 수신액을 읽는다. 대표 신청을 정산한 뒤 포털 수신 차수 2와 수신액 180,000원을 확인한다. [CI의 Oracle·MySQL 대사](../ops/ci_https_proxy.sh)
 
 ## Java 서비스 설치와 중지
 
