@@ -1,0 +1,1679 @@
+{
+  "revision": "1af49f2d958a5710fd9dacde763b1b9c5dd06d5c",
+  "runId": "44919460412",
+  "database": "Oracle Database Free (FREEPDB1, loopback TCP)",
+  "chromium": "157.0.8103.78",
+  "platform": "linux",
+  "cpu": "Intel(R) Xeon(R) 6975P-C",
+  "logicalCpus": 4,
+  "memoryGiB": 15.333580017089844,
+  "viewport": [
+    1280,
+    900
+  ],
+  "claims": 50,
+  "concurrency": 1,
+  "discardedWarmupPairs": 1,
+  "samples": [
+    {
+      "pair": 1,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1.400000000023283,
+        "responseStart": 5,
+        "responseEnd": 5.2999999999883585,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 68.70000000001164,
+        "requestStart": 69.5,
+        "responseStart": 77.5,
+        "responseEnd": 77.90000000002328,
+        "transferBytes": 13301
+      },
+      "documentId": "c8deec68-a628-474c-9983-139b4c6327c6",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 19.20000000001164,
+          "requestStart": 25.400000000023283,
+          "responseStart": 28.400000000023283,
+          "responseEnd": 28.900000000023283,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 19.5,
+          "requestStart": 26.29999999998836,
+          "responseStart": 28,
+          "responseEnd": 31.600000000034925,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 19.600000000034925,
+          "requestStart": 31.100000000034925,
+          "responseStart": 33.5,
+          "responseEnd": 33.90000000002328,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 80,
+          "requestStart": 80.40000000002328,
+          "responseStart": 81.20000000001164,
+          "responseEnd": 81.5,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "92d9a024-ba2a-4a40-a6ea-5f4b885ee3c6",
+      "lcpCandidates": [
+        {
+          "ms": 60,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 127.5,
+      "listFrameMs": 153.60000000003492,
+      "documentServer": {
+        "dispatchMs": 6.223,
+        "queries": []
+      },
+      "dispatchMs": 7.373,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 4.066
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.403
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.29
+        }
+      ]
+    },
+    {
+      "pair": 1,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 0.7999999999883585,
+        "responseStart": 2.599999999976717,
+        "responseEnd": 2.7999999999883585,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 13.699999999953434,
+        "requestStart": 14.099999999976717,
+        "responseStart": 27.5,
+        "responseEnd": 27.79999999998836,
+        "transferBytes": 13301
+      },
+      "documentId": "f5d87364-0c0f-4111-adcb-c2a744c78da1",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 5.899999999965075,
+          "requestStart": 5.899999999965075,
+          "responseStart": 5.899999999965075,
+          "responseEnd": 5.899999999965075,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 6.099999999976717,
+          "requestStart": 6.099999999976717,
+          "responseStart": 6.099999999976717,
+          "responseEnd": 6.099999999976717,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 6.099999999976717,
+          "requestStart": 6.099999999976717,
+          "responseStart": 6.099999999976717,
+          "responseEnd": 6.099999999976717,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 29.199999999953434,
+          "requestStart": 29.79999999998836,
+          "responseStart": 30.5,
+          "responseEnd": 30.79999999998836,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "abc71972-5d57-4855-9944-9d601464032d",
+      "lcpCandidates": [
+        {
+          "ms": 24,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 46.899999999965075,
+      "listFrameMs": 61.199999999953434,
+      "documentServer": {
+        "dispatchMs": 1.158,
+        "queries": []
+      },
+      "dispatchMs": 12.992,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 5.522
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 5.272
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.36
+        }
+      ]
+    },
+    {
+      "pair": 2,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1.7000000000116415,
+        "responseStart": 4.899999999965075,
+        "responseEnd": 5.2000000000116415,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 60.5,
+        "requestStart": 60.899999999965075,
+        "responseStart": 75.70000000001164,
+        "responseEnd": 76,
+        "transferBytes": 13301
+      },
+      "documentId": "428d9d1b-6363-42c1-9433-91035b6db84f",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 12.599999999976717,
+          "requestStart": 21.20000000001164,
+          "responseStart": 23.899999999965075,
+          "responseEnd": 24.099999999976717,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 13,
+          "requestStart": 22.79999999998836,
+          "responseStart": 25.399999999965075,
+          "responseEnd": 26.099999999976717,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 13.099999999976717,
+          "requestStart": 23,
+          "responseStart": 27.70000000001164,
+          "responseEnd": 28,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 80.29999999998836,
+          "requestStart": 81.5,
+          "responseStart": 82.59999999997672,
+          "responseEnd": 83,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "c9ffadf8-899b-4d4c-b080-786b41566aa9",
+      "lcpCandidates": [
+        {
+          "ms": 52,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 116,
+      "listFrameMs": 142.70000000001164,
+      "documentServer": {
+        "dispatchMs": 1.595,
+        "queries": []
+      },
+      "dispatchMs": 13.906,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 10.08
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 1.241
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.33
+        }
+      ]
+    },
+    {
+      "pair": 2,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 0.8999999999650754,
+        "responseStart": 2.7000000000116415,
+        "responseEnd": 3.099999999976717,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 14.5,
+        "requestStart": 15,
+        "responseStart": 24,
+        "responseEnd": 24.29999999998836,
+        "transferBytes": 13301
+      },
+      "documentId": "939b53ea-182c-4acc-a781-761c67f9b7b3",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.2999999999883585,
+          "requestStart": 6.2999999999883585,
+          "responseStart": 6.2999999999883585,
+          "responseEnd": 6.2999999999883585,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 6.399999999965075,
+          "requestStart": 6.399999999965075,
+          "responseStart": 6.399999999965075,
+          "responseEnd": 6.399999999965075,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 6.399999999965075,
+          "requestStart": 6.399999999965075,
+          "responseStart": 6.399999999965075,
+          "responseEnd": 6.399999999965075,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 27.899999999965075,
+          "requestStart": 28.29999999998836,
+          "responseStart": 28.79999999998836,
+          "responseEnd": 29,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "c9652be9-9de1-47b2-87a4-002d21e5e8f6",
+      "lcpCandidates": [
+        {
+          "ms": 28,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 43.59999999997672,
+      "listFrameMs": 58.5,
+      "documentServer": {
+        "dispatchMs": 1.23,
+        "queries": []
+      },
+      "dispatchMs": 8.351,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 5.954
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.358
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.283
+        }
+      ]
+    },
+    {
+      "pair": 3,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 2.599999999976717,
+        "responseStart": 5.7999999999883585,
+        "responseEnd": 6.099999999976717,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 59,
+        "requestStart": 59.59999999997672,
+        "responseStart": 72.5,
+        "responseEnd": 72.89999999996508,
+        "transferBytes": 13301
+      },
+      "documentId": "a928e8af-5419-4d59-b8b5-fdb597da6cf6",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 14.599999999976717,
+          "requestStart": 23.899999999965075,
+          "responseStart": 25.599999999976717,
+          "responseEnd": 26.099999999976717,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 15.599999999976717,
+          "requestStart": 26.29999999998836,
+          "responseStart": 28.699999999953434,
+          "responseEnd": 31.29999999998836,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 19,
+          "requestStart": 26.399999999965075,
+          "responseStart": 35.5,
+          "responseEnd": 36.79999999998836,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 74.59999999997672,
+          "requestStart": 76.39999999996508,
+          "responseStart": 77.19999999995343,
+          "responseEnd": 78,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "aea57f02-b43b-4498-bba0-745aa9bad83c",
+      "lcpCandidates": [
+        {
+          "ms": 52,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 117.09999999997672,
+      "listFrameMs": 145.09999999997672,
+      "documentServer": {
+        "dispatchMs": 2.513,
+        "queries": []
+      },
+      "dispatchMs": 11.117,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 6.011
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.702
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.601
+        }
+      ]
+    },
+    {
+      "pair": 3,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1,
+        "responseStart": 3.199999999953434,
+        "responseEnd": 3.5,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 15,
+        "requestStart": 15.599999999976717,
+        "responseStart": 25.699999999953434,
+        "responseEnd": 26.399999999965075,
+        "transferBytes": 13301
+      },
+      "documentId": "1a47d676-de20-4d0f-9485-02b1ef716b6b",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.899999999965075,
+          "requestStart": 6.899999999965075,
+          "responseStart": 6.899999999965075,
+          "responseEnd": 6.899999999965075,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 7,
+          "requestStart": 7,
+          "responseStart": 7,
+          "responseEnd": 7,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 7,
+          "requestStart": 7,
+          "responseStart": 7,
+          "responseEnd": 7,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 27.599999999976717,
+          "requestStart": 28.099999999976717,
+          "responseStart": 28.899999999965075,
+          "responseEnd": 29.199999999953434,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "08b2dff8-4d1b-4380-ab1f-55773bae4f78",
+      "lcpCandidates": [
+        {
+          "ms": 28,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 46.59999999997672,
+      "listFrameMs": 61.199999999953434,
+      "documentServer": {
+        "dispatchMs": 1.514,
+        "queries": []
+      },
+      "dispatchMs": 9.737,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 5.54
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 1.487
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.294
+        }
+      ]
+    },
+    {
+      "pair": 4,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 2.400000000023283,
+        "responseStart": 5.7000000000116415,
+        "responseEnd": 6,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 49.79999999998836,
+        "requestStart": 50.29999999998836,
+        "responseStart": 58.79999999998836,
+        "responseEnd": 59.09999999997672,
+        "transferBytes": 13301
+      },
+      "documentId": "c7a1a57d-b4ef-4834-bfee-9b5344be7f67",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 12.5,
+          "requestStart": 21.20000000001164,
+          "responseStart": 26,
+          "responseEnd": 26.599999999976717,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 13.299999999988358,
+          "requestStart": 21.900000000023283,
+          "responseStart": 26.29999999998836,
+          "responseEnd": 27.099999999976717,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 13.400000000023283,
+          "requestStart": 22.29999999998836,
+          "responseStart": 26.5,
+          "responseEnd": 27.099999999976717,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 68.79999999998836,
+          "requestStart": 70.09999999997672,
+          "responseStart": 73.90000000002328,
+          "responseEnd": 74.20000000001164,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "4909f5f8-a9f9-4432-94ff-036648882693",
+      "lcpCandidates": [
+        {
+          "ms": 80,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 119,
+      "listFrameMs": 148.5,
+      "documentServer": {
+        "dispatchMs": 1.631,
+        "queries": []
+      },
+      "dispatchMs": 7.324,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 3.493
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.774
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.373
+        }
+      ]
+    },
+    {
+      "pair": 4,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1,
+        "responseStart": 2.900000000023283,
+        "responseEnd": 3.1000000000349246,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 14.799999999988358,
+        "requestStart": 15.200000000011642,
+        "responseStart": 25.400000000023283,
+        "responseEnd": 25.79999999998836,
+        "transferBytes": 13301
+      },
+      "documentId": "19af9ae5-b015-45f1-aca2-052a853b3003",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 5.900000000023283,
+          "requestStart": 5.900000000023283,
+          "responseStart": 5.900000000023283,
+          "responseEnd": 5.900000000023283,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 6,
+          "requestStart": 6,
+          "responseStart": 6,
+          "responseEnd": 6,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 6,
+          "requestStart": 6,
+          "responseStart": 6,
+          "responseEnd": 6,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 26.70000000001164,
+          "requestStart": 27,
+          "responseStart": 28.600000000034925,
+          "responseEnd": 28.70000000001164,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "c42507cd-efa4-4604-8e22-b8aa6327e8b1",
+      "lcpCandidates": [
+        {
+          "ms": 24,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 47,
+      "listFrameMs": 61.20000000001164,
+      "documentServer": {
+        "dispatchMs": 1.233,
+        "queries": []
+      },
+      "dispatchMs": 9.595,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 6.501
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.413
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.421
+        }
+      ]
+    },
+    {
+      "pair": 5,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 2.599999999976717,
+        "responseStart": 6.5,
+        "responseEnd": 7.7000000000116415,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 61,
+        "requestStart": 61.59999999997672,
+        "responseStart": 74.5,
+        "responseEnd": 76.20000000001164,
+        "transferBytes": 13301
+      },
+      "documentId": "a9a40bae-1e1f-4a01-8c26-a040553a1ada",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 13.299999999988358,
+          "requestStart": 19.5,
+          "responseStart": 23.599999999976717,
+          "responseEnd": 24.20000000001164,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 13.400000000023283,
+          "requestStart": 24.29999999998836,
+          "responseStart": 32.5,
+          "responseEnd": 33.09999999997672,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 13.5,
+          "requestStart": 24.5,
+          "responseStart": 25.599999999976717,
+          "responseEnd": 28.5,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 78.59999999997672,
+          "requestStart": 78.90000000002328,
+          "responseStart": 80.59999999997672,
+          "responseEnd": 80.79999999998836,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "50d27a04-65ed-4c6e-8522-c6c217b23483",
+      "lcpCandidates": [
+        {
+          "ms": 56,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 129.09999999997672,
+      "listFrameMs": 156.29999999998836,
+      "documentServer": {
+        "dispatchMs": 2.945,
+        "queries": []
+      },
+      "dispatchMs": 13.419,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 6.174
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 3.393
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.5
+        }
+      ]
+    },
+    {
+      "pair": 5,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1.1000000000349246,
+        "responseStart": 2.800000000046566,
+        "responseEnd": 3.1000000000349246,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 13.400000000023283,
+        "requestStart": 13.800000000046566,
+        "responseStart": 22.400000000023283,
+        "responseEnd": 22.70000000001164,
+        "transferBytes": 13301
+      },
+      "documentId": "3beaecd8-6234-427a-bae5-682b8e3c80d5",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.100000000034925,
+          "requestStart": 6.100000000034925,
+          "responseStart": 6.100000000034925,
+          "responseEnd": 6.100000000034925,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 6.100000000034925,
+          "requestStart": 6.100000000034925,
+          "responseStart": 6.100000000034925,
+          "responseEnd": 6.100000000034925,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 6.2000000000116415,
+          "requestStart": 6.2000000000116415,
+          "responseStart": 6.2000000000116415,
+          "responseEnd": 6.2000000000116415,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 24,
+          "requestStart": 24.70000000001164,
+          "responseStart": 25.5,
+          "responseEnd": 25.600000000034925,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "3ee16e53-20d9-4f66-ad89-1d0ab9490bd7",
+      "lcpCandidates": [
+        {
+          "ms": 24,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 40.70000000001164,
+      "listFrameMs": 55.600000000034925,
+      "documentServer": {
+        "dispatchMs": 1.022,
+        "queries": []
+      },
+      "dispatchMs": 8.143,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 5.344
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.477
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.327
+        }
+      ]
+    },
+    {
+      "pair": 6,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1.3999999999650754,
+        "responseStart": 6.2999999999883585,
+        "responseEnd": 6.599999999976717,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 68,
+        "requestStart": 68.79999999998836,
+        "responseStart": 90.79999999998836,
+        "responseEnd": 91.29999999998836,
+        "transferBytes": 13301
+      },
+      "documentId": "e49e513a-fcf8-4a07-8242-46a7a3fe7c7b",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 13.099999999976717,
+          "requestStart": 21.399999999965075,
+          "responseStart": 23.5,
+          "responseEnd": 24.899999999965075,
+          "transferBytes": 9539
+        },
+        {
+          "name": "portal.js",
+          "start": 14.5,
+          "requestStart": 25.70000000001164,
+          "responseStart": 30.399999999965075,
+          "responseEnd": 30.899999999965075,
+          "transferBytes": 37005
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 14.5,
+          "requestStart": 25.399999999965075,
+          "responseStart": 30.599999999976717,
+          "responseEnd": 31.099999999976717,
+          "transferBytes": 87833
+        },
+        {
+          "name": "expense-categories",
+          "start": 93.59999999997672,
+          "requestStart": 96.5,
+          "responseStart": 97.5,
+          "responseEnd": 97.70000000001164,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "759c63d0-b5c7-412d-a36f-15e83ec24a05",
+      "lcpCandidates": [
+        {
+          "ms": 64,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 127.59999999997672,
+      "listFrameMs": 152.70000000001164,
+      "documentServer": {
+        "dispatchMs": 1.642,
+        "queries": []
+      },
+      "dispatchMs": 20.178,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 16.257
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.745
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.739
+        }
+      ]
+    },
+    {
+      "pair": 6,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 0.9000000000232831,
+        "responseStart": 3,
+        "responseEnd": 3.2999999999883585,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 15,
+        "requestStart": 15.5,
+        "responseStart": 23.79999999998836,
+        "responseEnd": 24.29999999998836,
+        "transferBytes": 13301
+      },
+      "documentId": "05f70657-433f-46ba-8928-ee0565d57cc8",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.900000000023283,
+          "requestStart": 6.900000000023283,
+          "responseStart": 6.900000000023283,
+          "responseEnd": 6.900000000023283,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 7,
+          "requestStart": 7,
+          "responseStart": 7,
+          "responseEnd": 7,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 7,
+          "requestStart": 7,
+          "responseStart": 7,
+          "responseEnd": 7,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 25.79999999998836,
+          "requestStart": 26.20000000001164,
+          "responseStart": 26.79999999998836,
+          "responseEnd": 27.099999999976717,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "7a6667a6-9d77-4957-a35c-f4467b06c2f3",
+      "lcpCandidates": [
+        {
+          "ms": 32,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 42.29999999998836,
+      "listFrameMs": 57.5,
+      "documentServer": {
+        "dispatchMs": 1.247,
+        "queries": []
+      },
+      "dispatchMs": 7.867,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 4.795
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.658
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.372
+        }
+      ]
+    },
+    {
+      "pair": 7,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1.7999999999883585,
+        "responseStart": 4.400000000023283,
+        "responseEnd": 4.600000000034925,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 53.100000000034925,
+        "requestStart": 54.5,
+        "responseStart": 66.60000000003492,
+        "responseEnd": 68.10000000003492,
+        "transferBytes": 13301
+      },
+      "documentId": "a88509ee-bd9f-4d2f-b8c6-bb908b04088e",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 10,
+          "requestStart": 15.799999999988358,
+          "responseStart": 19.79999999998836,
+          "responseEnd": 20.400000000023283,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 11.400000000023283,
+          "requestStart": 16.5,
+          "responseStart": 20.29999999998836,
+          "responseEnd": 20.79999999998836,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 11.600000000034925,
+          "requestStart": 20.79999999998836,
+          "responseStart": 24.100000000034925,
+          "responseEnd": 24.400000000023283,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 69.60000000003492,
+          "requestStart": 70.5,
+          "responseStart": 71.29999999998836,
+          "responseEnd": 71.79999999998836,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "cac32e4c-011d-47c7-8350-9c2357d5d1cc",
+      "lcpCandidates": [
+        {
+          "ms": 48,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 104.5,
+      "listFrameMs": 130.5,
+      "documentServer": {
+        "dispatchMs": 1.503,
+        "queries": []
+      },
+      "dispatchMs": 9.606,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 5.032
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.535
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.378
+        }
+      ]
+    },
+    {
+      "pair": 7,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 0.8999999999650754,
+        "responseStart": 2.8999999999650754,
+        "responseEnd": 3.2999999999883585,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 15.099999999976717,
+        "requestStart": 15.699999999953434,
+        "responseStart": 27.79999999998836,
+        "responseEnd": 28.29999999998836,
+        "transferBytes": 13301
+      },
+      "documentId": "fbb91b51-a14d-4002-aa05-3d4cddee5402",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.899999999965075,
+          "requestStart": 6.899999999965075,
+          "responseStart": 6.899999999965075,
+          "responseEnd": 6.899999999965075,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 7,
+          "requestStart": 7,
+          "responseStart": 7,
+          "responseEnd": 7,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 7,
+          "requestStart": 7,
+          "responseStart": 7,
+          "responseEnd": 7,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 28.899999999965075,
+          "requestStart": 29.199999999953434,
+          "responseStart": 29.79999999998836,
+          "responseEnd": 30.099999999976717,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "67dc5a5e-944c-4bcf-ac11-e74ed91825c1",
+      "lcpCandidates": [
+        {
+          "ms": 28,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 43.899999999965075,
+      "listFrameMs": 58.09999999997672,
+      "documentServer": {
+        "dispatchMs": 1.515,
+        "queries": []
+      },
+      "dispatchMs": 11.73,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 6.556
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 2.516
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.41
+        }
+      ]
+    },
+    {
+      "pair": 8,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1.7999999999883585,
+        "responseStart": 3.7999999999883585,
+        "responseEnd": 6,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 67.70000000001164,
+        "requestStart": 68.20000000001164,
+        "responseStart": 81,
+        "responseEnd": 83.09999999997672,
+        "transferBytes": 13301
+      },
+      "documentId": "70b88a8f-fbaa-4c82-b5dc-9166b6e0488f",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 9.799999999988358,
+          "requestStart": 19.5,
+          "responseStart": 21.099999999976717,
+          "responseEnd": 24.5,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 10,
+          "requestStart": 24.70000000001164,
+          "responseStart": 27.79999999998836,
+          "responseEnd": 28.20000000001164,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 10.099999999976717,
+          "requestStart": 24.70000000001164,
+          "responseStart": 29.29999999998836,
+          "responseEnd": 29.5,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 85,
+          "requestStart": 86,
+          "responseStart": 86.70000000001164,
+          "responseEnd": 86.90000000002328,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "f8d5aa3a-ad8c-458c-b43d-0daae85c2df7",
+      "lcpCandidates": [
+        {
+          "ms": 64,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 119.29999999998836,
+      "listFrameMs": 144.70000000001164,
+      "documentServer": {
+        "dispatchMs": 1.404,
+        "queries": []
+      },
+      "dispatchMs": 12.141,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 4.957
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.835
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 1.947
+        }
+      ]
+    },
+    {
+      "pair": 8,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1,
+        "responseStart": 3,
+        "responseEnd": 3.400000000023283,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 14.400000000023283,
+        "requestStart": 15,
+        "responseStart": 23.300000000046566,
+        "responseEnd": 23.70000000001164,
+        "transferBytes": 13301
+      },
+      "documentId": "0cecc613-936b-41f7-bf6c-71430547d32a",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.5,
+          "requestStart": 6.5,
+          "responseStart": 6.5,
+          "responseEnd": 6.5,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 6.600000000034925,
+          "requestStart": 6.600000000034925,
+          "responseStart": 6.600000000034925,
+          "responseEnd": 6.600000000034925,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 6.600000000034925,
+          "requestStart": 6.600000000034925,
+          "responseStart": 6.600000000034925,
+          "responseEnd": 6.600000000034925,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 24.900000000023283,
+          "requestStart": 25.400000000023283,
+          "responseStart": 26.20000000001164,
+          "responseEnd": 26.400000000023283,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "e3acf840-8475-4b16-a2ea-5d5586436af0",
+      "lcpCandidates": [
+        {
+          "ms": 28,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 46.40000000002328,
+      "listFrameMs": 61.5,
+      "documentServer": {
+        "dispatchMs": 1.443,
+        "queries": []
+      },
+      "dispatchMs": 7.584,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 4.877
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.471
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.314
+        }
+      ]
+    },
+    {
+      "pair": 9,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 2.2999999999883585,
+        "responseStart": 5.899999999965075,
+        "responseEnd": 6.099999999976717,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 62.79999999998836,
+        "requestStart": 63.29999999998836,
+        "responseStart": 79,
+        "responseEnd": 79.29999999998836,
+        "transferBytes": 13301
+      },
+      "documentId": "2021aef1-a466-408f-bc25-f44d79dfb930",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 11.5,
+          "requestStart": 18.79999999998836,
+          "responseStart": 21.20000000001164,
+          "responseEnd": 21.5,
+          "transferBytes": 9539
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 11.700000000011642,
+          "requestStart": 19.5,
+          "responseStart": 26.399999999965075,
+          "responseEnd": 27,
+          "transferBytes": 87833
+        },
+        {
+          "name": "portal.js",
+          "start": 11.799999999988358,
+          "requestStart": 19.5,
+          "responseStart": 23.20000000001164,
+          "responseEnd": 23.5,
+          "transferBytes": 37005
+        },
+        {
+          "name": "expense-categories",
+          "start": 80.79999999998836,
+          "requestStart": 81.29999999998836,
+          "responseStart": 83,
+          "responseEnd": 83.5,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "2c38089e-b2d8-4d4a-ac08-0ad3b77d888d",
+      "lcpCandidates": [
+        {
+          "ms": 56,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 112.70000000001164,
+      "listFrameMs": 137.59999999997672,
+      "documentServer": {
+        "dispatchMs": 2.565,
+        "queries": []
+      },
+      "dispatchMs": 12.618,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 5.655
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.773
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.708
+        }
+      ]
+    },
+    {
+      "pair": 9,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 0.9000000000232831,
+        "responseStart": 3.1000000000349246,
+        "responseEnd": 3.400000000023283,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 14.300000000046566,
+        "requestStart": 14.700000000011642,
+        "responseStart": 24.900000000023283,
+        "responseEnd": 25.100000000034925,
+        "transferBytes": 13301
+      },
+      "documentId": "d358cf47-95e3-4a2b-a018-644928bc64b6",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.5,
+          "requestStart": 6.5,
+          "responseStart": 6.5,
+          "responseEnd": 6.5,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 6.7000000000116415,
+          "requestStart": 6.7000000000116415,
+          "responseStart": 6.7000000000116415,
+          "responseEnd": 6.7000000000116415,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 6.7000000000116415,
+          "requestStart": 6.7000000000116415,
+          "responseStart": 6.7000000000116415,
+          "responseEnd": 6.7000000000116415,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 26.20000000001164,
+          "requestStart": 26.800000000046566,
+          "responseStart": 27.400000000023283,
+          "responseEnd": 27.70000000001164,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "adbd0d79-9154-478b-94a6-c0c723ff8126",
+      "lcpCandidates": [
+        {
+          "ms": 24,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 43.40000000002328,
+      "listFrameMs": 61.100000000034925,
+      "documentServer": {
+        "dispatchMs": 1.389,
+        "queries": []
+      },
+      "dispatchMs": 9.751,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 4.632
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.404
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.791
+        }
+      ]
+    },
+    {
+      "pair": 10,
+      "cache": "cold",
+      "navigation": {
+        "start": 0,
+        "requestStart": 1.5,
+        "responseStart": 5,
+        "responseEnd": 6.599999999976717,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 54.59999999997672,
+        "requestStart": 55.70000000001164,
+        "responseStart": 65.5,
+        "responseEnd": 66,
+        "transferBytes": 13301
+      },
+      "documentId": "7605dcc0-184b-4914-b5fc-c67c09264a36",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 11.400000000023283,
+          "requestStart": 19.5,
+          "responseStart": 23.20000000001164,
+          "responseEnd": 23.599999999976717,
+          "transferBytes": 9539
+        },
+        {
+          "name": "portal.js",
+          "start": 11.700000000011642,
+          "requestStart": 21.20000000001164,
+          "responseStart": 25.20000000001164,
+          "responseEnd": 26.79999999998836,
+          "transferBytes": 37005
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 11.700000000011642,
+          "requestStart": 21.20000000001164,
+          "responseStart": 27.5,
+          "responseEnd": 28.599999999976717,
+          "transferBytes": 87833
+        },
+        {
+          "name": "expense-categories",
+          "start": 67.79999999998836,
+          "requestStart": 69.29999999998836,
+          "responseStart": 70.90000000002328,
+          "responseEnd": 71.40000000002328,
+          "transferBytes": 392
+        }
+      ],
+      "traceId": "cd383622-e08b-4fd8-80ad-6bf892defa05",
+      "lcpCandidates": [
+        {
+          "ms": 48,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 100.70000000001164,
+      "listFrameMs": 128.90000000002328,
+      "documentServer": {
+        "dispatchMs": 2.516,
+        "queries": []
+      },
+      "dispatchMs": 8.632,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 4.397
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.463
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.66
+        }
+      ]
+    },
+    {
+      "pair": 10,
+      "cache": "warm",
+      "navigation": {
+        "start": 0,
+        "requestStart": 0.8999999999650754,
+        "responseStart": 2.599999999976717,
+        "responseEnd": 2.8999999999650754,
+        "transferBytes": 5185
+      },
+      "workspace": {
+        "start": 14.399999999965075,
+        "requestStart": 14.899999999965075,
+        "responseStart": 21.79999999998836,
+        "responseEnd": 22.099999999976717,
+        "transferBytes": 13301
+      },
+      "documentId": "0722378d-aa24-4cf5-a82f-75d5322e14eb",
+      "resources": [
+        {
+          "name": "portal.css",
+          "start": 6.199999999953434,
+          "requestStart": 6.199999999953434,
+          "responseStart": 6.199999999953434,
+          "responseEnd": 6.199999999953434,
+          "transferBytes": 0
+        },
+        {
+          "name": "jquery.min.js",
+          "start": 6.2999999999883585,
+          "requestStart": 6.2999999999883585,
+          "responseStart": 6.2999999999883585,
+          "responseEnd": 6.2999999999883585,
+          "transferBytes": 0
+        },
+        {
+          "name": "portal.js",
+          "start": 6.399999999965075,
+          "requestStart": 6.399999999965075,
+          "responseStart": 6.399999999965075,
+          "responseEnd": 6.399999999965075,
+          "transferBytes": 0
+        },
+        {
+          "name": "expense-categories",
+          "start": 22.79999999998836,
+          "requestStart": 23.199999999953434,
+          "responseStart": 24,
+          "responseEnd": 24.399999999965075,
+          "transferBytes": 300
+        }
+      ],
+      "traceId": "4009e541-e070-4c74-9084-98116d0bfce4",
+      "lcpCandidates": [
+        {
+          "ms": 28,
+          "tag": "H1",
+          "region": "H1",
+          "size": 4773
+        }
+      ],
+      "listDomMs": 40.59999999997672,
+      "listFrameMs": 55.399999999965075,
+      "documentServer": {
+        "dispatchMs": 1.143,
+        "queries": []
+      },
+      "dispatchMs": 6.421,
+      "queries": [
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.inbox",
+          "ms": 3.365
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.balance",
+          "ms": 0.393
+        },
+        {
+          "mapper": "kr.budget.claims.BudgetMapper.organization",
+          "ms": 0.991
+        }
+      ]
+    }
+  ]
+}

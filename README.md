@@ -12,6 +12,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 
 | 영역 | 검증 결과 |
 | --- | --- |
+| 결재함 첫 표시 | 실제 Oracle을 연결한 CI에서 부서장의 50건 결재함을 열었다. 최초 방문 10회 중앙값은 제목 LCP 56.0ms, 목록 표시 근사 시점 144.9ms였다. 같은 탐색에서 목록 API 응답 후 표시까지 64.8ms, API의 SQL 세 건에 7.22ms가 걸렸다. [요청별 분석과 원자료](docs/measurements/workspace-timing.md) |
 | 결재함 조회 | 합성 신청 100만 건을 100개 부서에 나눠 넣었다. 한 부서의 결재함에서 앞선 9,000건 이후 같은 51건을 조회할 때 Oracle 논리 읽기는 OFFSET 307회, 키셋 13회였다. 실행 순서를 교대한 4회 모두 같은 결과였다. [실행 계획 원자료](docs/measurements/oracle-inbox-44781386053.zip) |
 | 예산 원장과 복원 | 실제 Oracle 원장 시험 28건을 통과했다. 다른 세션이 신청을 수정하는 동안 계산 근거 조회는 직전 커밋의 금액을 읽었다. 같은 본부 예산을 동시에 배정해도 잔액을 초과하지 않았다. Data Pump로 별도 PDB에 복원한 결과, 전표 49건과 포털 송신 메시지 47건을 포함한 대사 결과 547행이 원본과 일치했다. [원장 시험](docs/measurements/oracle-cases-44809221277.json) · [복원 대사 원자료](docs/measurements/oracle-restore-44896984081.zip) |
 | 정적 자산 캐시 | 자체 JS·CSS의 내용 해시를 URL에 반영했다. 로컬 Chrome 결재함 재방문 때 정적 자산 3개의 전송량은 22,034B에서 0B로 줄었고, 첫 방문 전송량은 101B 증가했다. [전후 5회 측정](docs/measurements/README.md) |
