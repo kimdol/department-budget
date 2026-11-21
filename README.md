@@ -46,7 +46,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 
 ## 브라우저 시험
 
-공개 HTTPS에서 Chrome 시험 23건을 통과했다. 직원 신청함은 390·768·1440px에서 영수증 보완 후 정산 결과까지 확인했다. 교육비 월마감, 출장 결재, 학회비 규정 발행·복구, 지점 예산 배정, 방문자·부서 격리도 점검했다. 별도 부하·장애 조건을 쓰는 3건은 이 실행에서 건너뛰었다. TLS 1.3, Secure·HttpOnly·SameSite=Lax 쿠키, 업무 응답의 no-store, 비목표의 ETag 재검증과 정적 파일 재사용을 확인했다. [직원 신청함과 정산 결과](docs/measurements/deployment-workspace-layout.json) · [공개 전송 원자료](docs/measurements/deployment-https.json) · [재현 명령](docs/HTTPS.md#java-서비스-설치와-중지)
+공개 HTTPS에서 Chrome 시험 24건을 통과했다. 직원 신청함은 390·768·1440px에서 영수증 보완 후 정산 결과까지 확인했다. 교육비 월마감, 출장 결재, 학회비 규정 발행·복구, 지점 예산 배정, 방문자·부서 격리도 점검했다. 별도 부하·장애 조건을 쓰는 3건은 이 실행에서 건너뛰었다. TLS 1.3, Secure·HttpOnly·SameSite=Lax 쿠키, 업무 응답의 no-store, 비목표의 ETag 재검증과 정적 파일 재사용을 확인했다. [직원 신청함과 정산 결과](docs/measurements/deployment-workspace-sections.json) · [공개 전송 원자료](docs/measurements/deployment-https.json) · [재현 명령](docs/HTTPS.md#java-서비스-설치와-중지)
 
 첫 방문 시 접수 결과와 실제 지출액 입력칸을 찾기 어려웠다. 폼에 접수 상태를 표시하고 정산 입력과 첨부·신청 버튼을 한 영역에 배치했다. 모바일 크기의 Chrome에서 영수증이 없는 정산을 차단한 뒤, 보완 요청과 재제출을 거쳐 180,000원을 정산하는 흐름을 확인했다. [배포 전후 원자료](docs/measurements/deployment-claim-ux.json)
 

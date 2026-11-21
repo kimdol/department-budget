@@ -320,3 +320,9 @@ React 신청함을 처음 사용한 참가자 1명이 영수증이 필요한 교
 조직·부서·역할 설정을 부서 예산 요약 위에 배치했다. 개인 장부는 지출 입력·내역과 예산 설정·예상 비용을 나누고, 저장 결과를 화면에 표시한다. 로컬 Chrome 시험 22건이 통과했고 공개 HTTPS에서 23건이 통과했다. 390px과 1280px에서 예산 500,000원과 지출 32,000원을 입력하고 잔액 468,000원 및 지출 내역을 확인했다. [변경 코드](https://github.com/kimdol/department-budget/commit/bbc6403) · [공개 시험 결과](measurements/deployment-workspace-layout.json) · [Oracle 통합 시험](https://github.com/kimdol/department-budget/actions/runs/44911498560)
 
 공개 주소의 도메인은 해석됐지만 HTTPS 연결과 SSH 배너 수신이 시간 초과됐고, 당시 콘솔에서 VM은 실행 상태였다. 일반 재부팅을 요청했고 재부팅 후 Java·HTTPS 프록시·포털 수신 서비스가 기동했다. 종료 단계에서 기본 스왑 사용량은 497MiB, 가용량은 0MiB였다. 직전 부팅의 커널 저널이 남아 있지 않아 장애 원인은 확정하지 못했다. 기존 부팅 볼륨에 1GiB 스왑을 추가한 뒤 활성 상태와 부팅 시 적용 설정을 확인했다. 재부팅·화면 배포·스왑 추가가 같은 복구 과정에서 진행되어 스왑의 단독 효과는 측정하지 않았다. 접속 장애로 중단된 참가자의 시도는 과제 완료 시간에서 제외한다.
+
+## 신청·정산 화면의 업무 구분
+
+체험 설정, 부서 예산 현황, 비용 신청, 신청함을 제목과 여백으로 구분했다. 예상 지원액은 신청 양식 안에 배치했다. 신청함은 목록과 상세의 바탕을 나누고, 영수증 종류와 첨부 버튼은 같은 구획에 두었다. 제출·승인은 남색 버튼으로 강조하고 조회·이력은 보조 버튼으로 표시한다. 공개 환경에서 390·768·1440px의 영수증 보완 흐름을 확인했다. [화면 변경](https://github.com/kimdol/department-budget/commit/9fd9b55) · [PC 신청함](images/employee-inbox.png) · [모바일 증빙 보완](images/employee-receipt-mobile.png)
+
+개인 장부를 연 직후 예산 500,000원과 지출 32,000원을 입력했을 때 잔액이 예상한 468,000원 대신 −32,000원으로 표시됐다. 최초 데이터 조회와 편집이 겹칠 수 있어 조회가 끝난 뒤 예산 입력과 저장을 활성화했다. 다른 탭의 갱신이 도착해도 작성 중인 예산은 보존한다. 지연 초기화와 탭 갱신 조건을 회귀 시험에 추가했고 공개 화면에서도 잔액 468,000원을 확인했다. 공개 Chrome 시험 24건이 통과했고 별도 부하·장애 조건이 필요한 3건은 건너뛰었다. [수정](https://github.com/kimdol/department-budget/commit/5f88f3a) · [회귀 시험](../frontend/tests/personal-ledger.spec.ts) · [배포 검증 결과](measurements/deployment-workspace-sections.json)
