@@ -12,12 +12,11 @@
 <label id="role-choice" hidden>시연 역할<select id="role"><option value="EMPLOYEE">직원</option><option value="MANAGER">부서장</option><option value="FINANCE">재무 담당자</option></select></label>
 <div class="start-actions"><button id="employee-start" class="primary">내 신청함 시작</button><button id="start">개인 데모 시작</button></div></div>
 <div id="session-toolbar" hidden><span id="member-name"></span><button type="button" id="delegate" hidden></button>
-<form id="end-demo" method="post" action="/api/demo/end"><input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"><button>내 체험 종료</button></form></div></section>
-<p id="notice" role="status" aria-live="polite">데모를 시작하면 독립된 부서 예산 100만 원이 배정됩니다.</p>
-<div id="desk" hidden><div class="metrics"><article>배정액<strong id="allocation"></strong></article><article>약정 잔액<strong id="committed"></strong></article><article>누적 집행<strong id="spent"></strong></article><article>가용 예산<strong id="available"></strong></article></div>
-<section id="entry"><h2>비용 신청</h2><form id="submit"><label>신청명<input name="title" maxlength="100" required value="직무 교육 참가"></label><label>비목<select name="category" required></select></label><label>예정 금액(원)<input type="number" name="estimated" min="1" required value="300000"></label><label>기간(일)<input type="number" name="days" min="1" max="365" required value="1"></label><button>신청 제출</button></form><div id="employee-root"></div><p id="submit-status" role="status"></p><button type="button" id="employee-view" data-module="${assetPaths['employee.js']}">직원용 신청 화면으로 전환</button></section>
-<div id="estimate-panel" hidden><button type="button" id="estimate">지원 예정액 확인</button><p id="estimate-result" role="status"></p></div>
-<details id="policy-panel" data-module="${assetPaths['policy-editor.js']}"><summary>지원 규정 비교 및 발행</summary><div id="policy-editor"></div></details>
+<form id="end-demo" method="post" action="/api/demo/end"><input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"><button>내 체험 종료</button></form></div>
+<p id="notice" role="status" aria-live="polite">데모를 시작하면 독립된 부서 예산 100만 원이 배정됩니다.</p></section>
+<div id="desk" hidden><section class="budget-overview" aria-labelledby="balance-heading"><h2 id="balance-heading">부서 예산 현황</h2><div class="metrics"><article>배정액<strong id="allocation"></strong></article><article>약정 잔액<strong id="committed"></strong></article><article>누적 집행<strong id="spent"></strong></article><article>가용 예산<strong id="available"></strong></article></div></section>
+<section id="entry"><h2>비용 신청</h2><form id="submit"><label>신청명<input name="title" maxlength="100" required value="직무 교육 참가"></label><label>비목<select name="category" required></select></label><label>예정 금액(원)<input type="number" name="estimated" min="1" required value="300000"></label><label>기간(일)<input type="number" name="days" min="1" max="365" required value="1"></label><button>신청 제출</button></form><div id="employee-root"></div><p id="submit-status" role="status"></p><button type="button" id="employee-view" data-module="${assetPaths['employee.js']}">직원용 신청 화면으로 전환</button>
+<div id="estimate-panel" hidden><button type="button" id="estimate">지원 예정액 확인</button><p id="estimate-result" role="status"></p></div></section>
 <section id="branch-allocation" hidden><h2>지점 예산 배정</h2>
 <button type="button" id="view-branch">본부·지점 잔액 조회</button>
 <form id="allocate"><label>지점에 배정할 금액(원)<input type="number" name="amount" min="1" step="1" required></label><button>지점 배정</button></form>
@@ -28,4 +27,6 @@
 <div id="portal-failures" aria-live="polite"></div>
 <div id="statement" aria-live="polite"></div>
 <button id="close-period" hidden>이 기간 마감 확정</button></section>
-<section id="employee-inbox" hidden></section><section id="legacy-inbox"><h2>신청 내역</h2><label>신청 상태<select id="claim-filter"><option value="">전체 상태</option></select></label><div id="claims"></div><button id="newer" hidden>이전 페이지</button><button id="older" hidden>다음 페이지</button></section></div></main></body></html>
+<section id="employee-inbox" hidden></section><section id="legacy-inbox"><h2>신청 내역</h2><label>신청 상태<select id="claim-filter"><option value="">전체 상태</option></select></label><div id="claims"></div><button id="newer" hidden>이전 페이지</button><button id="older" hidden>다음 페이지</button></section>
+<details id="policy-panel" data-module="${assetPaths['policy-editor.js']}"><summary>지원 규정 비교 및 발행</summary><div id="policy-editor"></div></details>
+</div></main></body></html>

@@ -126,7 +126,9 @@ function render(state) {
         " · 예산으로 돌아간 약정 차액 " + money(claim.approved-claim.settled);
       $("<p>").text(detail).appendTo(row);
     }
-    const actions = $("<div>").addClass("actions").appendTo(row);
+    const records = $("<div>").addClass("claim-records").appendTo(row);
+    $("<h3>").text("조회 자료").appendTo(records);
+    const lookup = $("<div>").addClass("actions").appendTo(records);
     const path = "/api/claims/" + encodeURIComponent(claim.claimId);
     if (state.role === "FINANCE") {
       $("<button>").text("전표 조회").on("click", () => {
@@ -156,16 +158,16 @@ function render(state) {
             });
           }).fail(reportError);
         }).fail(reportError);
-      }).appendTo(actions);
+      }).appendTo(lookup);
     }
-    const documents = $("<div>").appendTo(row);
+    const documents = $("<div>").appendTo(records);
     $("<button>").text("신청 버전 조회").on("click",()=>
       $.getJSON(path+"/versions").done(versions=>{
         documents.empty();
         $("<strong>").text("최초 신청번호 "+versions[0].seriesId).appendTo(documents);
         for (const v of versions) $("<p>").text("버전 "+v.versionNo+" · "+v.title+" · "+money(v.estimated)+" · "+
           v.days+"일 · "+statusName[v.status]+" · "+v.claimId).appendTo(documents);
-      }).fail(reportError)).appendTo(actions);
+      }).fail(reportError)).appendTo(lookup);
     const historyButton = $("<button>").text("결재 이력").on("click", () =>
       $.getJSON(path+"/history").done(events => {
         const names = {SUBMIT:"신청 접수",FORWARD_FINANCE:"재무로 결재 요청",FINAL_APPROVAL:"최종 사전승인",
@@ -184,13 +186,13 @@ function render(state) {
           documents.empty();
           historyButton.trigger("focus");
         }).appendTo(documents).trigger("focus");
-      }).fail(reportError)).appendTo(actions);
+      }).fail(reportError)).appendTo(lookup);
     if (state.role === "FINANCE" && state.portalEnabled) $("<button>").text("사내 포털 수신 결과").on("click",() =>
       $.getJSON(path+"/portal-receipt").done(receipt => {
         if (!receipt) {documents.text("아직 포털에 도착한 결과가 없습니다."); return;}
         const kind = ({APPROVAL:"사전승인",SETTLEMENT:"정산 확정",CANCELLATION:"취소"})[receipt.event];
         documents.text("포털 수신 차수 " + receipt.sequence + " · " + kind + " · " + money(receipt.amount));
-      }).fail(()=>documents.text("포털에서 결과를 조회할 수 없습니다. 잠시 후 다시 조회하세요."))).appendTo(actions);
+      }).fail(()=>documents.text("포털에서 결과를 조회할 수 없습니다. 잠시 후 다시 조회하세요."))).appendTo(lookup);
     $("<button>").text("신청 당시 계산 근거").on("click",() =>
       $.getJSON(path+"/calculation").done(calc => {
         documents.empty();
@@ -206,7 +208,7 @@ function render(state) {
             const list = $("<ol>").appendTo(detail);
             for (const step of steps) $("<li>").text(labels[step.operation]+" · "+step.value).appendTo(list);
           }
-      }).fail(reportError)).appendTo(actions);
+      }).fail(reportError)).appendTo(lookup);
     $("<button>").text("증빙 요건 확인").on("click",() =>
       $.getJSON(path + "/evidence/assessment").done(result => {
         documents.text(result.issues.length ? result.issues.join(" ") : "필요한 증빙을 모두 제출했습니다.");
@@ -217,7 +219,7 @@ function render(state) {
             ({PASS:"충족",FAIL:"미충족",MISSING:"자료 부족"})[step.verdict]).appendTo(detail);
           for (const name of rule.skipped) $("<p>").text(name + " · 앞선 조건으로 판정되어 생략").appendTo(detail);
         }
-      }).fail(reportError)).appendTo(actions);
+      }).fail(reportError)).appendTo(lookup);
     $("<button>").text("증빙 조회").on("click", () => {
       $.getJSON(path + "/evidence").done(items => {
         documents.empty();
@@ -227,7 +229,8 @@ function render(state) {
             .text((item.evidenceType==="RECEIPT" ? "지출 영수증" : "참석 확인서")+" · "+money(item.receiptAmount)).appendTo(documents);
         }
       }).fail(reportError);
-    }).appendTo(actions);
+    }).appendTo(lookup);
+    const actions = $("<div>").addClass("actions claim-commands").insertBefore(records);
     const send = (button, route, data) => {
       button.prop("disabled",true);
       row.prop("inert",true).attr("aria-busy","true");
@@ -316,7 +319,7 @@ function render(state) {
     }
     const financeReview = state.role === "FINANCE" && claim.status === "IN_REVIEW";
     if (managerReview) action("증액 승인","/increase",()=>({round:claim.reviewRound}));
-    if (financeReview) $("<button>").text("정산 확정").on("click",function() {
+    if (financeReview) $("<button>").addClass("primary").text("정산 확정").on("click",function() {
       const button = $(this).prop("disabled",true);
       api(path+"/settle",{round:claim.reviewRound}).then(refreshClaim).fail(error => {
         if (error.status === 422) $.getJSON(path+"/evidence/issues").done(issues =>

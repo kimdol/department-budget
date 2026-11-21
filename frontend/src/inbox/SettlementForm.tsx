@@ -53,14 +53,16 @@ export function SettlementForm({claim}:{claim:Claim}) {
     }
   }
   return <form className="receipt-form" onSubmit={event=>{event.preventDefault();void submit(false);}}>
+    <fieldset><legend>{claim.status==="NEEDS_RECEIPT"?"증빙 보완":"실제 지출 제출"}</legend>
     {claim.status==="NEEDS_RECEIPT"&&<p>재무팀이 요청한 증빙을 첨부하고 ‘첨부됨’을 확인한 뒤 다시 제출하세요.</p>}
     <label>실제 지출액(원)<input type="number" min="1" max="999999999999" required value={amount} disabled={busy}
       onChange={e=>setAmount(e.target.value)}/></label>
-    <label>증빙 종류<select value={type} disabled={busy} onChange={e=>setType(e.target.value)}>
+    <div className="attachment-fields"><label>증빙 종류<select value={type} disabled={busy} onChange={e=>setType(e.target.value)}>
       <option value="RECEIPT">지출 영수증</option><option value="ATTENDANCE">참석 확인서</option></select></label>
-    <button type="button" disabled={busy} onClick={e=>{if(e.currentTarget.form?.reportValidity())void submit(true);}}>합성 증빙 첨부</button>
+    <button type="button" disabled={busy} onClick={e=>{if(e.currentTarget.form?.reportValidity())void submit(true);}}>합성 증빙 첨부</button></div>
     {documents.map(row=><p key={row.evidenceType}>{row.evidenceType==="RECEIPT"?"지출 영수증":"참석 확인서"} · {won(row.receiptAmount)} 첨부됨</p>)}
     <p role="status">{message}</p>
+    </fieldset>
     <button disabled={busy}>{claim.status==="NEEDS_RECEIPT"?"보완 내용 다시 제출":"정산 신청"}</button>
   </form>;
 }
