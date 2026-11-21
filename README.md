@@ -2,7 +2,9 @@
 
 은행 경영지원팀·병원 행정부서·일반 기업의 직원이 교육비와 출장비를 신청하고 부서장과 재무 담당자가 승인·정산하는 경영지원 웹 애플리케이션이다. 같은 신청번호로 **승인 금액과 실제 집행액의 차이**를 추적한다.
 
-**공개 데모는 배포 준비 중이다.** [3분 체험 순서](#3분-체험)에서 직원의 300,000원 신청부터 부서장의 200,000원 약정, 재무의 180,000원 정산까지 따라갈 수 있다. 아래 화면은 로컬 Tomcat과 H2에서 Chrome으로 처리한 결과다. 같은 시점에 두 번째 방문자의 가용 예산은 1,000,000원이었다.
+**[공개 데모 열기](https://129-225-133-96.sslip.io/)** · [3분 체험 순서](#3분-체험)
+
+별도 가입 없이 방문자마다 독립된 부서 예산 1,000,000원이 배정된다. 교육비 300,000원을 신청하고 부서장과 재무 담당자로 역할을 바꿔 승인과 정산을 끝낼 수 있다. 아래는 공개 서비스에서 정산한 화면이다. 화면, Oracle 원장, 결산표의 가용 예산은 820,000원이었고 사내 포털은 MySQL에 정산액 180,000원을 기록했다. 체험에는 합성 증빙을 사용한다. [정산과 재전송](docs/measurements/deployment-settlement.json) · [Oracle·MySQL 대사](docs/measurements/deployment-ledger.txt)
 
 Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 신청·결재함, React·TypeScript는 직원 신청과 규정 비교·발행, PHP·MySQL은 사내 포털 수신에 사용한다. 직원 역할에서 **직원용 신청 화면으로 전환**을 누르면 입력한 내용을 React 화면에서 이어서 제출할 수 있다. [두 화면의 신청 계약 시험](frontend/tests/employee-form.spec.ts) · [화면에서 원장까지 소스 따라가기](#소스-따라가기)
 
@@ -11,7 +13,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 | 영역 | 검증 결과 |
 | --- | --- |
 | 결재함 조회 | 합성 신청 100만 건을 100개 부서에 나눠 넣었다. 한 부서의 결재함에서 앞선 9,000건 이후 같은 51건을 조회할 때 Oracle 논리 읽기는 OFFSET 307회, 키셋 13회였다. 실행 순서를 교대한 4회 모두 같은 결과였다. [실행 계획 원자료](docs/measurements/oracle-inbox-44781386053.zip) |
-| 예산 원장과 복원 | 실제 Oracle 원장 시험 28건을 통과했다. 다른 세션이 신청을 수정 중일 때 계산 근거 조회는 직전 커밋의 금액을 반환했다. 같은 본부 예산을 동시에 배정해도 잔액을 초과하지 않았고, 신청을 변경해도 이전 약정과 새 결재를 버전별로 추적할 수 있었다. Data Pump로 같은 PDB의 별도 스키마에 복원한 결과, 포털 송신 메시지 47건을 포함한 대사 파일이 원본과 일치했다. [시험 결과](docs/measurements/oracle-cases-44809221277.json) · [복원 대사 원자료](docs/measurements/oracle-restore-44801501494.zip) |
+| 예산 원장과 복원 | 실제 Oracle 원장 시험 28건을 통과했다. 다른 세션이 신청을 수정하는 동안 계산 근거 조회는 직전 커밋의 금액을 읽었다. 같은 본부 예산을 동시에 배정해도 잔액을 초과하지 않았다. Data Pump로 별도 PDB에 복원한 결과, 전표 49건과 포털 송신 메시지 47건을 포함한 대사 결과 547행이 원본과 일치했다. [원장 시험](docs/measurements/oracle-cases-44809221277.json) · [복원 대사 원자료](docs/measurements/oracle-restore-44896984081.zip) |
 | 정적 자산 캐시 | 자체 JS·CSS의 내용 해시를 URL에 반영했다. 로컬 Chrome 결재함 재방문 때 정적 자산 3개의 전송량은 22,034B에서 0B로 줄었고, 첫 방문 전송량은 101B 증가했다. [전후 5회 측정](docs/measurements/README.md) |
 | 학회비 지원 규정 | 학회비 지원율을 80%에서 90%로 바꾼 뒤에도 이전 신청의 인정액 144,000원을 재현했다. 같은 실비 180,000원의 신규 신청은 162,000원, 이전 규정 복구 후 접수한 신청은 144,000원이었다. [발행·복구 계약 시험](src/test/java/kr/budget/claims/PostingContract.java) |
 
@@ -41,6 +43,8 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 재무 담당자로 **전표 조회**와 **결산표 조회**를 열면 같은 신청의 약정 해제, 실제 집행액, 부서 가용액을 대조할 수 있다. [Chrome 회귀 시험](frontend/tests/claims.spec.ts)
 
 ## 브라우저 시험
+
+공개 HTTPS에서 교육비 신청·정산·월마감, 출장 결재, 학회비 규정 발행·복구, 지점 예산 배정, 방문자·부서 격리를 포함한 Chrome 시험 18건을 통과했다. TLS 1.3, Secure·HttpOnly·SameSite=Lax 쿠키, 업무 응답의 no-store, 비목표의 ETag 재검증과 정적 파일 재사용을 확인했다. [공개 전송 원자료](docs/measurements/deployment-https.json) · [재현 명령](docs/HTTPS.md#java-서비스-설치와-중지)
 
 CI에서는 실제 Oracle 원장과 송신함, HTTPS를 경유한 PHP 수신기, MySQL 수신 요약을 한 신청번호로 대조했다. Chrome에서 교육비 정산을 확정한 뒤 포털의 2차 수신액을 조회하고, 두 DB에서 같은 업무 공간·신청번호·차수·종류·금액(180,000원)을 확인했다. [실행 결과](https://github.com/kimdol/department-budget/actions/runs/44774362675/job/136420076607) · [재현 스크립트](ops/ci_https_proxy.sh)
 
