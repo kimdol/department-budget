@@ -8,7 +8,8 @@ const pendingAction = {
 const money = value => new Intl.NumberFormat("ko-KR").format(value) + "원";
 const notice = message => $("#notice").text(message);
 const api = (path, data) => $.ajax({url:path, method:"POST", data, headers:{"X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content}});
-const reportError = error => notice(({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.");
+const errorMessage = error => ({403:"현재 역할로 처리할 수 없습니다.",409:"신청 상태가 바뀌었습니다.",422:"금액과 가용 예산을 확인하세요."})[error.status] || "처리 결과를 확인할 수 없습니다. 화면을 새로 열어 확인하세요.";
+const reportError = error => notice(errorMessage(error));
 const cursors = [null];
 const claimFilter = document.getElementById("claim-filter");
 for (const [value,label] of Object.entries(statusName)) claimFilter.add(new Option(label,value));
@@ -505,6 +506,7 @@ $("#estimate").on("click", () => {
 $("#entry").on("submit","form",event=>{
   event.preventDefault();
   const button = $(event.target).find("button").prop("disabled",true);
+  const status = $("#submit-status").text("신청을 접수하고 있습니다.");
   const fields = $(event.target).serialize();
   const previous = JSON.parse(sessionStorage.getItem("pending-claim") || "null");
   const key = previous?.fields === fields ? previous.key : crypto.randomUUID();
@@ -513,11 +515,16 @@ $("#entry").on("submit","form",event=>{
   api("/api/claims", fields + generation + "&requestKey=" + encodeURIComponent(key)).then(() => {
     sessionStorage.removeItem("pending-claim");
     cursors.splice(0,cursors.length,null);
-    return refresh();
+    status.text("신청이 접수됐습니다. 아래 신청 내역에서 확인하세요.");
+    return refresh().then(undefined, () => {
+      status.text("신청이 접수됐습니다. 화면을 새로 열어 신청 내역을 확인하세요.");
+    });
   }).fail(error => {
-    if (error.status === 409 && generation) {
-      notice("지원 규정이 변경되었습니다. 지원 예정액을 다시 확인하세요.");
-    } else reportError(error);
+    const message = error.status === 409 && generation
+      ? "지원 규정이 변경되었습니다. 지원 예정액을 다시 확인하세요."
+      : errorMessage(error);
+    status.text(message);
+    notice(message);
   }).always(()=>button.prop("disabled",false));
 });
 $.getJSON("/api/workspace").done(state=>loadCategories().then(()=>render(state)).fail(reportError));

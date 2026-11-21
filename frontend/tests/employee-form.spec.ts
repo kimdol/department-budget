@@ -49,15 +49,27 @@ for (const mode of ["JSP","React"]) {
     await role("MANAGER");
     await title.press("Enter");
     await expect(page.locator("#notice")).toContainText("현재 역할로 처리할 수 없습니다.");
+    const submitStatus = page.locator("#submit-status");
+    await expect(submitStatus).toHaveText("현재 역할로 처리할 수 없습니다.");
     await role("EMPLOYEE");
+    let resumeSubmission!:()=>void;
+    const submissionGate = new Promise<void>(resolve=>{resumeSubmission=resolve;});
+    await page.route("**/api/claims",async route=>{await submissionGate; await route.continue();},{times:1});
     const submitted = page.waitForResponse(r=>r.request().method()==="POST" && new URL(r.url()).pathname==="/api/claims");
     await title.press("Enter");
+    try {
+      await expect(submitStatus).toHaveText("신청을 접수하고 있습니다.");
+      await expect(form.getByRole("button")).toBeDisabled();
+    } finally {
+      resumeSubmission();
+    }
     const response = await submitted;
     expect(response.status()).toBe(200);
     const payload = new URLSearchParams(response.request().postData()!);
     expect(payload.get("expectedGeneration")).toBe("0");
     expect(payload.get("estimated")).toBe("300000");
     const {claimId} = await response.json();
+    await expect(submitStatus).toHaveText("신청이 접수됐습니다. 아래 신청 내역에서 확인하세요.");
     await expect(page.locator(".claim")).toContainText(claimId);
     await page.locator("#role").selectOption("MANAGER");
     await page.getByRole("button",{name:"사전승인"}).click();
@@ -65,6 +77,23 @@ for (const mode of ["JSP","React"]) {
     await expect(page.locator("#available")).toHaveText("800,000원");
   });
 }
+
+test("목록을 불러오지 못해도 이미 접수된 신청을 안내한다",async ({page})=>{
+  await page.goto("/");
+  await page.getByRole("button", {name:"개인 데모 시작"}).click();
+  await expect(page.locator("#available")).toHaveText("1,000,000원");
+  await page.route("**/api/workspace",route=>route.fulfill({status:503}),{times:1});
+  await page.getByRole("button", {name:"신청 제출"}).click();
+  await expect(page.locator("#submit-status")).toHaveText("신청이 접수됐습니다. 화면을 새로 열어 신청 내역을 확인하세요.");
+  await expect(page.getByRole("button",{name:"신청 제출"})).toBeEnabled();
+  const response = await page.request.get("/api/workspace");
+  expect(response.status()).toBe(200);
+  const state = await response.json();
+  expect(state.claims).toHaveLength(1);
+  await page.reload();
+  await expect(page.locator(".claim")).toContainText(state.claims[0].claimId);
+});
+
 test("부서장 대행도 본인의 신청을 승인할 수 없다",async ({page})=>{
   await page.goto("/");
   await page.locator("#start").click();
