@@ -80,3 +80,19 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
     }
   });
 }
+
+test("직원 모듈을 늦게 열어도 먼저 접수한 신청이 목록에 나타난다",async({page})=>{
+  let release!:()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route("**/employee.js",async route=>{await gate;await route.continue();},{times:1});
+  await page.goto("/");
+  await page.getByRole("button",{name:"내 신청함 시작"}).click();
+  try {
+    await page.locator("#submit button").click();
+    await expect(page.locator("#submit-status")).toContainText("접수됐습니다");
+    await expect(page.locator("#claims")).toContainText("직무 교육 참가");
+  } finally {release();}
+  const inbox=page.locator("#employee-inbox");
+  await expect(inbox.getByRole("button",{name:/직무 교육 참가.*결재 대기/})).toHaveCount(1);
+  await expect(inbox.getByText("아직 신청한 비용이 없습니다.")).toHaveCount(0);
+});

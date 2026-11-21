@@ -1,22 +1,22 @@
-import {useEffect,useLayoutEffect,useRef,useState} from "react";
+import {useSyncExternalStore,useLayoutEffect,useRef,useState} from "react";
 import {ClaimDetail} from "./ClaimDetail";
 import {ClaimList} from "./ClaimList";
+function subscribe(update:()=>void){
+  document.addEventListener("employee-inbox-update",update);
+  return ()=>document.removeEventListener("employee-inbox-update",update);
+}
+const snapshot=()=>window.employeeInbox.state;
+
 export function EmployeeInbox(){
-  const desk=window.employeeInbox;
-  const [,paint]=useState(0);
+  const state=useSyncExternalStore(subscribe,snapshot);
   const [id,setId]=useState("");
   const [open,setOpen]=useState(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   const scroll=useRef(0);
   const heading=useRef<HTMLHeadingElement>(null);
-  useEffect(()=>{
-    const update=()=>paint(n=>n+1);
-    document.addEventListener("employee-inbox-update",update);
-    return ()=>document.removeEventListener("employee-inbox-update",update);
-  },[]);
   useLayoutEffect(()=>{if(open)heading.current?.focus();},[id,open]);
-  const state=desk.state;
+
   if(!state||state.role!=="EMPLOYEE")return null;
   const claims=state.claims;
   const selected=claims.find(c=>c.claimId===id)??claims[0];
