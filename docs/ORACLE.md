@@ -2,7 +2,7 @@
 
 ## 최초 설치
 
-업무 스키마와 Spring Batch 메타데이터는 같은 Oracle 사용자 소유다. Oracle PDB에 데이터 테이블스페이스 할당량과 CREATE SESSION, CREATE TABLE, CREATE SEQUENCE 권한이 있는 빈 사용자를 준비한다. 개발·시험·공개 배포는 각각 다른 사용자로 접속한다. 아래 명령은 저장소 루트 기준이다. BUDGET_APP과 BUDGET_PDB는 준비한 사용자와 접속 별칭으로 바꾸며 비밀번호는 프롬프트에 입력한다.
+업무 스키마와 Spring Batch 메타데이터는 같은 Oracle 사용자 소유다. Oracle PDB에 데이터 테이블스페이스 할당량과 CREATE SESSION, CREATE TABLE, CREATE SEQUENCE 권한이 있는 빈 사용자를 준비한다. 개발·시험·공개 배포는 각각 다른 사용자로 접속한다. Oracle Autonomous Database 19c의 계정 비밀번호는 12~30바이트 제한에 맞춘다. 아래 명령은 저장소 루트 기준이다. BUDGET_APP과 BUDGET_PDB는 준비한 사용자와 접속 별칭으로 바꾸며 비밀번호는 프롬프트에 입력한다. [Oracle 19c 비밀번호 규칙](https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/guidelines-securing-passwords.html)
 
 ```text
 python ops/oracle_install.py target/department-budget-0.1.0.war target/install.sql
@@ -24,7 +24,7 @@ release_id=$(python3 ops/oracle_install.py target/department-budget-0.1.0.war --
 java -cp "$driver_dir/*" ops/CheckRuntimeDatabase.java TCPS "$release_id"
 ```
 
-검사기는 배포할 WAR에서 계산한 버전 번호와 정의 해시를 설치된 스키마의 값과 비교한다. 설치가 끝나 READY 상태이고 두 값이 일치해야 업무 테이블 검사를 진행한다. CI는 정상 연결, 다른 버전 번호 거절, TCP 세션에서 TCPS 요구 거절을 각각 검사한다. 실제 OCI 세션의 TCPS 통과와 원격 VM에서의 업무 실행은 자원 할당 후 확인한다. [접속 검사](../ops/CheckRuntimeDatabase.java) · [배포 WAR 시험](../ops/ci_oracle_release.sh)
+검사기는 배포할 WAR에서 계산한 버전 번호와 정의 해시를 설치된 스키마의 값과 비교한다. 설치가 끝나 READY 상태이고 두 값이 일치해야 업무 테이블 검사를 진행한다. CI는 정상 연결, 다른 버전 번호 거절, TCP 세션에서 TCPS 요구 거절을 각각 검사한다. OCI 오사카 배포 VM에서 Autonomous Database 19c에 접속해 TCPS 세션과 V025 스키마를 확인했다. [접속 검사](../ops/CheckRuntimeDatabase.java) · [배포 WAR 시험](../ops/ci_oracle_release.sh)
 
 Oracle Free의 같은 PDB 내 별도 스키마에 복원한 CI 실행에서 Data Pump 내보내기는 51초, 가져오기는 33초였다. 원본·복원 대사 파일은 각각 169행이며 내용이 일치했다. 대사 단계의 초 단위 계측값은 0초였다. 이 수치는 합성 계약 시험 데이터에 대한 1회 관측이며 VM 재구축, 외부 전송, 업무 재개 시간은 포함하지 않는다. [시간 원자료](measurements/oracle-restore-time-44784441705.txt) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44784441705)
 
@@ -45,7 +45,7 @@ sqlplus -L BUDGET_APP@BUDGET_PDB @target/upgrade.sql
 
 ## 백업과 별도 스키마 복원
 
-GitHub Actions의 Verify Oracle Ledger 작업은 로컬·Oracle 계약 시험 이름이 일치하고 모두 실행됐는지 검사한다. 이어서 원본 스키마를 내보내 같은 시험 PDB의 별도 사용자 BUDGET_RESTORE에 가져온다. 공간·부서 소속·전표·마감 잔액·비목 행의 존재와 원본·복원의 전체 대사 결과 일치를 확인한 뒤 결과와 SHA-256을 보관한다. [CI 복원 절차](../ops/ci_oracle_restore.sh) · [시험 실행 확인](../ops/check_oracle_contract.py). 별도 인스턴스 재해 복구는 추가 검증 대상이다.
+GitHub Actions의 Verify Oracle Ledger 작업은 로컬·Oracle 계약 시험 이름이 일치하고 모두 실행됐는지 검사한다. 원본 `FREEPDB1.BUDGET`을 Data Pump로 내보내고 같은 CDB에 새로 만든 `BUDGETVERIFY.BUDGET_RESTORE`로 가져온다. 두 연결의 PDB와 스키마 이름을 각각 검사한다. 전표 49건, 포털 송신 메시지 47건을 포함한 대사 결과 547행이 바이트 단위로 일치했다. 내보내기는 36초, 가져오기는 26초였다. 별도 인스턴스 재해 복구는 추가 검증 대상이다. [PDB와 대사 원자료](measurements/oracle-restore-44896984081.zip) · [CI 실행](https://github.com/kimdol/department-budget/actions/runs/44896984081) · [복원 절차](../ops/ci_oracle_restore.sh)
 
 아래는 자체 관리 Oracle PDB에서 DBA가 Data Pump 디렉터리 BUDGET_BACKUP을 만들고 읽기·쓰기 권한과 서버 디스크 공간을 제공한 경우의 절차다. 같은 Oracle 버전·문자 집합의 별도 검증 PDB에 비어 있는 대상 스키마를 준비한다. 같은 서비스로 전달할 외부 연계와 예약 작업을 복원 환경에서 비활성화한다. Autonomous Database의 객체 스토리지 내보내기와 복구는 해당 서비스 운영 절차가 필요하다.
 

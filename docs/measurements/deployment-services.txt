@@ -1,0 +1,4 @@
+PORTAL|f81e7fe7-6662-4730-bdea-3d9c0742e86b|36859ae5-5d3e-47f8-9de4-567ab12697db|1|2026-11-21T11:09:14+0000|2026-11-21T11:13:28+0000
+Oracle JDBC 23.7.0.25.01 | transport TCPS | schema queries 7
+RELEASE|579c0b1275d4ed3a220c9d15762ad2d6aa2d0149 9f3cf1d2c7f37c74e8fab97abbf4ed52432b339161f9babd35223e36fbfb459b 25:b0be474d68785645b444b5346c9763f5759a7035d57e66738a5fdcf422e62eea
+Bootstrap temporaries removed; runtime credential files root-only

@@ -18,6 +18,8 @@ flowchart LR
 
 방문자 공간과 시연 역할은 서버 세션에서 결정한다. Oracle에 저장할 업무 전표와 포털 송신 대기 행은 한 트랜잭션에서 기록한다. 원격 수신은 나중에 실행하므로 포털 장애가 난 동안에도 이미 승인된 신청의 약정은 보존된다. [업무 트랜잭션](../src/main/java/kr/budget/claims/ClaimService.java) · [송신 재처리](../src/main/java/kr/budget/portal/PortalRelay.java) · [수신 이력 기록](../portal/receive.php)
 
+결재함은 JSP와 jQuery로 신청 목록을 그리고, 선택한 신청 아래에 계산 근거·증빙·결재 이력을 연다. 목록에서 필터와 페이지를 유지하고, 결재·보완 후에는 같은 신청 제목으로 키보드 포커스를 돌려준다. 이 화면의 설계 변경으로 jqGrid 연동은 적용 범위에서 빠졌다. 상태 필터·상세 왕복·키보드 동작은 공개 HTTPS에서 검증했다. [목록 필터 시험](../frontend/tests/inbox-pages.spec.ts) · [키보드 결재 시험](../frontend/tests/keyboard-review.spec.ts)
+
 ## 역할별 업무 권한
 
 | 업무 | 직원 | 부서장 | 재무 담당자 | 처리 조건 |

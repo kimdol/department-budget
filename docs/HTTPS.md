@@ -26,7 +26,7 @@ sha256sum --check SHA256SUMS
 3. Caddy 서비스 환경에 실제 DNS 이름을 `BUDGET_PUBLIC_HOST`로 설정한다. 같은 변수가 설정된 셸에서 `caddy validate --config ./Caddyfile --adapter caddyfile`을 실행하고 [설정 파일](../ops/Caddyfile)을 서비스에 적용한다. 인증서 저장 공간은 재기동 후에도 보존한다. Caddy가 전달하는 원래 접속 프로토콜은 같은 VM의 루프백에서만 신뢰한다. [Caddy 프록시 헤더 동작](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#headers)
 4. Java와 Caddy 서비스를 재기동한 다음 외부 네트워크에서 데모를 연다. 저장소의 `frontend`에서 환경 변수 `TEST_DEPLOYMENT_URL`에 공개 HTTPS 원점 주소를, `RECORD_TLS`에 `1`을 지정하고 `npx --no-install playwright test --reporter=list`를 실행한다. 외부 시험은 공개 인증서, 세션·캐시 헤더, 두 방문자의 독립 업무 처리를 함께 검사한다.
 
-Ubuntu CI에서 실제 Caddy가 시험 CA로 발급한 인증서를 신뢰 목록에 등록한 뒤 Chrome으로 배포용 WAR와 Oracle에 접속했다. 두 방문자의 독립 신청·정산·초기화, HSTS·세션·캐시, 정적 자산 재사용을 확인했다. systemd 서비스 정의는 같은 실행에서 정적 검사를 통과했다. 실제 OCI의 공개 인증서 발급, VM 재기동과 외부 접속 검증은 배포 후 기록한다. [Caddy HTTPS 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282/job/136415004389) · [시험 스크립트](../ops/ci_https_proxy.sh)
+Ubuntu CI에서 Caddy의 시험 CA를 신뢰 목록에 등록하고 Chrome으로 배포 WAR와 Oracle에 접속했다. 오사카 VM의 공개 주소에서도 브라우저가 신뢰하는 인증서, TLS 1.3, HTTP 308과 세션·캐시 응답을 확인했다. VM을 재부팅한 뒤 Java·Caddy·PHP-FPM이 자동으로 올라왔고 두 방문자의 정산·월마감·격리와 HTTPS 시험을 다시 통과했다. [CI 프록시 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282/job/136415004389) · [공개 전송](measurements/deployment-https.json) · [VM 재부팅 확인](measurements/deployment-restart.txt)
 
 ## OCI 공개 포트 확인
 
@@ -60,7 +60,7 @@ Windows OpenJDK 21에서 동일 WAR와 매번 새로 만든 H2 스키마로 기�
 | JVM·연결 수 기본값 | 296.4~305.1 MiB | 428.7~437.8 MiB | 6.093~6.734초 |
 | 1GB VM용 후보 | 243.4~244.7 MiB | 238.3~243.0 MiB | 6.141~7.313초 |
 
-비교 항목은 Java 프로세스 단독이다. OCI Linux의 Java·Caddy·PHP 합계, 실제 Oracle 연결, 동시 요청 대기는 서버에서 별도로 측정한다. [측정 요약](measurements/micro-memory-summary.json) · [샘플 원자료](measurements/micro-memory-samples.csv)
+비교 항목은 Windows의 Java 프로세스 단독이다. OCI Linux에서는 사용 가능한 물리 메모리 498MiB를 확인했다. 설치 시 추가한 임시 스왑 없이 재부팅한 후 기본 스왑 498MiB 상태에서 Java·Caddy·PHP와 실제 DB 연결이 복구됐다. [Windows 샘플 원자료](measurements/micro-memory-samples.csv) · [OCI 재부팅 확인](measurements/deployment-restart.txt)
 
 Windows에서 Java 21 경로, H2 2.3.232 JAR 경로와 해시를 확인한 배포 ZIP을 지정한다. frontend에서 npm ci를 마치고 Chrome을 설치한 뒤 저장소 루트에서 실행한다. 18753 포트가 비어 있어야 한다.
 
@@ -82,6 +82,8 @@ sudo install -m 0644 department-budget-portal.service /etc/systemd/system/
 관리자로 `budget` 스키마와 초기 테이블을 설치하고, 배포 VM의 사설 IPv4에서만 로그인할 수 있는 수신 전용 계정을 만든다. `budget_event_receipt`에는 SELECT·INSERT, `budget_claim_summary`에는 SELECT·INSERT·UPDATE를 부여한다. PHP-FPM에는 이 수신 계정의 자격 증명을 제공한다. 로컬 MySQL 8.4.13에서 이 권한으로 승인·정산 및 중복 수신 방지를 실행했다. 수신 이력 UPDATE, 요약 DELETE, 새 테이블 생성은 모두 MySQL 1142로 거절됐다. [실행 원자료](measurements/portal-receiver-privileges.json) · [재현 시험](../ops/test_portal.py)
 
 root만 읽을 수 있는 `/etc/department-budget/portal.env`에 `PORTAL_MYSQL_DSN`, `PORTAL_MYSQL_USER`, `PORTAL_MYSQL_PASSWORD`, `BUDGET_PORTAL_TOKEN`을 설정한다. OCI용 DSN은 `mysql:host=PRIVATE_MYSQL_HOST;port=3306;dbname=budget;charset=utf8mb4`에서 `PRIVATE_MYSQL_HOST`를 실제 사설 엔드포인트로 바꾼다. `sudo systemctl daemon-reload` 후 `sudo systemctl enable --now department-budget-portal`로 수신기를 기동한다. Caddy가 읽는 설정에 `Caddyfile.portal`을 가져오고 Caddy 서비스 환경에 `BUDGET_PORTAL_ROOT=/opt/department-budget/portal`을 설정한다. 이 설정은 127.0.0.1:18759에서 내부 인증서로 TLS를 종료하고 127.0.0.1:18760의 PHP-FPM으로 전달한다.
+
+Oracle Linux의 SELinux 감사 로그에 PHP-FPM의 `name_bind` 거부가 있으면 TCP 18760의 포트 유형을 확인한다. 전용 VM에서는 `sudo semanage port -a -t http_port_t -p tcp 18760`으로 서비스 포트를 등록했다. PHP-FPM의 주소는 127.0.0.1에 고정한다. `name_connect`가 MySQL 포트에서 거부되면 `httpd_t` 영역의 다른 프로세스와 기존 정책을 먼저 점검한다. 전용 VM에서는 포털 서비스의 systemd 설정에 `IPAddressDeny=any`와 `IPAddressAllow=localhost PRIVATE_MYSQL_HOST/32`를 적용한 뒤 `sudo setsebool -P httpd_can_network_connect_db on`을 사용했다. SELinux는 Enforcing으로 유지한다. 확인할 때 사설 주소를 허용 목록에서 뺀 임시 프로세스의 연결은 시간 초과됐고, 포털의 비인증 조회는 403, 인증된 빈 조회는 404였다. [Oracle Linux 포트 정책](https://docs.oracle.com/en/operating-systems/oracle-linux/selinux/OL-SELINUX.pdf) · [PHP와 MySQL 연결 정책](https://docs.oracle.com/en/learn/oci-mysql-db-web-app/)
 
 Java 서비스에 `BUDGET_PORTAL_URL=https://127.0.0.1:18759/receive.php`와 PHP-FPM에 설정한 동일한 `BUDGET_PORTAL_TOKEN`을 지정한다. Oracle의 TCPS도 사용하는 Java에는 공개 CA와 내부 포털 CA가 모두 필요하다. 현재 Java의 기본 신뢰 저장소를 별도 PKCS#12 파일로 복사한 후 Caddy가 생성한 로컬 CA의 공개 인증서 `pki/authorities/local/root.crt`를 추가한다. `JAVA_HOME`에는 서비스가 쓰는 JDK의 경로를 지정한다. 전체 경로의 기준은 [Caddy 데이터 디렉터리](https://caddyserver.com/docs/conventions#data-directory)이며, CA 개인 키를 복사할 필요가 없다.
 
@@ -107,7 +109,7 @@ RECORD_SETTLEMENT="$PWD/../target/public-settlement.json" RECORD_TLS=1 \
   npx --no-install playwright test claims.spec.ts https.spec.ts --reporter=list
 ```
 
-정산 결과는 `target/public-settlement.json`, 전송·캐시 응답은 `docs/measurements/deployment-https.json`에서 확인한다. CI 프록시의 결과는 해당 실행의 `proxy-transport` 아티팩트에 저장된다.
+정산 결과는 `target/public-settlement.json`, 전송·캐시 응답은 `docs/measurements/deployment-https.json`에서 확인한다. 공개 OCI에서 처리한 신청은 [정산 응답](measurements/deployment-settlement.json)과 [Oracle·MySQL 대사](measurements/deployment-ledger.txt)에 기록했다. CI 프록시의 결과는 해당 실행의 `proxy-transport` 아티팩트에 저장된다.
 
 배포 검사 시 브라우저는 자동 이동을 끈 HTTP GET으로 경로·쿼리 보존 여부를 확인한 후 HTTPS에서 업무 공간과 규정 편집기를 연다. Linux CI의 Caddy가 308로 같은 자산 경로와 쿼리를 돌려줬고, 시험 CA를 신뢰한 클라이언트가 TLS 1.3으로 연결했다. 관찰한 고유 요청 주소 11개는 같은 HTTPS 출처였다. 공개 URL에서는 `TEST_DEPLOYMENT_URL`과 `RECORD_TLS=1`로 동일 시험을 다시 수행한다. [CI 실응답](measurements/proxy-transport-44788840479.json)
 

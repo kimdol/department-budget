@@ -1,0 +1,36 @@
+{
+  "origin": "https://129-225-133-96.sslip.io",
+  "browser": "157.0.8103.79",
+  "viewport": [
+    1280,
+    900
+  ],
+  "sessions": "Five fresh Chrome browser contexts on the same machine and browser process after service warm-up",
+  "samples": [
+    {
+      "run": 1,
+      "entryMs": 880.9,
+      "submitMs": 848.8
+    },
+    {
+      "run": 2,
+      "entryMs": 269.8,
+      "submitMs": 249.4
+    },
+    {
+      "run": 3,
+      "entryMs": 365.3,
+      "submitMs": 337.4
+    },
+    {
+      "run": 4,
+      "entryMs": 254,
+      "submitMs": 215.5
+    },
+    {
+      "run": 5,
+      "entryMs": 257.2,
+      "submitMs": 216.9
+    }
+  ]
+}

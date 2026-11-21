@@ -1,0 +1,31 @@
+{
+  "environment": "deployment",
+  "origin": "https://129-225-133-96.sslip.io",
+  "transport": {
+    "trusted": true,
+    "protocol": "TLSv1.3",
+    "validFrom": "Nov 21 09:57:19 2026 GMT",
+    "validTo": "Feb 19 09:57:18 2027 GMT"
+  },
+  "redirect": {
+    "status": 308,
+    "location": "https://129-225-133-96.sslip.io/assets/portal.css?visit=redirect"
+  },
+  "sameOriginRequests": 12,
+  "hsts": "max-age=31536000 ; includeSubDomains",
+  "cookie": {
+    "secure": true,
+    "httpOnly": true,
+    "sameSite": "Lax"
+  },
+  "workspaceCache": "no-cache, no-store, max-age=0, must-revalidate",
+  "libraryCache": "max-age=31536000, public, immutable",
+  "catalog": {
+    "etag": "\"68d43670ac2f04c8f03e167cd9feeb794e9b60d47318577c3dc03ccc43537650\"",
+    "revalidation": 304
+  },
+  "reused": {
+    "transferSize": 0,
+    "encodedBodySize": 87533
+  }
+}

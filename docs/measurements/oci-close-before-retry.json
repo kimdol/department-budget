@@ -1,0 +1,70 @@
+{
+  "claimId": "01734848-2607-47ea-a82e-7f29cad78d8f",
+  "before": [
+    {
+      "claimId": "01734848-2607-47ea-a82e-7f29cad78d8f",
+      "kind": "APPROVAL",
+      "committedDelta": 200000,
+      "spentDelta": 0,
+      "periodKey": "2026-11",
+      "originalKind": null
+    },
+    {
+      "claimId": "01734848-2607-47ea-a82e-7f29cad78d8f",
+      "kind": "SETTLEMENT",
+      "committedDelta": -200000,
+      "spentDelta": 180000,
+      "periodKey": "2026-11",
+      "originalKind": null
+    }
+  ],
+  "after": [
+    {
+      "claimId": "01734848-2607-47ea-a82e-7f29cad78d8f",
+      "kind": "APPROVAL",
+      "committedDelta": 200000,
+      "spentDelta": 0,
+      "periodKey": "2026-11",
+      "originalKind": null
+    },
+    {
+      "claimId": "01734848-2607-47ea-a82e-7f29cad78d8f",
+      "kind": "SETTLEMENT",
+      "committedDelta": -200000,
+      "spentDelta": 180000,
+      "periodKey": "2026-11",
+      "originalKind": null
+    }
+  ],
+  "balance": {
+    "allocation": 1000000,
+    "committed": 0,
+    "spent": 180000,
+    "available": 820000
+  },
+  "portalReceipt": {
+    "sequence": 2,
+    "event": "SETTLEMENT",
+    "amount": 180000
+  },
+  "report": {
+    "period": "2026-11",
+    "balance": {
+      "allocation": 1000000,
+      "committed": 0,
+      "spent": 180000,
+      "available": 820000
+    },
+    "lines": [
+      {
+        "category": "EDUCATION",
+        "claimCount": 1,
+        "spent": 180000
+      }
+    ]
+  },
+  "settlementResponses200": 2,
+  "closeStatus": [
+    500
+  ]
+}

@@ -192,18 +192,18 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 | --- | --- | --- |
 | 필수 | 신청·약정·정산·정정 | 실제 Oracle에서 원장 계약 28건 통과. 비목 변경 재신청과 기존 약정 해제, 다음 달 규정 발행, 은행 본부 예산의 동시 배정, 정산 재전송, 다음 달 환입, PL/SQL 집행액 차이 검출 포함. 같은 PDB의 별도 스키마에 복원한 대사 파일에서 원신청·재신청 연결 1건과 전표 44건을 포함한 전체 내용이 일치했다. [시험별 결과](measurements/oracle-cases-44809221277.json) · [복원 원자료](measurements/oracle-restore-44795805725.zip) · [실행 기록](https://github.com/kimdol/department-budget/actions/runs/44795805725) |
 | 필수 | 규정 발행·복구·계산 재현 | 수식 시험 14건·조건 트리 2건 통과. 이전·새 평가기의 과거 결정 재현과 복구를 실제 Oracle과 Chrome에서 확인 |
-| 필수 | 세션·증빙·웹 응답 | 세션 ID 교체, 두 방문자와 두 부서의 업무·증빙 격리, no-store, 해시 자산의 재사용을 로컬 HTTPS에서 확인. 외부 공개 도메인의 역할 시연 대기 |
-| 필수 | 월마감·포털 | 실패한 배치 재시작과 원본 기간 보존을 H2·Oracle 원장 계약에서 확인. 실제 PHP·MySQL 수신 구간 검증. 외부 송신 경로 대기 |
-| 심화 | 성능·복원 | 재방문 전송량, 수식 미리보기, Oracle 깊은 페이지·월별 집계, 부서별 잠금 조회 시간 측정 완료. 같은 PDB의 별도 스키마 복원 대사 완료. |
+| 필수 | 세션·증빙·웹 응답 | 공개 HTTPS Chrome에서 세션 ID 교체, 두 방문자와 두 부서의 업무·증빙 격리, 종료 후 접근 차단, no-store와 정적 파일 재사용 확인. [전송 원자료](measurements/deployment-https.json) |
+| 필수 | 월마감·포털 | H2·Oracle 원장 계약의 배치 재시작과 원본 기간 보존. 공개 Oracle에서 정산·월마감·다음 달 환입을 처리하고 같은 신청번호의 MySQL 수신액과 대조했다. [원장과 수신 결과](measurements/deployment-ledger.txt) |
+| 심화 | 성능·복원 | 재방문 전송량, 수식 미리보기, Oracle 깊은 페이지·월별 집계, 부서별 잠금 조회 시간 측정 완료. 같은 CDB 안의 새 PDB에 복원한 대사 파일 547행 일치. |
 | 선택 | 상용 UI·리포팅 전환 | 제품 환경 미확보 |
 
 | 설계서의 세부 인수 항목 | 구현한 범위 | 남은 확인·구현 |
 | --- | --- | --- |
-| 직원의 사전 결정과 결재 | 개인 학습 장부, JSP 신청함의 지원액·본인 부담액·역할 경로, 접수 당시 규정 및 증빙 조건 고정, 비목 변경 재신청, 동일 비목의 범위·금액 변경 후 버전별 재상신 | 공개 배포에서 원신청과 새 버전의 약정 대조 |
-| 조직별 승인 주체 | 부서별 합성 구성원 신원과 서버 인가, 직원의 부서장 대행 시 자기 승인·증액 차단, 은행 본부 재무의 지점 예산 배정 | 외부 배포 환경에서 대행 체험 검증 |
-| 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교, 버전별 불변 구문 트리 캐시, 다음 달 예약 발행 | 예약 발행의 외부 배포 검증 |
-| 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis·Oracle PL/SQL 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조, Apache Camel JSON·CSV 공통 변환, 그누보드 설치본 로그인·회원별 정산 조회 | 공개 환경 대사 |
-| UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 같은 PDB 내 별도 스키마 복원 | 최초 사용자 관찰, 공개 호스트 재기동 후 검증 |
+| 직원의 사전 결정과 결재 | 개인 학습 장부, JSP 신청함의 지원액·본인 부담액·역할 경로, 접수 당시 규정 및 증빙 조건 고정, 비목 변경 재신청, 동일 비목의 범위·금액 변경 후 버전별 재상신 | 공개 Chrome으로 보완·재신청·동일 비목의 이전 버전과 현재 버전 조회 확인 |
+| 조직별 승인 주체 | 부서별 합성 구성원 신원과 서버 인가, 직원의 부서장 대행 시 자기 승인·증액 차단, 은행 본부 재무의 지점 예산 배정 | 공개 Chrome으로 자기 결재 차단과 지점 가용액 확인 |
+| 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교, 버전별 불변 구문 트리 캐시, 다음 달 예약 발행 | 공개 Chrome으로 예약·월마감·다음 달 적용 확인 |
+| 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis·Oracle PL/SQL 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조, Apache Camel JSON·CSV 공통 변환, 그누보드 설치본 로그인·회원별 정산 조회 | 공개 VM에서 정산 후 같은 신청번호의 Oracle 집행액, 결산표와 MySQL 수신액 대조 |
+| UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 별도 PDB 복원 | 최초 사용자의 관찰 시험 대기 |
 | 성능 | 100만 신청의 깊은 목록, 100만 전표의 월별 집계·DB p95, 인덱스 쓰기 비용, 승인 시 부서 행 잠금, 실제 Oracle 동시 승인 HTTP 응답, 결재함 본문·정적 자산·수식 입력 측정 | 공개 환경에서의 브라우저 측정 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
@@ -212,14 +212,30 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 
 1. git status, git log -1과 git ls-remote origin refs/heads/main을 대조한다.
 2. 다음 기능 변경에서도 Verify Oracle Ledger의 계약 시험과 복원 산출물 일치를 확인한다. 수식 평가기 교체를 포함한 [Oracle 기준 실행](https://github.com/kimdol/department-budget/actions/runs/44771763566)은 80ac4c6에 해당한다.
-3. OCI의 Japan Central (Osaka)에서 생성한 배포용 VM에 Oracle Autonomous AI Database와 MySQL HeatWave의 상시 무료 연결을 확인한다. Java 서비스를 설치할 때 배포 묶음의 SHA-256을 확인한다. 공개 URL에서 새 브라우저 두 개로 대표 업무와 방문자 격리를 재현한다.
+3. 새 버전을 배포할 때 WAR와 설치 스키마의 식별값을 대조한다. 공개 URL에서 독립된 두 브라우저 세션으로 대표 흐름과 방문자 격리를 재현한다. [운영 절차](HTTPS.md)
 4. 로컬 재현은 frontend에서 npm ci와 npm run build, 루트에서 mvn package, python ops/test_https.py 순서다. 포털 수신 시험은 python ops/test_portal.py로 실행한다.
 
 ## 외부 환경
 
 OCI 오사카 AD-1에서 상시 무료 A1 Flex의 2 OCPU·12GB와 1 OCPU·6GB 생성 요청이 모두 호스트 용량 부족으로 거절됐다. 같은 리전에 상시 무료 대상인 AMD VM.Standard.E2.1.Micro 1GB와 기본 부팅 볼륨을 선택해 `department-budget-demo`를 생성했다. Oracle 콘솔에서 Running과 공인 IP 미할당을 확인했다. SSH 공개 키는 생성 요청에 포함했으며 실제 SSH 접속은 검증 전이다. 홈 리전의 상시 무료 한도 기준 예상 인프라 비용은 월 0원이다. [OCI 상시 무료 자원](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
 
-1GB VM은 Java 웹과 PHP 포털 수신기를 담당한다. 오사카 Oracle 원장 DB는 19c Transaction Processing, Always Free, AVAILABLE로 확인했다. MySQL 수신 DB는 MySQL.Free 50GiB로 생성했고, 공인 IP를 금지한 전용 서브넷의 사설 엔드포인트 1개와 ACTIVE 상태를 확인했다. Oracle에는 CIDR로 제한한 TLS 접근 규칙을 적용했다. 무료 Autonomous DB의 서비스 주소는 사설 엔드포인트로 전환할 수 없으므로 실제 연결 경로와 원장 스키마 설치는 배포 후 확인한다. VM의 공인 IP는 미할당 상태다. 웹 서브넷에 TCP 80·443과 관리 IPv4 한 개의 TCP 22만 허용하는 규칙을 적용하고 조회로 대조한 뒤 공인 IP를 할당한다. OCI Cloud Shell 연결이 끊겨 실제 규칙 변경과 SSH 접속은 확인하지 못했다. [Oracle DB 연결 절차](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 상시 무료 서비스](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html)
+1GB VM은 Java 웹과 PHP 포털 수신기를 담당한다. 오사카 Oracle 원장 DB는 19c Transaction Processing, Always Free, AVAILABLE로 확인했다. MySQL 수신 DB는 MySQL.Free 50GiB를 사용한다. OCI 보안 목록에서 TCP 80·443은 공개하고 TCP 22는 관리 IPv4 한 개로 좁혔다. 보안 규칙을 조회로 대조한 뒤 공인 IPv4를 할당하고 첫 부팅의 서버 지문과 비교해 SSH에 연결했다. Oracle ACL은 VM 공인 IPv4 한 개, MySQL 3306은 VM 사설 IPv4 한 개를 허용한다. OCI VM에서 Oracle TCPS로 V025를 확인했고, MySQL 전용 수신 계정으로 두 테이블을 읽었다. [Oracle DB 연결 절차](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 상시 무료 서비스](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html)
+
+Oracle Linux 9의 패키지 설치에서 커널이 DNF를 OOM으로 종료했다. OS의 사용 가능 물리 메모리는 498MiB였고, 기본 장애 덤프 메모리 예약은 448MiB였다. 기존 부팅 설정을 유지하고 내장 디스크에 설치용 스왑 1GiB를 추가했으며, 설치에 사용한 저장소를 BaseOS와 AppStream으로 좁혔다. OpenJDK 21.0.13.1·PHP-FPM 8.3.36·MySQL 8.0.46 클라이언트 설치를 확인했다. Oracle 스키마 사용자 생성에서 30바이트를 넘는 비밀번호를 사용해 ORA-00972가 발생했다. 계정이 생성되지 않은 것을 확인하고 28바이트로 다시 생성한 뒤 JDBC로 설치 버전과 전송 방식을 대조했다.
+
+공개 HTTPS 응답에서 신뢰 체인·TLS 1.3·HTTP 308·세션 쿠키·결재 데이터의 no-store를 Chrome으로 확인했다. 공통 비목 코드표의 ETag 재검증은 304였다. Chrome의 jQuery 재방문 전송량은 0B였다. [공개 전송 원자료](measurements/deployment-https.json)
+
+PHP-FPM의 루프백 18760이 SELinux에서 거부돼 Caddy의 비인증 요청에 502가 반환됐다. 전용 포트에 `http_port_t` 유형을 지정한 후 127.0.0.1에서만 수신하고 비인증 요청에는 403을 반환했다. PHP에서 사설 MySQL로 보내는 인증된 조회는 SELinux의 `name_connect` 제한으로 503이었다. systemd 주소 제한을 적용한 뒤 전용 VM의 `httpd_t` 영역이 DB 포트에 연결하도록 허용했다. SELinux는 Enforcing을 유지했고 인증된 빈 조회가 404로 바뀌었다. [포털 수신 연결](HTTPS.md#포털-수신-연결)
+
+별도 복원 PDB `BUDGETVERIFY`를 생성하고 원본 `FREEPDB1`에서 Data Pump로 이동했다. 서로 다른 PDB·스키마로 연결했음을 검사하고 전표 49건과 포털 송신 메시지 47건을 포함한 대사 547행의 해시가 동일함을 확인했다. [시험 구현](https://github.com/kimdol/department-budget/commit/611fb9d) · [원자료](measurements/oracle-restore-44896984081.zip)
+
+공개 Oracle 19c에서 교육비 정산과 재전송은 200이었고 두 번 모두 전표 2건·가용액 820,000원이었다. 그 신청의 포털 수신액과 사설 MySQL 조회액은 모두 180,000원이었다. 이어서 월마감 요청은 500을 반환했다. Spring Batch가 직렬화 트랜잭션으로 `BATCH_JOB_INSTANCE`에 행을 삽입할 때 Oracle이 ORA-08177로 거절했다. 같은 부서·월의 파라미터로 새 트랜잭션에서 실행을 최대 세 번 시도하도록 수정했다. 첫 실패 후 재개, 세 번 실패 시 503, 다른 SQL 오류의 전달을 시험했다. 로컬 Java 시험 58건이 통과했고 Oracle 전용 28건은 로컬 실행에서 건너뛰었다. [수정](https://github.com/kimdol/department-budget/commit/579c0b1) · [회귀 시험](../src/test/java/kr/budget/closing/ClosingServiceTest.java) · [수정 전 공개 응답](measurements/oci-close-before-retry.json) · [DB 대사](measurements/oci-ledger-before-retry.txt)
+
+수정 WAR의 스키마 지문이 기존 V025와 일치함을 확인하고 OCI에 교체 배포했다. 공개 Chrome 시험 18건을 통과했다. 별도 부하 또는 장애 주입 설정에 의존하는 3건은 이 실행에서 건너뛰었다. 같은 신청번호로 마감 시점의 Oracle 스냅샷, 포털 수신 차수 2, 월 변경 후 환입 전표를 대조했다. DB 통신이 차단됐을 때 실패한 승인 이벤트는 설정 복구 후 같은 이벤트 ID로 수신됐다. [공개 정산](measurements/deployment-settlement.json) · [원장과 수신](measurements/deployment-ledger.txt) · [배포 식별값과 재처리](measurements/deployment-services.txt) · [수정 커밋의 Oracle CI](https://github.com/kimdol/department-budget/actions/runs/44898578314)
+
+OCI VM의 부팅 식별값이 바뀐 뒤 Java·PHP-FPM·Caddy가 모두 자동 실행됐다. 기본 스왑 498MiB에서 SELinux Enforcing 상태를 유지했고, 공개 주소에서 HTTPS 200과 새 Chrome 세션의 정산·월마감 및 세션·캐시 시험 2건이 통과했다. [재부팅과 재시험](measurements/deployment-restart.txt)
+
+예열된 공개 서버에서 Chrome 157의 새 브라우저 컨텍스트 5개를 순차 실행했다. `개인 데모 시작` 클릭부터 가용 예산 표시까지 254.0~880.9ms, `신청 제출` 클릭부터 결재 대기 표시까지 215.5~848.8ms였다. 두 구간 모두 첫 화면 로딩 뒤의 자동 조작을 계측했다. [표본 5개](measurements/deployment-first-claim.json) · [같은 조작의 브라우저 시험](../frontend/tests/claims.spec.ts)
 
 배포 후보 `517cf8f`의 Oracle CI가 성공했다. 배포 ZIP을 내려받아 GitHub에 게시된 ZIP SHA-256, 내부 파일 13개의 개별 SHA-256과 커밋 식별값을 확인했다. 포털·서비스·DB 검사 파일 10개는 저장소 내용과 대조했다. [배포 묶음을 생성한 실행](https://github.com/kimdol/department-budget/actions/runs/44884197218) · [묶음 검증 절차](HTTPS.md#검증한-war-받기)
 
