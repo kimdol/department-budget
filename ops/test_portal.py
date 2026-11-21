@@ -83,6 +83,26 @@ def main():
             denied = sql(statement, False, user="receiver", credential=receiver_password)
             if denied.returncode == 0 or "ERROR 1142" not in denied.stderr:
                 raise AssertionError("수신 계정에 부여하지 않은 권한을 확인할 수 없습니다.")
+        if "--retention" in sys.argv:
+            space, event, other_space, other_event = [str(uuid.uuid4()) for _ in range(4)]
+            secret = secrets.token_hex(24)
+            sql(f"""CREATE USER 'cleanup'@'localhost' IDENTIFIED BY '{secret}';
+GRANT SELECT(event_id),DELETE ON budget.budget_event_receipt TO 'cleanup'@'localhost';
+GRANT SELECT(workspace_id),DELETE ON budget.budget_claim_summary TO 'cleanup'@'localhost';""")
+            for ws, ev in [(space,event),(other_space,other_event)]:
+                sql(f"""USE budget;
+INSERT INTO budget_event_receipt(event_id,payload_hash) VALUES('{ev}',SHA2('demo',256));
+INSERT INTO budget_claim_summary VALUES('{ws}','{uuid.uuid4()}',1,'APPROVAL',200000);""")
+            config=directory/"cleanup.cnf"
+            config.write_text(f"[client]\nuser=cleanup\npassword={secret}\nhost=127.0.0.1\nport={port}\nprotocol=tcp\n")
+            subprocess.run([os.environ.get("TEST_MAVEN","mvn"),"-B","-ntp","-Dtest=PortalRetentionTest","test"],
+                           cwd=root,check=True,env=dict(os.environ,TEST_CLEANUP_MYSQL_CONFIG=str(config),
+                                                       TEST_CLEANUP_SPACE=space,TEST_CLEANUP_EVENT=event))
+            remaining=sql("SELECT event_id FROM budget.budget_event_receipt; SELECT workspace_id FROM budget.budget_claim_summary;")
+            if remaining.stdout.splitlines()!=[other_event,other_space]:
+                raise AssertionError("다른 체험 공간의 포털 기록이 보존되지 않았습니다.")
+            print("MySQL cleanup acknowledged; other visitor receipt and summary preserved.")
+            return
         webport = free_port()
         address = "127.0.0.1:" + str(webport)
         php_args = [php]

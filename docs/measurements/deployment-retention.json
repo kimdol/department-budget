@@ -1,0 +1,43 @@
+{
+  "dateKst": "2026-11-22",
+  "deployedCommit": "31535a1b2ab9139a2f2b92dec34f435cf0dfc105",
+  "warSha256": "e8be68a63ad9bef8c9d8d1e08f4dc637c8870788d3e613c7e8e1c2d6f26e138a",
+  "beforeMigration": {
+    "oracleSchemaVersion": 25,
+    "oracleSchemaAllocatedBytes": 7340032,
+    "oracleSchemaQuotaBytes": 536870912,
+    "databaseWideUsedBytes": null,
+    "dataTablespaceMetricAccess": "ORA-00942",
+    "workspaces": 542,
+    "visitorPairs": 271,
+    "claims": 675,
+    "pendingPortalDeliveries": 0,
+    "eligiblePairs": null,
+    "lastActivityTracked": false,
+    "mysqlVisibleTablesDataAndIndexBytes": 98304,
+    "mysqlEventReceipts": 257,
+    "mysqlClaimSummaries": 179
+  },
+  "afterMigrationBeforeEnabling": {
+    "oracleSchemaVersion": 26,
+    "oracleSchemaAllocatedBytes": 7405568,
+    "workspaces": 542,
+    "visitorPairs": 271,
+    "claims": 675,
+    "pendingPortalDeliveries": 0,
+    "eligiblePairs": 0
+  },
+  "releaseVerification": {
+    "publicChromeTests": 5,
+    "publicChromePassed": 5,
+    "durationSeconds": 25.9,
+    "specs": ["employee-inbox.spec.ts", "inbox-assistant.spec.ts"],
+    "oracleCiRun": "https://github.com/kimdol/department-budget/actions/runs/44927202859",
+    "serviceActive": true,
+    "scheduledCleanupEnabled": true,
+    "scheduledTime": "03:15 Asia/Seoul",
+    "retentionDays": 30,
+    "productionMysqlCleanupCredential": "pending",
+    "expiredProductionPairsDeletedDuringVerification": 0
+  }
+}

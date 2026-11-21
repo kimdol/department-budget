@@ -1,5 +1,7 @@
 # 인수 현황
 
+2026년 11월 22일 V026을 적용하고 무료 VM에서 03:15 일일 정리를 활성화했다. 적용 직전 기존 체험 271쌍의 실제 마지막 활동은 알 수 없어 배포일 기준 30일의 유예를 부여했다. 스키마 전환 직후 삭제 후보 0쌍을 확인했다. 운영 MySQL 정리 전용 계정 설정이 남았다. 공개 직원 도우미에서 영수증 첨부 취소·확인·재제출을 검증했다. [보관 기준과 업무 도우미](DEMO-OPERATIONS.md) · [배포 기록](measurements/deployment-retention.json)
+
 배포 묶음에 포털의 PHP 수신·조회 파일과 MySQL 초기 스키마를 포함한다. 패키징 시험에서 세 파일의 내용이 원본과 같은지, 하위 경로를 포함한 해시 목록으로 전체 묶음을 검증할 수 있는지 확인했다. [배포 절차](HTTPS.md#포털-수신-연결) · [패키징 시험](../ops/test_package_release.py)
 
 포털 전송 장애는 서버 로그의 `Portal delivery failed`에서 eventId를 찾고, 같은 eventId의 `Portal delivery acknowledged`로 재처리 완료를 확인한다. claimId는 신청번호, sequence는 같은 신청 안의 전송 순서다. 수신처가 저장 직후 응답을 잃는 회귀 시험에서 같은 이벤트의 실패·성공 순서와 중복 없는 수신 금액을 검사했다. 로컬 Maven 시험 55건 통과, Oracle 전용 28건 제외. [전송 처리](../src/main/java/kr/budget/portal/PortalRelay.java) · [회귀 시험](../src/test/java/kr/budget/claims/PostingContract.java)

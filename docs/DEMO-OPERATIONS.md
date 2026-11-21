@@ -16,6 +16,18 @@ V025에는 마지막 이용 시각이 없다. V026 적용 시 기존 공간에�
 - 서버에서 Oracle 도구는 서비스의 기존 JDBC 환경을 사용한다. MySQL 도구는 포털 서비스 환경으로 `--inventory`를 주면 읽기만 한다. 전용 계정 초기 설정은 운영자가 같은 환경에서 옵션 없이 실행하고 MySQL 관리 암호를 대화식으로 입력한다. 전용 계정은 접속 VM 호스트에서 TLS를 사용하며 두 수신 테이블의 삭제와 키 열 조회만 허용한다. 설정 파일은 root와 서비스 그룹만 읽을 수 있다.
 - `BUDGET_CLEANUP_ENABLED=true`인 웹 서비스가 일일 정리를 실행한다. 운영 로그의 삭제한 쌍 수와 포털 대기 수를 확인한다. Oracle 대기 건수는 `select count(*) from demo_portal_cleanup`으로 조회한다.
 
+## 배포 검증과 포털 권한
+
+공개 배포 직전 새 기준으로 삭제 후보는 **0쌍**이었고 V026 적용 전후 부서·신청 건수는 같았다. 공개 Chrome에서 기존 신청함의 세 화면 폭, 지연 로딩, 도우미를 포함한 5건이 통과했다. 운영용 MySQL 정리 계정은 별도 등록을 기다린다. 로컬 MySQL에서는 전용 권한으로 만료 공간의 수신·요약을 삭제하고 다른 방문자의 두 기록을 보존했다. `python ops/test_portal.py --retention`으로 재현한다. [배포·용량 기록](measurements/deployment-retention.json) · [실제 Oracle 시험](https://github.com/kimdol/department-budget/actions/runs/44927202859)
+
+관리자가 VM에 접속한 뒤 아래 명령을 실행하면 전용 계정에 필요한 권한을 설정한다. MySQL 관리 암호는 해당 터미널 입력창에서만 사용한다.
+
+```sh
+sudo systemd-run --pty --wait --collect \
+  -p EnvironmentFile=/etc/department-budget/portal.env \
+  /usr/bin/python3 /home/opc/department-budget-deploy/portal_cleanup_account.py
+```
+
 ## 직원 업무 도우미
 
 **내 신청함 시작 → 내 신청함 → 대화형 업무 도우미**로 연다. 현재 선택한 신청을 대상으로 한다. “가용 예산 알려줘”, “신청 상태 알려줘”는 현재 화면에서 금액과 상태를 읽어 준다. “영수증 첨부해줘”는 보완 요청의 신청명과 금액을 먼저 표시한다. **이 영수증 첨부**를 누르면 실비와 확인 차수로 합성 영수증을 첨부한다. “다시 제출해줘”는 일치하는 영수증을 확인한 뒤 별도의 **이 신청 재제출** 확인을 받는다. 직원에게 결재 권한이 필요한 요청이 들어오면 담당 역할을 안내한다.

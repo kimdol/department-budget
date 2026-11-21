@@ -4,6 +4,8 @@
 
 **[공개 데모 열기](https://129-225-133-96.sslip.io/)** · [3분 체험 순서](#3분-체험) · [직원 신청함 사용 안내와 무안내 체험 기록](docs/EMPLOYEE-INBOX.md)
 
+공개 체험 공간은 마지막 이용 후 30일을 보관한다. 직원 신청함의 **대화형 업무 도우미**에서 예산·상태를 조회하고 영수증 첨부와 보완 재제출을 확인할 수 있다. [보관 기준·도우미 사용법과 운영 상태](docs/DEMO-OPERATIONS.md)
+
 별도 가입 없이 방문자마다 독립된 부서 예산 1,000,000원이 배정된다. 교육비 300,000원을 신청하고 부서장과 재무 담당자로 역할을 바꿔 승인과 정산을 끝낼 수 있다. 아래는 공개 서비스에서 정산한 화면이다. 화면, Oracle 원장, 결산표의 가용 예산은 820,000원이었고 사내 포털은 MySQL에 정산액 180,000원을 기록했다. 체험에는 합성 증빙을 사용한다. [정산과 재전송](docs/measurements/deployment-settlement.json) · [Oracle·MySQL 대사](docs/measurements/deployment-ledger.txt)
 
 Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 신청·결재함, React·TypeScript는 직원 신청과 규정 비교·발행, PHP·MySQL은 사내 포털 수신에 사용한다. 첫 화면의 **내 신청함 시작**을 누르면 React 직원 신청함이 열린다. 기존 JSP 신청서에서 전환할 때도 작성 중인 값을 이어받는다. [두 화면의 신청 계약 시험](frontend/tests/employee-form.spec.ts) · [화면에서 원장까지 소스 따라가기](#소스-따라가기)
