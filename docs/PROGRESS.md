@@ -249,6 +249,8 @@ OCI VM의 부팅 식별값이 바뀐 뒤 Java·PHP-FPM·Caddy가 모두 자동 �
 
 배포 `94a15ee`에서 공개 Chrome 시험 19건이 통과했다. 별도 조건에서만 실행하는 승인 경합 측정, 수식 입력 측정과 포털 장애 시험 각 1건은 이 실행에서 건너뛰었다. 정산 응답 유실 뒤 같은 요청을 재전송했으며, Oracle 전표 2건과 결산표 가용액 820,000원, 포털 수신액 180,000원을 다시 확인했다. TLS·세션과 두 방문자의 신청·증빙 격리도 통과했다. 새 WAR와 직전 WAR의 Oracle 스키마는 V025로 일치했다. [최종 배포와 정산 원자료](measurements/deployment-claim-ux.json) · [전송 결과](measurements/deployment-https.json)
 
+같은 커밋의 Oracle CI와 ARM 배포 CI가 성공했다. Oracle 원장 계약, 별도 PDB 복원 대사, 운영 데이터가 있는 스키마의 이관, 설치 WAR의 Chrome 업무 흐름과 Caddy·PHP·MySQL 통합을 확인했다. [Oracle CI](https://github.com/kimdol/department-budget/actions/runs/44902297539) · [ARM CI](https://github.com/kimdol/department-budget/actions/runs/44902297579)
+
 배포 후보 `517cf8f`의 Oracle CI가 성공했다. 배포 ZIP을 내려받아 GitHub에 게시된 ZIP SHA-256, 내부 파일 13개의 개별 SHA-256과 커밋 식별값을 확인했다. 포털·서비스·DB 검사 파일 10개는 저장소 내용과 대조했다. [배포 묶음을 생성한 실행](https://github.com/kimdol/department-budget/actions/runs/44884197218) · [묶음 검증 절차](HTTPS.md#검증한-war-받기)
 
 AMD Micro용 JVM·Tomcat·DB 연결 풀 후보를 Windows에서 비교했다. 두 방문자의 교육비 흐름은 4회 모두 통과했고, Java 최대 작업 집합은 기본 296.4~305.1 MiB, 후보 243.4~244.7 MiB였다. OCI 근거는 배포 뒤 별도로 남긴다. [설정과 재현 명령](HTTPS.md#1gb-vm의-java-메모리-설정)
