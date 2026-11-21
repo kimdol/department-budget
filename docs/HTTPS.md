@@ -28,6 +28,19 @@ sha256sum --check SHA256SUMS
 
 Ubuntu CI에서 실제 Caddy가 시험 CA로 발급한 인증서를 신뢰 목록에 등록한 뒤 Chrome으로 배포용 WAR와 Oracle에 접속했다. 두 방문자의 독립 신청·정산·초기화, HSTS·세션·캐시, 정적 자산 재사용을 확인했다. systemd 서비스 정의는 같은 실행에서 정적 검사를 통과했다. 실제 OCI의 공개 인증서 발급, VM 재기동과 외부 접속 검증은 배포 후 기록한다. [Caddy HTTPS 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282/job/136415004389) · [시험 스크립트](../ops/ci_https_proxy.sh)
 
+## OCI 공개 포트 확인
+
+전용 웹 서브넷과 VM의 기본 NIC에 연결된 보안 목록·보안 그룹을 먼저 확인한다. 다른 서비스의 수신 규칙을 보존하려면 전용 서브넷에서 적용한다. 현재 관리 회선의 공인 IPv4를 확인한 뒤 보안 목록 조회 결과와 함께 아래 명령에 전달한다.
+
+```sh
+oci network security-list get --security-list-id "$WEB_SECURITY_LIST" > current-ingress.json
+python3 ops/oci_web_ingress.py current-ingress.json "$ADMIN_IPV4" > proposed-ingress.json
+```
+
+생성한 JSON의 TCP 22에는 관리 IPv4 한 개만, TCP 80·443에는 전체 IPv4가 들어 있어야 한다. 도구는 기존 ICMP 규칙을 보존하고 확인되지 않은 포트나 규칙이 있으면 중단한다. 현재 보안 목록의 ETag를 조건으로 변경을 적용할 때 세 TCP 규칙을 함께 저장한다. 수정 결과를 다시 읽고 나서 공인 IP를 연결한다. OCI 쪽 규칙과 VM 방화벽 양쪽에서 HTTP·HTTPS와 관리 경로를 확인한다.
+
+관리 주소가 같은 공유기 뒤의 장치에는 같을 수 있다. SSH 인증은 배포용 개인 키를 보유한 클라이언트에 한한다. 인터넷 회선에서 공인 IP가 바뀌면 현재 주소를 다시 확인하고 TCP 22의 허용 주소를 교체한다.
+
 ## 1GB VM의 Java 메모리 설정
 
 AMD Micro에서는 Oracle 원장과 MySQL 수신 스키마를 각각 관리형 DB에 두고 Java·Caddy·PHP-FPM을 같은 VM에서 실행한다. Java 서비스 환경 파일의 후보 설정은 다음과 같다. 포털 CA용 Java 옵션이 있다면 같은 `JAVA_TOOL_OPTIONS` 값에 이어 붙인다.
