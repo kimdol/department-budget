@@ -1,0 +1,33 @@
+{
+  "origin": "https://129-225-133-96.sslip.io",
+  "release": {
+    "rev": "7725417e73ab0d07573e3d71962c2e24650363a7",
+    "sha": "1a7bc146426ad92df54b06c8a44f6c976df16e31dca9dce6b3b1d5bdee7479a9",
+    "bundle": "bb666b312ae87c52180ef9490f4a2ae078ea43d1c3a36313e063e703f8de3edd"
+  },
+  "schemaVersion": 25,
+  "chromeSuite": {
+    "passed": 23,
+    "skipped": 3,
+    "employeeInbox": [
+      "390px 직원 신청함에서 증빙 보완 후 결과를 조회한다 (6.2s)",
+      "768px 직원 신청함에서 증빙 보완 후 결과를 조회한다 (3.7s)",
+      "1440px 직원 신청함에서 증빙 보완 후 결과를 조회한다 (5.2s)",
+      "직원 모듈을 늦게 열어도 먼저 접수한 신청이 목록에 나타난다 (1.1s)"
+    ]
+  },
+  "settlement": {
+    "balance": {
+      "allocation": 1000000,
+      "committed": 0,
+      "spent": 180000,
+      "available": 820000
+    },
+    "postingsAfterRetry": 2,
+    "portalReceipt": {
+      "sequence": 2,
+      "event": "SETTLEMENT",
+      "amount": 180000
+    }
+  }
+}
