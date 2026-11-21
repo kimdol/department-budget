@@ -37,6 +37,11 @@ if java -cp "$work/jdbc/*" ops/CheckRuntimeDatabase.java TCPS "$release_id" > "$
 fi
 grep -Fq "Unexpected database transport" "$work/transport-check.log"
 export HTTPS_ONLY=false SERVER_ADDRESS=127.0.0.1 SERVER_PORT=18753
+if [[ -n "${WORKSPACE_TIMING_OUTPUT:-}" ]]; then
+    export BUDGET_WORKSPACE_TIMING=true
+    export WORKSPACE_TIMING_LOG="$PWD/$work/tomcat.log"
+    export WORKSPACE_TIMING_DB="Oracle Database Free (FREEPDB1, loopback TCP)"
+fi
 java -jar target/department-budget-0.1.0.war > "$work/tomcat.log" 2>&1 &
 server=$!
 trap 'kill "$server" 2>/dev/null || true; wait "$server" 2>/dev/null || true' EXIT
@@ -54,4 +59,7 @@ fi
     cd frontend
     TEST_EXTERNAL_RELEASE=1 npx --no-install playwright test claims.spec.ts hospital-policy.spec.ts travel-approval.spec.ts inbox-pages.spec.ts keyboard-review.spec.ts bank-allocation.spec.ts employee-form.spec.ts personal-ledger.spec.ts --reporter=list
     TEST_EXTERNAL_RELEASE=1 RECORD_APPROVAL_CONTENTION="$PWD/../target/approval-contention.json" npx --no-install playwright test approval-contention.spec.ts --reporter=list
+    if [[ -n "${WORKSPACE_TIMING_OUTPUT:-}" ]]; then
+        TEST_EXTERNAL_RELEASE=1 npx --no-install playwright test workspace-timing.spec.ts --reporter=list
+    fi
 )

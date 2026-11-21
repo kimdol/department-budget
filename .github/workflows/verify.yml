@@ -60,6 +60,12 @@ jobs:
           ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
           BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
           RECORD_ROLLBACK_CLAIM: ${{ runner.temp }}/rollback-claim.txt
+          WORKSPACE_TIMING_OUTPUT: ${{ github.workspace }}/target/workspace-timing.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workspace-timing
+          path: target/workspace-timing.json
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: oracle-approval-contention
