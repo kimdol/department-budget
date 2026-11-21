@@ -14,12 +14,12 @@
 <label>항목명<input name="title" maxlength="100" required></label>
 <label>지출액(원)<input name="amount" type="number" min="1" max="999999999999" required></label>
 <label>실제 지원액(원)<input name="support" type="number" min="0" max="999999999999" value="0" required></label>
-<button class="primary">지출 저장</button></form></section>
+<button class="primary" disabled>지출 저장</button></form></section>
 <section class="expense-book"><h2>지출 내역</h2><p id="empty-expenses" hidden>등록한 지출이 없습니다.</p><ul id="expenses"></ul></section>
-</div><aside><section><h2>예산 설정</h2><form id="personal-budget"><label>개인 예산(원)<input name="budget" type="number" min="0" max="999999999999" required></label><button>예산 저장</button></form></section>
+</div><aside><section><h2>예산 설정</h2><form id="personal-budget"><label>개인 예산(원)<input disabled name="budget" type="number" min="0" max="999999999999" required></label><button disabled>예산 저장</button></form></section>
 <section><h2>다음 교육 예상 비용</h2><form id="projection">
 <label>교육비(원)<input name="cost" type="number" min="1" max="999999999999" required></label>
 <label>예상 지원율(%)<input name="rate" type="number" min="0" max="100" value="80" required></label>
 <label>행사당 한도(원)<input name="cap" type="number" min="0" max="999999999999" value="200000" required></label>
-<button>예상 잔액 계산</button></form><p id="forecast" role="status"></p></section></aside></div>
-<p id="personal-status" role="status"></p></main></body></html>
+<button disabled>예상 잔액 계산</button></form><p id="forecast" role="status"></p></section></aside></div>
+<p id="personal-status" role="status">장부를 불러오고 있습니다.</p></main></body></html>

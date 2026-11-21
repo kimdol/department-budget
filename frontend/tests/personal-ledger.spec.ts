@@ -1,5 +1,28 @@
 import {expect,test} from "@playwright/test";
 
+test("장부를 읽은 뒤 저장할 수 있고 다른 탭의 갱신 중에도 미저장 예산을 유지한다",async ({page,context})=>{
+  let resume!:()=>void;
+  const loading=new Promise<void>(resolve=>{resume=resolve;});
+  await page.route("**/personal.js",async route=>{await loading; await route.continue();});
+  await page.goto("/personal",{waitUntil:"commit"});
+  const budget=page.getByLabel("개인 예산(원)");
+  const save=page.getByRole("button",{name:"예산 저장"});
+  try {
+    await expect(budget).toBeDisabled();
+    await expect(save).toBeDisabled();
+  } finally { resume(); }
+  await budget.fill("500000");
+  await budget.press("Tab");
+  const other=await context.newPage();
+  await other.goto("/personal");
+  await other.getByLabel("개인 예산(원)").fill("100000");
+  await other.getByRole("button",{name:"예산 저장"}).click();
+  await expect(page.locator("#remaining")).toHaveText("100,000원");
+  await expect(budget).toHaveValue("500000");
+  await save.click();
+  await expect(other.locator("#remaining")).toHaveText("500,000원");
+});
+
 test("두 탭에서 동시에 기록한 지출을 보존하고 선택한 기록만 삭제한다",async ({page,context})=>{
   const other = await context.newPage();
   await Promise.all([page.goto("/personal"),other.goto("/personal")]);

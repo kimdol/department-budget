@@ -18,6 +18,8 @@ const changes = typeof BroadcastChannel === "function" ? new BroadcastChannel("p
 let balance = 0n;
 let projected = false;
 let revision = 0;
+let budgetEdited = false;
+budgetForm.elements.budget.addEventListener("input",()=>{budgetEdited = true;});
 
 function calculate() {
   const fields = projection.elements;
@@ -40,7 +42,7 @@ async function refreshLedger() {
   const total = BigInt(budget.result ?? 0);
   const paid = expenses.result.reduce((sum,item)=>sum+BigInt(item.amount)-BigInt(item.support),0n);
   balance = total-paid;
-  if (document.activeElement !== budgetForm.elements.budget) budgetForm.elements.budget.value = total.toString();
+  if (!budgetEdited && document.activeElement !== budgetForm.elements.budget) budgetForm.elements.budget.value = total.toString();
   document.getElementById("budget-total").textContent = money(total);
   document.getElementById("paid-total").textContent = money(paid);
   document.getElementById("remaining").textContent = money(balance);
@@ -69,6 +71,11 @@ async function refreshLedger() {
     };
     row.append(entry,amounts,remove);
     list.append(row);
+  }
+  if (budgetForm.elements.budget.disabled) {
+    budgetForm.elements.budget.disabled = false;
+    for (const form of [budgetForm,expenseForm,projection]) form.querySelector("button").disabled = false;
+    message("");
   }
   if (projected && projection.checkValidity()) calculate();
 }
@@ -99,10 +106,11 @@ async function save(button,storeName,write,success) {
   }
 }
 
-budgetForm.onsubmit = event=>{
+budgetForm.onsubmit = async event=>{
   event.preventDefault();
   const budget = budgetForm.elements.budget.valueAsNumber;
-  save(budgetForm.querySelector("button"),"settings",store=>store.put(budget,"budget"),"개인 예산을 저장했습니다.");
+  const saved = await save(budgetForm.querySelector("button"),"settings",store=>store.put(budget,"budget"),"개인 예산을 저장했습니다.");
+  if (saved && budgetForm.elements.budget.valueAsNumber === budget) budgetEdited = false;
 };
 expenseForm.onsubmit = async event=>{
   event.preventDefault();
