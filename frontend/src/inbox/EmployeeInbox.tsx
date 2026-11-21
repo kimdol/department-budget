@@ -35,5 +35,5 @@ export function EmployeeInbox(){
     {selected&&<div className="inbox-pane"><button type="button" className="inbox-back" onClick={back}>목록으로 돌아가기</button>
       <h3 tabIndex={-1} ref={heading}>신청 상세</h3><ClaimDetail key={selected.claimId} claim={selected} available={state.balance.available}/></div>}
     </div><p role="status">{error}</p>
-    <a href={location.pathname+"?"+new URLSearchParams({department:new URLSearchParams(location.search).get("department")??"PRIMARY",view:"classic"})}>신청 변경·철회 및 전체 이력</a></>;
+    <div className="inbox-tools"><a className="inbox-history" href={location.pathname+"?"+new URLSearchParams({department:new URLSearchParams(location.search).get("department")??"PRIMARY",view:"classic"})}>신청 변경·철회 및 전체 이력</a></div></>;
 }

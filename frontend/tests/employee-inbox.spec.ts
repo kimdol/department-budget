@@ -21,6 +21,8 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
     },{times:1});
     await submit.click();
     await expect(inbox.getByRole("button",{name:/직무 교육 참가/})).toHaveCount(1);
+    await expect(inbox.getByRole("heading",{name:"신청 목록"})).toBeVisible();
+    await expect(inbox.getByRole("button",{name:/직무 교육 참가/})).toContainText("다음 담당자 · 부서장");
     await role.selectOption("MANAGER");
     await page.getByRole("button",{name:"사전승인",exact:true}).click();
     await expect(page.locator("#committed")).toHaveText("200,000원");
@@ -35,6 +37,7 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
     await role.selectOption("EMPLOYEE");
     await expect(inbox).toBeVisible();await openClaim();
     await expect(detail).toContainText("보완 사유");
+    await expect(detail).toContainText("‘첨부됨’을 확인한 뒤");
     let release!:()=>void;
     const gate=new Promise<void>(resolve=>{release=resolve;});
     await page.route("**/evidence",async route=>{
@@ -78,6 +81,11 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
       await expect(inbox.getByLabel("상태로 찾기")).toHaveValue("SETTLED");
       await expect(inbox.getByRole("button",{name:/직무 교육 참가/})).toBeFocused();
     }
+    const history=inbox.getByRole("link",{name:"신청 변경·철회 및 전체 이력"});
+    await history.focus();
+    await expect(history).toBeFocused();
+    await history.press("Enter");
+    await expect(page).toHaveURL(/view=classic/);
   });
 }
 

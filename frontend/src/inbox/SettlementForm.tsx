@@ -53,6 +53,7 @@ export function SettlementForm({claim}:{claim:Claim}) {
     }
   }
   return <form className="receipt-form" onSubmit={event=>{event.preventDefault();void submit(false);}}>
+    {claim.status==="NEEDS_RECEIPT"&&<p>재무팀이 요청한 증빙을 첨부하고 ‘첨부됨’을 확인한 뒤 다시 제출하세요.</p>}
     <label>실제 지출액(원)<input type="number" min="1" max="999999999999" required value={amount} disabled={busy}
       onChange={e=>setAmount(e.target.value)}/></label>
     <label>증빙 종류<select value={type} disabled={busy} onChange={e=>setType(e.target.value)}>

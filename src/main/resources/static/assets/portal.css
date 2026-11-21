@@ -16,6 +16,12 @@ details{margin:1rem 0}summary{cursor:pointer;font-weight:700}textarea{font:1rem/
 .receipt-form{display:grid;align-items:start}
 .receipt-form p:empty{display:none}
 .inbox-back{display:none}
+.inbox-list small{color:#485e64}
+.inbox-tools{border-top:1px solid #d4dfdd;padding-top:.75rem}
+.inbox-history{display:inline-flex;align-items:center;gap:.75rem;min-height:44px;padding:.4rem .8rem;color:#21534e;background:#f4f8f7;border:1px solid #b5cac6;border-radius:.35rem;text-decoration:none;font-size:.9rem;font-weight:600}
+.inbox-history::after{content:"";width:.4rem;height:.4rem;border:solid currentColor;border-width:1.5px 1.5px 0 0;transform:rotate(45deg)}
+.inbox-history:hover{background:#e7f4ef;border-color:#638b83}
+.inbox-history:focus-visible{outline:3px solid #986200;outline-offset:2px}
 @media(max-width:52rem){
   .inbox-layout{display:block}
   .inbox-pane,.detail-open .inbox-list{display:none}
