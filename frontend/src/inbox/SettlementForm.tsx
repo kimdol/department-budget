@@ -16,7 +16,12 @@ export function SettlementForm({claim}:{claim:Claim}) {
     let current=true;
     claimRequest<Evidence[]>(id,"evidence").then(rows=>{if(current&&!edited.current)setDocuments(rows);})
       .catch(()=>{if(current)setMessage("첨부 목록을 불러오지 못했습니다. 새로 확인해 주세요.");});
-    return ()=>{current=false;alive.current=false;};
+    function confirmed(event:Event) {
+      const detail=(event as CustomEvent<{id:string;docs:Evidence[]}>).detail;
+      if(detail.id===id){edited.current=true;setDocuments(detail.docs);}
+    }
+    document.addEventListener("employee-evidence-confirmed",confirmed);
+    return ()=>{current=false;alive.current=false;document.removeEventListener("employee-evidence-confirmed",confirmed);};
   },[id]);
 
   async function submit(attach:boolean) {

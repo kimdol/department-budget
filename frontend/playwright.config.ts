@@ -4,7 +4,7 @@ import path from "node:path";
 
 const root = path.resolve(__dirname, "..");
 const tls = process.env.TEST_TLS_SPKI;
-const port = tls ? "18754" : "18753";
+const port = tls ? "18754" : (process.env.TEST_HTTP_PORT ?? "18753");
 const deployment = process.env.TEST_DEPLOYMENT_URL ? new URL(process.env.TEST_DEPLOYMENT_URL) : undefined;
 if (deployment && (deployment.protocol !== "https:" || deployment.href !== deployment.origin + "/" || tls)) {
   throw new Error("공개 배포 시험에는 인증서 예외 없는 HTTPS 원점 주소가 필요합니다.");

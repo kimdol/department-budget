@@ -23,6 +23,9 @@ declare global { interface Window { employeeInbox:InboxBridge } }
 
 export const won=(value:number)=>new Intl.NumberFormat("ko-KR").format(value)+"원";
 export interface Evidence {evidenceType:string;receiptAmount:number}
+export class ClaimRequestError extends Error {
+  constructor(readonly status:number) {super("HTTP "+status);}
+}
 export async function claimRequest<T>(id:string,route:string,fields?:Record<string,string>):Promise<T> {
   const url=new URL("/api/claims/"+encodeURIComponent(id)+"/"+route,location.origin);
   const department=new URL(location.href).searchParams.get("department");
@@ -30,6 +33,6 @@ export async function claimRequest<T>(id:string,route:string,fields?:Record<stri
   const response=await fetch(url,{method:fields?"POST":"GET",signal:AbortSignal.timeout(15000),
     headers:fields?{"X-CSRF-TOKEN":document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')!.content}:{},
     body:fields?new URLSearchParams(fields):undefined});
-  if(!response.ok) throw new Error("HTTP "+response.status);
+  if(!response.ok) throw new ClaimRequestError(response.status);
   return fields?undefined as T:await response.json() as T;
 }

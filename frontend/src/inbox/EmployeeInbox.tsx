@@ -1,6 +1,7 @@
 import {useSyncExternalStore,useLayoutEffect,useRef,useState} from "react";
 import {ClaimDetail} from "./ClaimDetail";
 import {ClaimList} from "./ClaimList";
+import {InboxAssistant} from "./InboxAssistant";
 function subscribe(update:()=>void){
   document.addEventListener("employee-inbox-update",update);
   return ()=>document.removeEventListener("employee-inbox-update",update);
@@ -29,7 +30,8 @@ export function EmployeeInbox(){
     setOpen(false);
     requestAnimationFrame(()=>{document.getElementById("inbox-item-"+selected?.claimId)?.focus({preventScroll:true});window.scrollTo(0,scroll.current);});
   }
-  return <><h2>내 신청함</h2><div className={"inbox-layout"+(open&&selected?" detail-open":"")}>
+  return <><h2>내 신청함</h2><InboxAssistant key={[selected?.claimId,selected?.reviewRound,selected?.status,selected?.actual].join("/")}
+    claim={selected} available={state.balance.available}/><div className={"inbox-layout"+(open&&selected?" detail-open":"")}>
     <ClaimList claims={claims} selected={selected?.claimId} busy={busy} run={run}
       select={key=>{scroll.current=window.scrollY;setId(key);setOpen(true);}}/>
     {selected&&<div className="inbox-pane"><button type="button" className="inbox-back" onClick={back}>목록으로 돌아가기</button>
