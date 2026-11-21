@@ -6,7 +6,7 @@
 
 별도 가입 없이 방문자마다 독립된 부서 예산 1,000,000원이 배정된다. 교육비 300,000원을 신청하고 부서장과 재무 담당자로 역할을 바꿔 승인과 정산을 끝낼 수 있다. 아래는 공개 서비스에서 정산한 화면이다. 화면, Oracle 원장, 결산표의 가용 예산은 820,000원이었고 사내 포털은 MySQL에 정산액 180,000원을 기록했다. 체험에는 합성 증빙을 사용한다. [정산과 재전송](docs/measurements/deployment-settlement.json) · [Oracle·MySQL 대사](docs/measurements/deployment-ledger.txt)
 
-Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 신청·결재함, React·TypeScript는 직원 신청과 규정 비교·발행, PHP·MySQL은 사내 포털 수신에 사용한다. 직원 역할에서 **직원용 신청 화면으로 전환**을 누르면 입력한 내용을 React 화면에서 이어서 제출할 수 있다. [두 화면의 신청 계약 시험](frontend/tests/employee-form.spec.ts) · [화면에서 원장까지 소스 따라가기](#소스-따라가기)
+Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 신청·결재함, React·TypeScript는 직원 신청과 규정 비교·발행, PHP·MySQL은 사내 포털 수신에 사용한다. 첫 화면의 **내 신청함 시작**을 누르면 React 직원 신청함이 열린다. 기존 JSP 신청서에서 전환할 때도 작성 중인 값을 이어받는다. [두 화면의 신청 계약 시험](frontend/tests/employee-form.spec.ts) · [화면에서 원장까지 소스 따라가기](#소스-따라가기)
 
 ## 원장과 화면 검증
 
@@ -21,7 +21,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 
 ## 3분 체험
 
-기본 조직인 **일반 기업 경영지원팀**에서 **개인 데모 시작**을 누른다. 같은 부서와 신청번호를 유지하고 **시연 역할**만 아래 순서대로 바꾼다.
+기본 조직인 **일반 기업 경영지원팀**에서 **내 신청함 시작**을 누른다. 같은 부서와 신청번호를 유지하고 **시연 역할**만 아래 순서대로 바꾼다.
 
 | 역할 | 동작 | 원장 기준 결과 |
 | --- | --- | --- |
@@ -31,6 +31,8 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 | 재무 담당자 | **정산 확정**을 누른다. | 약정 0원 · 집행 180,000원 · 가용 820,000원 |
 
 신청 내역에서 실비 225,000원 중 직원이 부담한 45,000원과, 승인 약정 200,000원 중 집행하지 않아 가용 예산으로 돌아간 20,000원을 각각 확인할 수 있다.
+
+직원으로 돌아가 **내 신청함**에서 같은 신청을 열면 정산액과 현재 가용 예산을 확인할 수 있다. 재무에서 보완을 요청한 건에는 보완 사유가 표시된다. 영수증을 첨부하면 서버가 확인한 종류와 금액이 표시되고 같은 신청에서 다시 제출할 수 있다. [PC 신청함](docs/images/employee-inbox.png) · [모바일 증빙 보완](docs/images/employee-receipt-mobile.png) · [화면 크기별 통합 시험](frontend/tests/employee-inbox.spec.ts)
 
 개발자 도구를 열면 같은 신청번호로 화면과 HTTP 응답의 금액을 대조할 수 있다. [역할별 요청·응답과 재시도](docs/API.md)
 
