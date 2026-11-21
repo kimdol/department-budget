@@ -60,7 +60,14 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
     await role.selectOption("EMPLOYEE");await expect(inbox).toBeVisible();
     if(width<833 && await inbox.getByRole("button",{name:"목록으로 돌아가기"}).isVisible())
       await inbox.getByRole("button",{name:"목록으로 돌아가기"}).click();
+    let resumeFilter!:()=>void;
+    const waitingForFilter=new Promise<void>(resolve=>{resumeFilter=resolve;});
+    await page.route("**/api/workspace?*status=SETTLED*",async route=>{
+      await waitingForFilter;
+      await route.continue();
+    },{times:1});
     await inbox.getByLabel("상태로 찾기").selectOption("SETTLED");
+    try {await expect(inbox.getByRole("button",{name:/직무 교육 참가/})).toBeDisabled();} finally {resumeFilter();}
     await expect(inbox.getByRole("button",{name:/직무 교육 참가.*정산 완료/})).toBeEnabled();
     await openClaim();
     await expect(detail).toContainText("180,000원");
