@@ -1,0 +1,73 @@
+{
+  "platform": "Windows-10-10.0.26300-SP0",
+  "availableLogicalCpus": 12,
+  "activeProcessorCount": 1,
+  "javaVersion": "openjdk version \"21.0.10\" 2026-01-20\nOpenJDK Runtime Environment (build 21.0.10+-14961533-b1163.108)\nOpenJDK 64-Bit Server VM (build 21.0.10+-14961533-b1163.108, mixed mode)\n",
+  "warSha256": "b21d18c5429ec095efe4059602da80b1540242f108058fd673f5c60fe4704a9e",
+  "schema": "fresh H2 in Oracle mode",
+  "sampleIntervalSeconds": 0.1,
+  "runs": [
+    {
+      "profile": "baseline",
+      "readySeconds": 6.734,
+      "sampleCount": 145,
+      "peakWorkingSetBytes": 310845440,
+      "peakPrivateBytes": 449486848,
+      "jvmFlags": [],
+      "environment": {},
+      "iteration": 1
+    },
+    {
+      "profile": "micro",
+      "readySeconds": 7.313,
+      "sampleCount": 132,
+      "peakWorkingSetBytes": 255180800,
+      "peakPrivateBytes": 249827328,
+      "jvmFlags": [
+        "-Xms64m",
+        "-Xmx256m",
+        "-XX:+UseSerialGC",
+        "-XX:MaxMetaspaceSize=128m",
+        "-XX:ReservedCodeCacheSize=48m"
+      ],
+      "environment": {
+        "SERVER_TOMCAT_THREADS_MAX": "32",
+        "SERVER_TOMCAT_THREADS_MIN_SPARE": "4",
+        "SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE": "4",
+        "SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE": "1"
+      },
+      "iteration": 2
+    },
+    {
+      "profile": "micro",
+      "readySeconds": 6.141,
+      "sampleCount": 119,
+      "peakWorkingSetBytes": 256630784,
+      "peakPrivateBytes": 254832640,
+      "jvmFlags": [
+        "-Xms64m",
+        "-Xmx256m",
+        "-XX:+UseSerialGC",
+        "-XX:MaxMetaspaceSize=128m",
+        "-XX:ReservedCodeCacheSize=48m"
+      ],
+      "environment": {
+        "SERVER_TOMCAT_THREADS_MAX": "32",
+        "SERVER_TOMCAT_THREADS_MIN_SPARE": "4",
+        "SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE": "4",
+        "SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE": "1"
+      },
+      "iteration": 3
+    },
+    {
+      "profile": "baseline",
+      "readySeconds": 6.093,
+      "sampleCount": 117,
+      "peakWorkingSetBytes": 319967232,
+      "peakPrivateBytes": 459046912,
+      "jvmFlags": [],
+      "environment": {},
+      "iteration": 4
+    }
+  ]
+}

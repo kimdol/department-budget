@@ -28,6 +28,33 @@ sha256sum --check SHA256SUMS
 
 Ubuntu CI에서 실제 Caddy가 시험 CA로 발급한 인증서를 신뢰 목록에 등록한 뒤 Chrome으로 배포용 WAR와 Oracle에 접속했다. 두 방문자의 독립 신청·정산·초기화, HSTS·세션·캐시, 정적 자산 재사용을 확인했다. systemd 서비스 정의는 같은 실행에서 정적 검사를 통과했다. 실제 OCI의 공개 인증서 발급, VM 재기동과 외부 접속 검증은 배포 후 기록한다. [Caddy HTTPS 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282/job/136415004389) · [시험 스크립트](../ops/ci_https_proxy.sh)
 
+## 1GB VM의 Java 메모리 설정
+
+AMD Micro에서는 Oracle 원장과 MySQL 수신 스키마를 각각 관리형 DB에 두고 Java·Caddy·PHP-FPM을 같은 VM에서 실행한다. Java 서비스 환경 파일의 후보 설정은 다음과 같다. 포털 CA용 Java 옵션이 있다면 같은 `JAVA_TOOL_OPTIONS` 값에 이어 붙인다.
+
+```text
+JAVA_TOOL_OPTIONS="-Xms64m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m"
+SERVER_TOMCAT_THREADS_MAX=32
+SERVER_TOMCAT_THREADS_MIN_SPARE=4
+SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=4
+SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+```
+
+Windows OpenJDK 21에서 동일 WAR와 매번 새로 만든 H2 스키마로 기본→제한→제한→기본 순서로 시험했다. Java의 활성 프로세서 수를 1로 지정했고 Chrome 작업자 1개가 독립 세션 두 개로 신청·정산·마감·초기화를 수행했다. 기동부터 브라우저 시험 종료까지 Java 프로세스 메모리를 0.1초 간격으로 샘플링했다.
+
+| 설정 | 관측한 최대 작업 집합 | 관측한 최대 전용 커밋 메모리 | 첫 HTTP 200 |
+| --- | ---: | ---: | ---: |
+| JVM·연결 수 기본값 | 296.4~305.1 MiB | 428.7~437.8 MiB | 6.093~6.734초 |
+| 1GB VM용 후보 | 243.4~244.7 MiB | 238.3~243.0 MiB | 6.141~7.313초 |
+
+비교 항목은 Java 프로세스 단독이다. OCI Linux의 Java·Caddy·PHP 합계, 실제 Oracle 연결, 동시 요청 대기는 서버에서 별도로 측정한다. [측정 요약](measurements/micro-memory-summary.json) · [샘플 원자료](measurements/micro-memory-samples.csv)
+
+Windows에서 Java 21 경로, H2 2.3.232 JAR 경로와 해시를 확인한 배포 ZIP을 지정한다. frontend에서 npm ci를 마치고 Chrome을 설치한 뒤 저장소 루트에서 실행한다. 18753 포트가 비어 있어야 한다.
+
+```powershell
+python ops/measure_micro_memory.py --bundle $bundle --java $java --h2 $h2
+```
+
 ## 포털 수신 연결
 
 배포 묶음의 `portal/mysql/V001__projection.sql`을 빈 MySQL 수신 스키마에 적용한다. Java와 PHP-FPM에서 사용할 Oracle과 MySQL은 같은 VM의 루프백 주소로 연결한다. Oracle Linux에 PHP-FPM과 PDO MySQL을 설치하고, 로그인 셸이 없는 시스템 사용자와 그룹 `department-budget-portal`을 준비한다.

@@ -221,6 +221,8 @@ OCI 오사카 AD-1에서 상시 무료 A1 Flex의 2 OCPU·12GB와 1 OCPU·6GB �
 
 1GB VM은 Java 웹과 PHP 포털 수신기를 담당하고, 원장은 상시 무료 Autonomous AI Database, 포털 수신 데이터는 상시 무료 MySQL HeatWave에 저장하는 구성을 검토한다. 실제 DB 할당, Oracle 스키마 설치, Java 메모리 예산과 네트워크 연결은 배포 시 검사한다. [Oracle DB 연결 절차](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 상시 무료 서비스](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html)
 
+AMD Micro용 JVM·Tomcat·DB 연결 풀 후보를 Windows에서 비교했다. 두 방문자의 교육비 흐름은 4회 모두 통과했고, Java 최대 작업 집합은 기본 296.4~305.1 MiB, 후보 243.4~244.7 MiB였다. OCI 근거는 배포 뒤 별도로 남긴다. [설정과 재현 명령](HTTPS.md#1gb-vm의-java-메모리-설정)
+
 A1 단일 VM 후보에 대해서는 Oracle Database Free와 MySQL의 ARM 동작을 확인했다. CI에서 Oracle 설치 SQL과 MySQL 수신 스키마를 적용했고, 두 DB를 루프백에 연결했다. 레지스트리의 linux/arm64 자식 매니페스트는 아래와 같다.
 
 | 이미지 | linux/arm64 매니페스트 |
