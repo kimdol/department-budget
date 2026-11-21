@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - .github/workflows/verify-arm.yml
+      - frontend/tests/claims.spec.ts
+      - ops/ci_https_proxy.sh
 permissions:
   contents: read
 jobs:

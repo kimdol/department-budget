@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체험한다", async ({ browser, page, baseURL }) => {
+  const expectPortal = Boolean(process.env.TEST_DEPLOYMENT_URL || process.env.TEST_PHP_ADDRESS);
+  test.slow(expectPortal, "포털의 약정·정산 메시지가 차례로 전달될 시간을 확보한다.");
   const second = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } });
   const other = await second.newPage();
   try {
@@ -78,16 +80,25 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(page.locator("#available")).toHaveText("820,000원");
     await expect(page.locator("#spent")).toHaveText("180,000원");
     await expect(claim).toContainText("제출한 실비 225,000원 · 정산 당시 본인 부담 45,000원 · 예산으로 돌아간 약정 차액 20,000원");
-    if (process.env.TEST_PHP_ADDRESS) {
-      await expect(async () => {
-        await claim.getByRole("button",{name:"사내 포털 수신 결과"}).click();
-        await expect(claim).toContainText("포털 수신 차수 2 · 정산 확정 · 180,000원",{timeout:1000});
-      }).toPass({timeout:15000});
-      if (process.env.RECORD_PORTAL_CLAIM) await writeFile(process.env.RECORD_PORTAL_CLAIM, number.trim());
-    }
     await expect(page.locator("#committed")).toHaveText("0원");
     await expect(claim.locator("small")).toHaveText(number);
     const claimApi = "/api/claims/"+number.trim();
+    let portalReceipt: {sequence:number;event:string;amount:number} | undefined;
+    if (expectPortal) {
+      const receiptButton = claim.getByRole("button",{name:"사내 포털 수신 결과"});
+      await expect(receiptButton).toBeVisible();
+      await expect(async () => {
+        const [response] = await Promise.all([
+          page.waitForResponse(result => new URL(result.url()).pathname === claimApi+"/portal-receipt",{timeout:8000}),
+          receiptButton.click()
+        ]);
+        expect(response.status()).toBe(200);
+        const receipt = await response.json();
+        expect(receipt).toEqual({sequence:2,event:"SETTLEMENT",amount:180000});
+        await expect(claim).toContainText("포털 수신 차수 2 · 정산 확정 · 180,000원",{timeout:1000});
+        portalReceipt = receipt;
+      }).toPass({timeout:45000});
+    }
     async function getJson(url:string) {
       const response = await page.request.get(url);
       expect(response.status()).toBe(200);
@@ -109,11 +120,6 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     expect(balance).toEqual({allocation:1000000,committed:0,spent:180000,available:820000});
     expect(statement.balance).toEqual(balance);
     expect(statement.lines).toContainEqual({category:"EDUCATION",claimCount:1,spent:180000});
-    if (process.env.RECORD_SETTLEMENT) {
-      const result = {origin:baseURL,claimId:number.trim(),retryStatus:retry.status(),before,after,balance,
-        report:{period:statement.period,balance:statement.balance,lines:statement.lines}};
-      await writeFile(process.env.RECORD_SETTLEMENT,JSON.stringify(result,null,2)+"\n");
-    }
     await claim.getByRole("button",{name:"결재 이력"}).click();
     for (const decision of ["직원 · 신청 접수 · 300,000원","부서장 · 최종 사전승인 · 200,000원",
       "직원 · 실제 지출 제출 · 225,000원","재무 · 정산 확정 · 180,000원"]) {
@@ -184,6 +190,14 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(page.locator("#claims")).toHaveText("아직 신청한 비용이 없습니다.");
     await other.reload();
     await expect(other.locator(".claim")).toContainText("다른 방문자의 교육 신청");
+    if (process.env.RECORD_SETTLEMENT) {
+      const result = {origin:baseURL,claimId:number.trim(),retryStatus:retry.status(),before,after,balance,portalReceipt,
+        report:{period:statement.period,balance:statement.balance,lines:statement.lines}};
+      await writeFile(process.env.RECORD_SETTLEMENT,JSON.stringify(result,null,2)+"\n");
+    }
+    if (portalReceipt && process.env.RECORD_PORTAL_CLAIM) {
+      await writeFile(process.env.RECORD_PORTAL_CLAIM,number.trim());
+    }
   } finally {
     await second.close();
   }
