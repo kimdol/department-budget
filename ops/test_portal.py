@@ -59,9 +59,10 @@ def main():
                                       "--init-file=" + str(init)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         stack.callback(stop, db)
         cli = [mysql, "--no-defaults", "--protocol=TCP", "--host=127.0.0.1", "--port=" + str(port),
-               "--user=root", "--batch", "--skip-column-names"]
-        def sql(statement, check=True):
-            return subprocess.run(cli, input=statement, text=True, capture_output=True, env=env, check=check)
+               "--batch", "--skip-column-names"]
+        def sql(statement, check=True, *, user="root", credential=password):
+            return subprocess.run(cli + ["--user=" + user], input=statement, text=True, capture_output=True,
+                                  env=dict(env, MYSQL_PWD=credential), check=check)
         wait_for(lambda: sql("SELECT 1", False).returncode == 0, db)
         def shutdown():
             sql("SHUTDOWN", False)
@@ -71,7 +72,17 @@ def main():
         receiver_password = secrets.token_hex(24)
         sql("CREATE DATABASE budget; USE budget;\n" + (root / "portal/mysql/V001__projection.sql").read_text() +
             "\nCREATE USER 'receiver'@'localhost' IDENTIFIED BY '" + receiver_password +
-            "'; GRANT SELECT,INSERT,UPDATE ON budget.* TO 'receiver'@'localhost';")
+            "'; GRANT SELECT,INSERT ON budget.budget_event_receipt TO 'receiver'@'localhost';"
+            "GRANT SELECT,INSERT,UPDATE ON budget.budget_claim_summary TO 'receiver'@'localhost';")
+        restricted_statements = (
+            "UPDATE budget.budget_event_receipt SET payload_hash='' WHERE 1=0;",
+            "DELETE FROM budget.budget_claim_summary WHERE 1=0;",
+            "CREATE TABLE budget.receiver_admin_probe(id INT);",
+        )
+        for statement in restricted_statements:
+            denied = sql(statement, False, user="receiver", credential=receiver_password)
+            if denied.returncode == 0 or "ERROR 1142" not in denied.stderr:
+                raise AssertionError("수신 계정에 부여하지 않은 권한을 확인할 수 없습니다.")
         webport = free_port()
         address = "127.0.0.1:" + str(webport)
         php_args = [php]
@@ -149,7 +160,8 @@ def main():
                             dict(os.environ,PORTAL_MYSQL_DSN=f"mysql:host=127.0.0.1;port={port};dbname=budget",
                                  PORTAL_READER_USER="reader",PORTAL_READER_PASSWORD=reader_password),
                             approval["workspaceId"],approval["claimId"])
-        print(json.dumps(dict(mysql=sql("SELECT VERSION()").stdout.strip(), http=statuses, receipts=2, settled=180000)))
+        print(json.dumps(dict(mysql=sql("SELECT VERSION()").stdout.strip(), http=statuses, receipts=2, settled=180000,
+                              deniedPrivileges=["receipt_update", "summary_delete", "create_table"])))
         if "--browser" in sys.argv:
             subprocess.run([sys.executable,str(root/"ops/test_https.py")],
                            env=dict(os.environ,TEST_PHP_ADDRESS=address,BUDGET_PORTAL_TOKEN=token), check=True)

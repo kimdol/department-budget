@@ -1,0 +1,19 @@
+{
+  "mysql": "8.4.13",
+  "http": [
+    409,
+    204,
+    204,
+    204,
+    204,
+    409,
+    409
+  ],
+  "receipts": 2,
+  "settled": 180000,
+  "deniedPrivileges": [
+    "receipt_update",
+    "summary_delete",
+    "create_table"
+  ]
+}
