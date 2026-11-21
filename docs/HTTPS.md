@@ -70,7 +70,7 @@ python ops/measure_micro_memory.py --bundle $bundle --java $java --h2 $h2
 
 ## 포털 수신 연결
 
-배포 묶음의 `portal/mysql/V001__projection.sql`을 빈 MySQL 수신 스키마에 적용한다. Java와 PHP-FPM에서 사용할 Oracle과 MySQL은 같은 VM의 루프백 주소로 연결한다. Oracle Linux에 PHP-FPM과 PDO MySQL을 설치하고, 로그인 셸이 없는 시스템 사용자와 그룹 `department-budget-portal`을 준비한다.
+배포 묶음의 `portal/mysql/V001__projection.sql`을 빈 MySQL 수신 스키마에 적용한다. OCI의 1GB VM에서 Java는 Oracle Autonomous Database에 TCPS로 연결하고 PHP-FPM은 같은 VCN의 MySQL 사설 엔드포인트에 연결한다. MySQL의 TCP 3306 수신 규칙은 앱 VM의 사설 IPv4 한 개로 제한한다. 로컬 통합 시험에서는 두 DB가 루프백 주소에 있다. Oracle Linux에 PHP-FPM과 PDO MySQL을 설치하고, 로그인 셸이 없는 시스템 사용자와 그룹 `department-budget-portal`을 준비한다. [Oracle TCPS 접속](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 엔드포인트](https://docs.oracle.com/en-us/iaas/mysql-database/doc/connecting-db-system.html)
 
 ```sh
 sudo install -d -m 0755 /opt/department-budget/portal
@@ -81,7 +81,7 @@ sudo install -m 0644 department-budget-portal.service /etc/systemd/system/
 
 관리자로 `budget` 스키마와 초기 테이블을 설치하고, 배포 VM의 사설 IPv4에서만 로그인할 수 있는 수신 전용 계정을 만든다. `budget_event_receipt`에는 SELECT·INSERT, `budget_claim_summary`에는 SELECT·INSERT·UPDATE를 부여한다. PHP-FPM에는 이 수신 계정의 자격 증명을 제공한다. 로컬 MySQL 8.4.13에서 이 권한으로 승인·정산 및 중복 수신 방지를 실행했다. 수신 이력 UPDATE, 요약 DELETE, 새 테이블 생성은 모두 MySQL 1142로 거절됐다. [실행 원자료](measurements/portal-receiver-privileges.json) · [재현 시험](../ops/test_portal.py)
 
-root만 읽을 수 있는 `/etc/department-budget/portal.env`에 `PORTAL_MYSQL_DSN`, `PORTAL_MYSQL_USER`, `PORTAL_MYSQL_PASSWORD`, `BUDGET_PORTAL_TOKEN`을 설정한다. `sudo systemctl daemon-reload` 후 `sudo systemctl enable --now department-budget-portal`로 수신기를 기동한다. Caddy가 읽는 설정에 `Caddyfile.portal`을 가져오고 Caddy 서비스 환경에 `BUDGET_PORTAL_ROOT=/opt/department-budget/portal`을 설정한다. 이 설정은 127.0.0.1:18759에서 내부 인증서로 TLS를 종료하고 127.0.0.1:18760의 PHP-FPM으로 전달한다.
+root만 읽을 수 있는 `/etc/department-budget/portal.env`에 `PORTAL_MYSQL_DSN`, `PORTAL_MYSQL_USER`, `PORTAL_MYSQL_PASSWORD`, `BUDGET_PORTAL_TOKEN`을 설정한다. OCI용 DSN은 `mysql:host=PRIVATE_MYSQL_HOST;port=3306;dbname=budget;charset=utf8mb4`에서 `PRIVATE_MYSQL_HOST`를 실제 사설 엔드포인트로 바꾼다. `sudo systemctl daemon-reload` 후 `sudo systemctl enable --now department-budget-portal`로 수신기를 기동한다. Caddy가 읽는 설정에 `Caddyfile.portal`을 가져오고 Caddy 서비스 환경에 `BUDGET_PORTAL_ROOT=/opt/department-budget/portal`을 설정한다. 이 설정은 127.0.0.1:18759에서 내부 인증서로 TLS를 종료하고 127.0.0.1:18760의 PHP-FPM으로 전달한다.
 
 Java 서비스에 `BUDGET_PORTAL_URL=https://127.0.0.1:18759/receive.php`와 PHP-FPM에 설정한 동일한 `BUDGET_PORTAL_TOKEN`을 지정한다. Oracle의 TCPS도 사용하는 Java에는 공개 CA와 내부 포털 CA가 모두 필요하다. 현재 Java의 기본 신뢰 저장소를 별도 PKCS#12 파일로 복사한 후 Caddy가 생성한 로컬 CA의 공개 인증서 `pki/authorities/local/root.crt`를 추가한다. `JAVA_HOME`에는 서비스가 쓰는 JDK의 경로를 지정한다. 전체 경로의 기준은 [Caddy 데이터 디렉터리](https://caddyserver.com/docs/conventions#data-directory)이며, CA 개인 키를 복사할 필요가 없다.
 

@@ -221,6 +221,8 @@ OCI 오사카 AD-1에서 상시 무료 A1 Flex의 2 OCPU·12GB와 1 OCPU·6GB �
 
 1GB VM은 Java 웹과 PHP 포털 수신기를 담당한다. 오사카 Oracle 원장 DB는 19c Transaction Processing, Always Free, AVAILABLE로 확인했다. MySQL 수신 DB는 MySQL.Free 50GiB로 생성했고, 공인 IP를 금지한 전용 서브넷의 사설 엔드포인트 1개와 ACTIVE 상태를 확인했다. Oracle에는 CIDR로 제한한 TLS 접근 규칙을 적용했다. 무료 Autonomous DB의 서비스 주소는 사설 엔드포인트로 전환할 수 없으므로 실제 연결 경로와 원장 스키마 설치는 배포 후 확인한다. VM의 공인 IP는 미할당 상태다. 웹 서브넷에 TCP 80·443과 관리 IPv4 한 개의 TCP 22만 허용하는 규칙을 적용하고 조회로 대조한 뒤 공인 IP를 할당한다. OCI Cloud Shell 연결이 끊겨 실제 규칙 변경과 SSH 접속은 확인하지 못했다. [Oracle DB 연결 절차](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 상시 무료 서비스](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html)
 
+배포 후보 `517cf8f`의 Oracle CI가 성공했다. 배포 ZIP을 내려받아 GitHub에 게시된 ZIP SHA-256, 내부 파일 13개의 개별 SHA-256과 커밋 식별값을 확인했다. 포털·서비스·DB 검사 파일 10개는 저장소 내용과 대조했다. [배포 묶음을 생성한 실행](https://github.com/kimdol/department-budget/actions/runs/44884197218) · [묶음 검증 절차](HTTPS.md#검증한-war-받기)
+
 AMD Micro용 JVM·Tomcat·DB 연결 풀 후보를 Windows에서 비교했다. 두 방문자의 교육비 흐름은 4회 모두 통과했고, Java 최대 작업 집합은 기본 296.4~305.1 MiB, 후보 243.4~244.7 MiB였다. OCI 근거는 배포 뒤 별도로 남긴다. [설정과 재현 명령](HTTPS.md#1gb-vm의-java-메모리-설정)
 
 A1 단일 VM 후보에 대해서는 Oracle Database Free와 MySQL의 ARM 동작을 확인했다. CI에서 Oracle 설치 SQL과 MySQL 수신 스키마를 적용했고, 두 DB를 루프백에 연결했다. 레지스트리의 linux/arm64 자식 매니페스트는 아래와 같다.
