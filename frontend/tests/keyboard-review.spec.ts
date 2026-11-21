@@ -54,6 +54,12 @@ test("키보드로 결재하고 보완 사유 입력 후 같은 신청에서 재
   await expect(heading).toBeFocused();
   await expect(claim).toContainText("보완 사유 · 교육비 영수증을 첨부하세요.");
   await role("Home","EMPLOYEE");
+  const settlement = claim.getByRole("group",{name:"정산 제출"});
+  await expect(claim.locator("small").filter({has:page.locator(".claim-number")})).toContainText("신청번호");
+  await expect(settlement).toContainText("‘합성 증빙 첨부’를 누른 뒤 ‘정산 신청’으로 다시 제출하세요.");
+  await expect(settlement.getByRole("combobox",{name:"증빙 종류"})).toHaveValue("RECEIPT");
+  await expect(settlement.getByRole("button",{name:"합성 증빙 첨부"})).toBeVisible();
+  await expect(settlement.getByRole("button",{name:"정산 신청"})).toBeVisible();
   await expect(actual).toHaveValue("125000");
   await tabTo(page,actual);
   await page.keyboard.press("ControlOrMeta+a");
@@ -73,7 +79,7 @@ for (const revise of [false,true]) test(revise ? "같은 비목의 변경 전후
   await page.locator("#start").click();
   await page.getByRole("button",{name:"신청 제출"}).click();
   const first = page.locator(".claim").first();
-  const original = await first.locator("small").innerText();
+  const original = await first.locator(".claim-number").innerText();
   await page.locator("#role").selectOption("MANAGER");
   await first.getByRole("button",{name:"사전승인"}).click();
   await expect(page.locator("#committed")).toHaveText("200,000원");
@@ -94,7 +100,7 @@ for (const revise of [false,true]) test(revise ? "같은 비목의 변경 전후
   await first.getByRole("button",{name:revise ? "변경 버전 재상신" : "원신청 철회 후 재신청"}).click();
   await expect(page.locator(".claim")).toHaveCount(2);
   await expect(page.locator("#committed")).toHaveText("0원");
-  const replacement = await first.locator("small").innerText();
+  const replacement = await first.locator(".claim-number").innerText();
   expect(replacement).not.toBe(original);
   await first.getByRole("button",{name:"결재 이력"}).click();
   await expect(first).toContainText("원신청 "+original);

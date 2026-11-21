@@ -86,7 +86,8 @@ function render(state) {
     $("<strong>").attr({id:headingId,tabindex:-1}).text(claim.title + " · " + statusName[claim.status]).appendTo(row);
     row.attr("aria-labelledby",headingId);
     const refreshClaim = () => refresh().then(()=>(document.getElementById(headingId) || claimFilter).focus());
-    $("<small>").text(claim.claimId).appendTo(row);
+    const reference = $("<small>").text("신청번호 ").appendTo(row);
+    $("<span>").addClass("claim-number").text(claim.claimId).appendTo(reference);
     if (pendingAction[claim.status]) $("<p>").text("다음 담당자 · " + pendingAction[claim.status]).appendTo(row);
     if (claim.reviewNote) $("<p>").text("보완 사유 · " + claim.reviewNote).appendTo(row);
     $("<p>").text("예정 " + money(claim.estimated) + " / 승인 " + money(claim.approved) + " / 정산 " + money(claim.settled)).appendTo(row);
@@ -207,9 +208,9 @@ function render(state) {
         button.prop("disabled",false).trigger("focus");
       });
     };
-    const action = (label, route, data) => $("<button>").text(label).on("click", function() {
+    const action = (label, route, data, container = actions) => $("<button>").text(label).on("click", function() {
       send($(this),route,data());
-    }).appendTo(actions);
+    }).appendTo(container);
     if (state.role === "MANAGER" && claim.status === "SUBMITTED") action(claim.approvalRoute === "MANAGER_FINANCE" ? "재무로 결재 요청" : "사전승인","/approve",()=>({}));
     if (state.role === "FINANCE" && claim.status === "FINANCE_PENDING") action("최종 사전승인","/finance-approval",()=>({}));
     if (state.role === "EMPLOYEE" && ["SUBMITTED","FINANCE_PENDING","APPROVED"].includes(claim.status)) {
@@ -217,15 +218,22 @@ function render(state) {
       action(approved ? "약정 취소" : "신청 철회", "/cancel", () => ({releaseApproval:approved}));
     }
     if (state.role === "EMPLOYEE" && ["APPROVED","NEEDS_RECEIPT"].includes(claim.status)) {
+      const settlement = $("<fieldset>").addClass("settlement-entry").appendTo(row);
+      $("<legend>").text("정산 제출").appendTo(settlement);
+      if (claim.status === "NEEDS_RECEIPT") {
+        $("<p>").text("증빙 종류를 선택해 ‘합성 증빙 첨부’를 누른 뒤 ‘정산 신청’으로 다시 제출하세요.").appendTo(settlement);
+      }
+      const settlementActions = $("<div>").addClass("actions").appendTo(settlement);
       const roundKey = claim.claimId + "/" + claim.reviewRound;
-      const amountLabel = $("<label>").text("실제 지출액(원)").appendTo(actions);
+      const amountLabel = $("<label>").text("실제 지출액(원)").appendTo(settlementActions);
       const amount = $("<input>").attr({type:"number",min:1,"data-expense-round":roundKey})
         .val(editingAmounts.get(roundKey) ?? claim.actual ?? 225000).appendTo(amountLabel);
-      const type = $("<select>").attr("aria-label","증빙 종류").appendTo(actions);
+      const evidenceLabel = $("<label>").text("증빙 종류").appendTo(settlementActions);
+      const type = $("<select>").appendTo(evidenceLabel);
       $("<option>").val("RECEIPT").text("지출 영수증").appendTo(type);
       $("<option>").val("ATTENDANCE").text("참석 확인서").appendTo(type);
-      action("합성 증빙 첨부","/evidence",()=>({type:type.val(),amount:amount.val()}));
-      action("정산 신청","/review",()=>({actual:amount.val(),round:claim.reviewRound}));
+      action("합성 증빙 첨부","/evidence",()=>({type:type.val(),amount:amount.val()}),settlementActions);
+      action("정산 신청","/review",()=>({actual:amount.val(),round:claim.reviewRound}),settlementActions);
     }
     const managerReview = state.role === "MANAGER" && claim.status === "INCREASE_REQUESTED";
     if (state.role === "EMPLOYEE" && claim.status === "NEEDS_RECEIPT") {

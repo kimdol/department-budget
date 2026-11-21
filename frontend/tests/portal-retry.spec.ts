@@ -8,7 +8,7 @@ test("포털 장애 복구 후 재무 담당자가 원래 승인 메시지를 �
   await page.getByRole("button", {name:"개인 데모 시작"}).click();
   await page.getByRole("button", {name:"신청 제출"}).click();
   const claim = page.locator(".claim");
-  const id = await claim.locator("small").innerText();
+  const id = await claim.locator(".claim-number").innerText();
   await page.locator("#role").selectOption("MANAGER");
   await rename(receiver!, receiver! + ".offline");
   try {

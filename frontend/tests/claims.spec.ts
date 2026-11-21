@@ -18,7 +18,7 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await page.getByRole("button", { name: "신청 제출" }).click();
     const claim = page.locator(".claim");
     await expect(claim).toContainText("결재 대기");
-    const number = await claim.locator("small").innerText();
+    const number = await claim.locator(".claim-number").innerText();
     await page.locator("#role").selectOption("MANAGER");
     await claim.getByRole("button", { name: "사전승인" }).click();
     await expect(page.locator("#committed")).toHaveText("200,000원");
@@ -102,7 +102,7 @@ test("두 방문자가 별도 예산으로 교육비 신청과 월 결산을 체
     await expect(page.locator("#spent")).toHaveText("180,000원");
     await expect(claim).toContainText("제출한 실비 225,000원 · 정산 당시 본인 부담 45,000원 · 예산으로 돌아간 약정 차액 20,000원");
     await expect(page.locator("#committed")).toHaveText("0원");
-    await expect(claim.locator("small")).toHaveText(number);
+    await expect(claim.locator(".claim-number")).toHaveText(number);
     let portalReceipt: {sequence:number;event:string;amount:number} | undefined;
     if (expectPortal) {
       const receiptButton = claim.getByRole("button",{name:"사내 포털 수신 결과"});
