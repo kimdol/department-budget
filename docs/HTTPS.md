@@ -28,6 +28,14 @@ sha256sum --check SHA256SUMS
 
 Ubuntu CI에서 Caddy의 시험 CA를 신뢰 목록에 등록하고 Chrome으로 배포 WAR와 Oracle에 접속했다. 오사카 VM의 공개 주소에서도 브라우저가 신뢰하는 인증서, TLS 1.3, HTTP 308과 세션·캐시 응답을 확인했다. VM을 재부팅한 뒤 Java·Caddy·PHP-FPM이 자동으로 올라왔고 두 방문자의 정산·월마감·격리와 HTTPS 시험을 다시 통과했다. [CI 프록시 실행](https://github.com/kimdol/department-budget/actions/runs/44772923282/job/136415004389) · [공개 전송](measurements/deployment-https.json) · [VM 재부팅 확인](measurements/deployment-restart.txt)
 
+## 무료 자원과 서비스 재개
+
+오사카 홈 리전에서 AMD E2.1.Micro 1대, Always Free Oracle Autonomous Database 1개, MySQL.Free 1개를 사용한다. 홈 리전의 상시 무료 자원과 한도를 기준으로 예상 비용은 월 0원이다. 같은 리전의 A1 Flex도 무료 한도에 들어갔지만 호스트 용량 부족으로 할당되지 않았다. AMD 무료 VM은 Oracle의 7일 유휴 판정에 따라 회수될 수 있다. [OCI 무료 한도와 유휴 판정](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm) · [할당 확인](PROGRESS.md#외부-환경)
+
+Oracle 원장은 20GB 한도다. 데이터베이스가 7일 동안 유휴 상태이면 자동 중지되며, 중지·비활성 상태가 누적 90일에 이르면 회수될 수 있다. MySQL 수신기는 50GiB 한도이고 자동 백업 보관 기간은 하루다. MySQL.Free에는 관리형 수동 백업과 시점 복구가 제공되지 않는다. Oracle의 별도 PDB Data Pump 복원 예시는 검증용 Oracle Free에서 실행했다. [Autonomous Database 중지·보관 조건](https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/autonomous-always-free.html) · [MySQL 무료 구성과 백업](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html) · [검증 PDB 복원](ORACLE.md#백업과-별도-스키마-복원)
+
+웹 서비스만 일시 중지할 때는 아래 [Java 서비스 중지 절차](#java-서비스-설치와-중지)를 사용한다. VM과 데이터베이스까지 중지했다면 OCI에서 Oracle·MySQL을 먼저 시작한다. 두 DB가 연결 가능한 상태가 된 후 VM의 Java·PHP-FPM·Caddy를 시작하고 공개 HTTPS에서 전표와 포털 수신액을 대조한다. VM 종료나 NIC 교체로 임시 공인 IPv4를 다시 할당하면 공개 호스트명, Oracle의 VM 송신 주소 허용 목록, Caddy 인증서와 README의 링크를 함께 갱신한다. 단순 VM 중지 중에는 임시 공인 주소가 유지된다. [OCI 임시 공인 주소](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingpublicIPs.htm)
+
 ## OCI 공개 포트 확인
 
 전용 웹 서브넷과 VM의 기본 NIC에 연결된 보안 목록·보안 그룹을 먼저 확인한다. 다른 서비스의 수신 규칙을 보존하려면 전용 서브넷에서 적용한다. 현재 관리 회선의 공인 IPv4를 확인한 뒤 보안 목록 조회 결과와 함께 아래 명령에 전달한다.
