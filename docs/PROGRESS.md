@@ -197,14 +197,14 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 | 심화 | 성능·복원 | 재방문 전송량, 수식 미리보기, Oracle 깊은 페이지·월별 집계, 부서별 잠금 조회 시간 측정 완료. 같은 CDB 안의 새 PDB에 복원한 대사 파일 547행 일치. |
 | 선택 | 상용 UI·리포팅 전환 | 제품 환경 미확보 |
 
-| 설계서의 세부 인수 항목 | 구현한 범위 | 남은 확인·구현 |
+| 설계서의 세부 인수 항목 | 구현한 범위 | 공개 검증·남은 항목 |
 | --- | --- | --- |
 | 직원의 사전 결정과 결재 | 개인 학습 장부, JSP 신청함의 지원액·본인 부담액·역할 경로, 접수 당시 규정 및 증빙 조건 고정, 비목 변경 재신청, 동일 비목의 범위·금액 변경 후 버전별 재상신 | 공개 Chrome으로 보완·재신청·동일 비목의 이전 버전과 현재 버전 조회 확인 |
 | 조직별 승인 주체 | 부서별 합성 구성원 신원과 서버 인가, 직원의 부서장 대행 시 자기 승인·증액 차단, 은행 본부 재무의 지점 예산 배정 | 공개 Chrome으로 자기 결재 차단과 지점 가용액 확인 |
 | 규정 적용·영향 비교 | 수식·조건 편집, 검토 해시, 버전 발행·복구, 저장한 신청별 예정액·경로 비교, 버전별 불변 구문 트리 캐시, 다음 달 예약 발행 | 공개 Chrome으로 예약·월마감·다음 달 적용 확인 |
 | 회계·포털 연계 | Spring Batch 월마감과 재시작, MyBatis·Oracle PL/SQL 대사, 실제 PHP·MySQL 송수신, 구 결산 CSV 대조, Apache Camel JSON·CSV 공통 변환, 그누보드 설치본 로그인·회원별 정산 조회 | 공개 VM에서 정산 후 같은 신청번호의 Oracle 집행액, 결산표와 MySQL 수신액 대조 |
 | UI·운영 검수 | JSP·React 직원 신청 화면의 동일 API·권한·키보드 검증, React 규정 작업실, 키보드 승인·보완과 오류 포커스, Linux CI의 WAR 복귀와 별도 PDB 복원 | 최초 사용자의 관찰 시험 대기 |
-| 성능 | 100만 신청의 깊은 목록, 100만 전표의 월별 집계·DB p95, 인덱스 쓰기 비용, 승인 시 부서 행 잠금, 실제 Oracle 동시 승인 HTTP 응답, 결재함 본문·정적 자산·수식 입력 측정 | 공개 환경에서의 브라우저 측정 |
+| 성능 | 100만 신청의 깊은 목록, 100만 전표의 월별 집계·DB p95, 인덱스 쓰기 비용, 승인 시 부서 행 잠금, 실제 Oracle 동시 승인 HTTP 응답, 결재함 본문·정적 자산·수식 입력 측정 | 공개 Chrome에서 [정적 자산 재사용](measurements/deployment-https.json)과 [새 세션의 첫 신청 시간](measurements/deployment-first-claim.json) 확인 |
 
 [원장 계약](../src/test/java/kr/budget/claims/PostingContract.java) · [브라우저 시험](../frontend/tests) · [정적 전송량](measurements/README.md) · [HTTPS](measurements/loopback-https.json) · [MySQL 수신](measurements/portal-receipts.json)
 
@@ -236,6 +236,8 @@ PHP-FPM의 루프백 18760이 SELinux에서 거부돼 Caddy의 비인증 요청�
 OCI VM의 부팅 식별값이 바뀐 뒤 Java·PHP-FPM·Caddy가 모두 자동 실행됐다. 기본 스왑 498MiB에서 SELinux Enforcing 상태를 유지했고, 공개 주소에서 HTTPS 200과 새 Chrome 세션의 정산·월마감 및 세션·캐시 시험 2건이 통과했다. [재부팅과 재시험](measurements/deployment-restart.txt)
 
 예열된 공개 서버에서 Chrome 157의 새 브라우저 컨텍스트 5개를 순차 실행했다. `개인 데모 시작` 클릭부터 가용 예산 표시까지 254.0~880.9ms, `신청 제출` 클릭부터 결재 대기 표시까지 215.5~848.8ms였다. 두 구간 모두 첫 화면 로딩 뒤의 자동 조작을 계측했다. [표본 5개](measurements/deployment-first-claim.json) · [같은 조작의 브라우저 시험](../frontend/tests/claims.spec.ts)
+
+공개 Chrome에서 최초 정산 요청을 서버에 전달한 뒤 HTTP 200 응답만 브라우저에 전달하지 않았다. 화면에 결과 확인 안내가 표시됐고, 다시 누르기 전의 Oracle 전표 조회에는 이미 약정·정산 전표 두 건이 있었다. 같은 신청·검토 차수로 화면에서 다시 확정한 뒤 API에서도 재전송했다. 전표는 그대로였으며 결산표 가용액 820,000원과 MySQL 정산 수신액 180,000원을 확인했다. [장애 재현 시험](../frontend/tests/claims.spec.ts) · [응답 유실 전후 결과](measurements/deployment-settlement-response-loss.json)
 
 배포 후보 `517cf8f`의 Oracle CI가 성공했다. 배포 ZIP을 내려받아 GitHub에 게시된 ZIP SHA-256, 내부 파일 13개의 개별 SHA-256과 커밋 식별값을 확인했다. 포털·서비스·DB 검사 파일 10개는 저장소 내용과 대조했다. [배포 묶음을 생성한 실행](https://github.com/kimdol/department-budget/actions/runs/44884197218) · [묶음 검증 절차](HTTPS.md#검증한-war-받기)
 

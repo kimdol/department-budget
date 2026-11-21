@@ -1,0 +1,87 @@
+{
+  "origin": "https://129-225-133-96.sslip.io",
+  "claimId": "86ab0019-0a10-4479-9170-e79a5e9a2627",
+  "droppedResponseStatus": 200,
+  "retryStatus": 200,
+  "afterDroppedResponse": [
+    {
+      "claimId": "86ab0019-0a10-4479-9170-e79a5e9a2627",
+      "kind": "APPROVAL",
+      "committedDelta": 200000,
+      "spentDelta": 0,
+      "periodKey": "2026-11",
+      "originalKind": null
+    },
+    {
+      "claimId": "86ab0019-0a10-4479-9170-e79a5e9a2627",
+      "kind": "SETTLEMENT",
+      "committedDelta": -200000,
+      "spentDelta": 180000,
+      "periodKey": "2026-11",
+      "originalKind": null
+    }
+  ],
+  "before": [
+    {
+      "claimId": "86ab0019-0a10-4479-9170-e79a5e9a2627",
+      "kind": "APPROVAL",
+      "committedDelta": 200000,
+      "spentDelta": 0,
+      "periodKey": "2026-11",
+      "originalKind": null
+    },
+    {
+      "claimId": "86ab0019-0a10-4479-9170-e79a5e9a2627",
+      "kind": "SETTLEMENT",
+      "committedDelta": -200000,
+      "spentDelta": 180000,
+      "periodKey": "2026-11",
+      "originalKind": null
+    }
+  ],
+  "after": [
+    {
+      "claimId": "86ab0019-0a10-4479-9170-e79a5e9a2627",
+      "kind": "APPROVAL",
+      "committedDelta": 200000,
+      "spentDelta": 0,
+      "periodKey": "2026-11",
+      "originalKind": null
+    },
+    {
+      "claimId": "86ab0019-0a10-4479-9170-e79a5e9a2627",
+      "kind": "SETTLEMENT",
+      "committedDelta": -200000,
+      "spentDelta": 180000,
+      "periodKey": "2026-11",
+      "originalKind": null
+    }
+  ],
+  "balance": {
+    "allocation": 1000000,
+    "committed": 0,
+    "spent": 180000,
+    "available": 820000
+  },
+  "portalReceipt": {
+    "sequence": 2,
+    "event": "SETTLEMENT",
+    "amount": 180000
+  },
+  "report": {
+    "period": "2026-11",
+    "balance": {
+      "allocation": 1000000,
+      "committed": 0,
+      "spent": 180000,
+      "available": 820000
+    },
+    "lines": [
+      {
+        "category": "EDUCATION",
+        "claimCount": 1,
+        "spent": 180000
+      }
+    ]
+  }
+}
