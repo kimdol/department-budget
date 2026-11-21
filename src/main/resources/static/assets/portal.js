@@ -218,8 +218,9 @@ function render(state) {
     }
     if (state.role === "EMPLOYEE" && ["APPROVED","NEEDS_RECEIPT"].includes(claim.status)) {
       const roundKey = claim.claimId + "/" + claim.reviewRound;
-      const amount = $("<input>").attr({type:"number",min:1,"aria-label":"실제 지출액(원)","data-expense-round":roundKey})
-        .val(editingAmounts.get(roundKey) ?? claim.actual ?? 225000).appendTo(actions);
+      const amountLabel = $("<label>").text("실제 지출액(원)").appendTo(actions);
+      const amount = $("<input>").attr({type:"number",min:1,"data-expense-round":roundKey})
+        .val(editingAmounts.get(roundKey) ?? claim.actual ?? 225000).appendTo(amountLabel);
       const type = $("<select>").attr("aria-label","증빙 종류").appendTo(actions);
       $("<option>").val("RECEIPT").text("지출 영수증").appendTo(type);
       $("<option>").val("ATTENDANCE").text("참석 확인서").appendTo(type);

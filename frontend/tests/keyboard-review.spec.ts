@@ -32,6 +32,9 @@ test("키보드로 결재하고 보완 사유 입력 후 같은 신청에서 재
   await expect(heading).toContainText("약정 완료");
   await role("Home","EMPLOYEE");
   const actual = claim.getByRole("spinbutton",{name:"실제 지출액(원)"});
+  const actualLabel = claim.locator("label").filter({has:page.getByRole("spinbutton",{name:"실제 지출액(원)"})});
+  await expect(actualLabel).toBeVisible();
+  await expect(actualLabel).toHaveText("실제 지출액(원)");
   await tabTo(page,actual);
   await page.keyboard.press("ControlOrMeta+a");
   await page.keyboard.insertText("125000");
