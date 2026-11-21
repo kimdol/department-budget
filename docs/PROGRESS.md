@@ -219,7 +219,7 @@ ba94fe6에서 임시 PHP 수신 경로를 중단한 채 직원 신청을 부서�
 
 OCI 오사카 AD-1에서 상시 무료 A1 Flex의 2 OCPU·12GB와 1 OCPU·6GB 생성 요청이 모두 호스트 용량 부족으로 거절됐다. 같은 리전에 상시 무료 대상인 AMD VM.Standard.E2.1.Micro 1GB와 기본 부팅 볼륨을 선택해 `department-budget-demo`를 생성했다. Oracle 콘솔에서 Running과 공인 IP 미할당을 확인했다. SSH 공개 키는 생성 요청에 포함했으며 실제 SSH 접속은 검증 전이다. 홈 리전의 상시 무료 한도 기준 예상 인프라 비용은 월 0원이다. [OCI 상시 무료 자원](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
 
-1GB VM은 Java 웹과 PHP 포털 수신기를 담당한다. 오사카 Oracle 원장 DB는 19c Transaction Processing, Always Free, AVAILABLE로 확인했다. MySQL 수신 DB는 MySQL.Free 50GiB로 생성했고, 공인 IP를 금지한 전용 서브넷의 사설 엔드포인트 1개와 ACTIVE 상태를 확인했다. Oracle에는 CIDR로 제한한 TLS 접근 규칙을 적용했다. 무료 Autonomous DB의 서비스 주소는 사설 엔드포인트로 전환할 수 없으므로 실제 연결 경로와 원장 스키마 설치는 배포 후 확인한다. VM의 공인 IP는 연결 대기 중이다. [Oracle DB 연결 절차](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 상시 무료 서비스](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html)
+1GB VM은 Java 웹과 PHP 포털 수신기를 담당한다. 오사카 Oracle 원장 DB는 19c Transaction Processing, Always Free, AVAILABLE로 확인했다. MySQL 수신 DB는 MySQL.Free 50GiB로 생성했고, 공인 IP를 금지한 전용 서브넷의 사설 엔드포인트 1개와 ACTIVE 상태를 확인했다. Oracle에는 CIDR로 제한한 TLS 접근 규칙을 적용했다. 무료 Autonomous DB의 서비스 주소는 사설 엔드포인트로 전환할 수 없으므로 실제 연결 경로와 원장 스키마 설치는 배포 후 확인한다. VM의 공인 IP는 미할당 상태다. 웹 서브넷에 TCP 80·443과 관리 IPv4 한 개의 TCP 22만 허용하는 규칙을 적용하고 조회로 대조한 뒤 공인 IP를 할당한다. OCI Cloud Shell 연결이 끊겨 실제 규칙 변경과 SSH 접속은 확인하지 못했다. [Oracle DB 연결 절차](ORACLE.md#oci-배포-vm에서-jdbc-연결-확인) · [MySQL 상시 무료 서비스](https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html)
 
 AMD Micro용 JVM·Tomcat·DB 연결 풀 후보를 Windows에서 비교했다. 두 방문자의 교육비 흐름은 4회 모두 통과했고, Java 최대 작업 집합은 기본 296.4~305.1 MiB, 후보 243.4~244.7 MiB였다. OCI 근거는 배포 뒤 별도로 남긴다. [설정과 재현 명령](HTTPS.md#1gb-vm의-java-메모리-설정)
 
