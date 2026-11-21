@@ -32,7 +32,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 
 신청 내역에서 실비 225,000원 중 직원이 부담한 45,000원과, 승인 약정 200,000원 중 집행하지 않아 가용 예산으로 돌아간 20,000원을 각각 확인할 수 있다.
 
-직원으로 돌아가 **내 신청함**에서 같은 신청을 열면 정산액과 현재 가용 예산을 확인할 수 있다. 재무에서 보완을 요청한 건에는 보완 사유가 표시된다. 영수증을 첨부하면 서버가 확인한 종류와 금액이 표시되고 같은 신청에서 다시 제출할 수 있다. [PC 신청함](docs/images/employee-inbox.png) · [모바일 증빙 보완](docs/images/employee-receipt-mobile.png) · [화면 크기별 통합 시험](frontend/tests/employee-inbox.spec.ts)
+직원으로 돌아가 **내 신청함**에서 같은 신청을 열면 정산액과 현재 가용 예산을 확인할 수 있다. 재무에서 보완을 요청한 건에는 보완 사유가 표시된다. 영수증을 첨부하면 서버가 확인한 종류와 금액이 표시되고 같은 신청에서 다시 제출할 수 있다. [개인 장부](docs/images/personal-ledger.png) · [PC 신청함](docs/images/employee-inbox.png) · [모바일 증빙 보완](docs/images/employee-receipt-mobile.png) · [화면 크기별 통합 시험](frontend/tests/employee-inbox.spec.ts)
 
 개발자 도구를 열면 같은 신청번호로 화면과 HTTP 응답의 금액을 대조할 수 있다. [역할별 요청·응답과 재시도](docs/API.md)
 
@@ -46,7 +46,7 @@ Java 21·Spring Boot·MyBatis·Oracle이 원장을 처리한다. JSP·jQuery는 
 
 ## 브라우저 시험
 
-공개 HTTPS에서 Chrome 시험 23건을 통과했다. 직원 신청함은 390·768·1440px에서 영수증 보완 후 정산 결과까지 확인했다. 교육비 월마감, 출장 결재, 학회비 규정 발행·복구, 지점 예산 배정, 방문자·부서 격리도 점검했다. 별도 부하·장애 조건을 쓰는 3건은 이 실행에서 건너뛰었다. TLS 1.3, Secure·HttpOnly·SameSite=Lax 쿠키, 업무 응답의 no-store, 비목표의 ETag 재검증과 정적 파일 재사용을 확인했다. [직원 신청함과 정산 결과](docs/measurements/deployment-inbox-navigation.json) · [공개 전송 원자료](docs/measurements/deployment-https.json) · [재현 명령](docs/HTTPS.md#java-서비스-설치와-중지)
+공개 HTTPS에서 Chrome 시험 23건을 통과했다. 직원 신청함은 390·768·1440px에서 영수증 보완 후 정산 결과까지 확인했다. 교육비 월마감, 출장 결재, 학회비 규정 발행·복구, 지점 예산 배정, 방문자·부서 격리도 점검했다. 별도 부하·장애 조건을 쓰는 3건은 이 실행에서 건너뛰었다. TLS 1.3, Secure·HttpOnly·SameSite=Lax 쿠키, 업무 응답의 no-store, 비목표의 ETag 재검증과 정적 파일 재사용을 확인했다. [직원 신청함과 정산 결과](docs/measurements/deployment-workspace-layout.json) · [공개 전송 원자료](docs/measurements/deployment-https.json) · [재현 명령](docs/HTTPS.md#java-서비스-설치와-중지)
 
 첫 방문 시 접수 결과와 실제 지출액 입력칸을 찾기 어려웠다. 폼에 접수 상태를 표시하고 정산 입력과 첨부·신청 버튼을 한 영역에 배치했다. 모바일 크기의 Chrome에서 영수증이 없는 정산을 차단한 뒤, 보완 요청과 재제출을 거쳐 180,000원을 정산하는 흐름을 확인했다. [배포 전후 원자료](docs/measurements/deployment-claim-ux.json)
 
