@@ -1,4 +1,5 @@
 import {useLayoutEffect, useRef} from "react";
+import {EmployeeInbox} from "./inbox/EmployeeInbox";
 import {createRoot} from "react-dom/client";
 
 const original = document.querySelector<HTMLFormElement>("#submit")!;
@@ -24,4 +25,6 @@ function EmployeeForm() {
   </form>;
 }
 
+createRoot(document.getElementById("employee-inbox")!).render(<EmployeeInbox/>);
+document.dispatchEvent(new Event("employee-inbox-ready"));
 createRoot(document.getElementById("employee-root")!).render(<EmployeeForm/>);

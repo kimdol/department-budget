@@ -4,7 +4,7 @@
 <meta name="csrf-token" content="${_csrf.token}"><title>부서예산 · 결재함</title>
 <link rel="stylesheet" href="${assetPaths['portal.css']}"><script defer src="/webjars/jquery/3.7.1/jquery.min.js"></script><script defer src="${assetPaths['portal.js']}"></script></head>
 <body><header><strong>부서예산</strong><span>교육비 · 출장비</span></header><main>
-<div class="heading"><div><h1>부서 결재함</h1><p>신청부터 정산까지, 부서 예산을 확인하세요.</p></div><label id="organization-choice">체험 조직<select id="organization"><option value="COMPANY">일반 기업 경영지원팀</option><option value="HOSPITAL">병원 행정부서</option><option value="BANK">은행 경영지원팀</option></select></label><button id="start">개인 데모 시작</button></div>
+<div class="heading"><div><h1>부서 결재함</h1><p>신청부터 정산까지, 부서 예산을 확인하세요.</p></div><label id="organization-choice">체험 조직<select id="organization"><option value="COMPANY">일반 기업 경영지원팀</option><option value="HOSPITAL">병원 행정부서</option><option value="BANK">은행 경영지원팀</option></select></label><button id="employee-start">내 신청함 시작</button><button id="start">개인 데모 시작</button></div>
 <p id="notice" role="status" aria-live="polite">데모를 시작하면 독립된 부서 예산 100만 원이 배정됩니다.</p>
 <p><a href="/personal">내 자격시험·교육·도서 장부</a></p>
 
@@ -27,4 +27,4 @@
 <div id="portal-failures" aria-live="polite"></div>
 <div id="statement" aria-live="polite"></div>
 <button id="close-period" hidden>이 기간 마감 확정</button></section>
-<section><h2>신청 내역</h2><label>신청 상태<select id="claim-filter"><option value="">전체 상태</option></select></label><div id="claims"></div><button id="newer" hidden>이전 페이지</button><button id="older" hidden>다음 페이지</button></section></div></main></body></html>
+<section id="employee-inbox" hidden></section><section id="legacy-inbox"><h2>신청 내역</h2><label>신청 상태<select id="claim-filter"><option value="">전체 상태</option></select></label><div id="claims"></div><button id="newer" hidden>이전 페이지</button><button id="older" hidden>다음 페이지</button></section></div></main></body></html>

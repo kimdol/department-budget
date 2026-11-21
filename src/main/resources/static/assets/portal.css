@@ -5,3 +5,19 @@ details{margin:1rem 0}summary{cursor:pointer;font-weight:700}textarea{font:1rem/
 .claim-number{overflow-wrap:anywhere}
 .settlement-entry{min-inline-size:0;margin:1rem 0 0;padding:.75rem;border:1px solid #d4dfdd;border-radius:.3rem}
 .settlement-entry legend{font-weight:700}
+.inbox-layout{display:grid;grid-template-columns:minmax(15rem,2fr) minmax(0,3fr);gap:1.25rem}
+.inbox-list ul{list-style:none;padding:0}
+.inbox-list li button{width:100%;text-align:left;display:grid;background:white;color:#193c40;margin:.25rem 0;overflow-wrap:anywhere}
+.inbox-list li button[aria-current=true]{background:#e7f4ef;border-color:#09665d}
+.inbox-pane{min-width:0;overflow-wrap:anywhere}
+.inbox-detail dl{display:grid;grid-template-columns:auto 1fr;gap:.3rem .8rem}
+.inbox-detail dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.review-note{padding:.7rem;background:#fff3d6;border-left:3px solid #986200}
+.receipt-form{display:grid;align-items:start}
+.receipt-form p:empty{display:none}
+.inbox-back{display:none}
+@media(max-width:52rem){
+  .inbox-layout{display:block}
+  .inbox-pane,.detail-open .inbox-list{display:none}
+  .detail-open .inbox-pane,.inbox-back{display:block}
+}

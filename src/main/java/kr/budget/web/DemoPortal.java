@@ -97,9 +97,10 @@ public class DemoPortal {
                                          @RequestParam(required=false) String status) {
         String workspace = workspace(session);
         long cursor = before == null ? Long.MAX_VALUE : before;
-        var rows = status == null || status.isEmpty() ? mapper.inbox(workspace,cursor)
-                : mapper.inboxByStatus(workspace,cursor,status);
         Role member = role(session);
+        var rows = member == Role.EMPLOYEE
+                ? mapper.employeeInbox(workspace,member.memberId,cursor,status == null || status.isEmpty() ? null : status)
+                : status == null || status.isEmpty() ? mapper.inbox(workspace,cursor) : mapper.inboxByStatus(workspace,cursor,status);
         return Map.of("balance", mapper.balance(workspace), "claims", rows.stream().limit(50).toList(), "hasMore",rows.size() > 50,
                 "role", member.effective(),"persona",member,"memberId",member.memberId,
                 "organization",mapper.organization(workspace),"portalEnabled",receipts.getIfAvailable()!=null);

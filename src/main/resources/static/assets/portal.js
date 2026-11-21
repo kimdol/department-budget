@@ -35,8 +35,24 @@ function departmentUrl(path) {
 $.ajaxPrefilter(options=>{
   if (options.url.startsWith("/api/") && !options.url.startsWith("/api/catalog/")) options.url = departmentUrl(options.url);
 });
-$("#department").on("change",event=>location.assign("/?department="+encodeURIComponent(event.target.value)));
+$("#department").on("change",event=>{
+  const url = new URL(location.href);
+  url.searchParams.set("department",event.target.value);
+  location.assign(url);
+});
 let nextCursor = null;
+let inboxReady = false;
+const inbox = window.employeeInbox = {
+  state:null,labels:statusName,nextSteps:pendingAction,filter:claimFilter,older:false,newer:false,
+  page:changePage,refresh,filterBy(value) {
+    claimFilter.value = value;
+    return changeFilter();
+  }
+};
+document.addEventListener("employee-inbox-ready",()=>{
+  inboxReady = true;
+  if (inbox.state) render(inbox.state);
+});
 function render(state) {
   claimFilter.dataset.applied = claimFilter.value;
   $("#department-choice").prop("hidden",false);
@@ -61,7 +77,7 @@ function render(state) {
   $("#portal-failures").empty();
   $("#view-failures").prop("hidden", !state.portalEnabled || state.role !== "FINANCE");
   $("#close-period").prop("hidden",true);
-  $("#start").prop("hidden", true);
+  $("#start,#employee-start").prop("hidden", true);
   $("#desk").prop("hidden", false);
   for (const key of ["allocation","committed","spent","available"]) $("#" + key).text(money(state.balance[key]));
   $("#role").val(state.role);
@@ -74,6 +90,19 @@ function render(state) {
   document.dispatchEvent(new Event("budget-session"));
   $("#entry").prop("hidden", state.role !== "EMPLOYEE");
   const list = $("#claims");
+  const employeeMode = state.role === "EMPLOYEE" && inboxReady;
+  Object.assign(inbox,{state,older:nextCursor !== null,newer:cursors.length > 1});
+  $("#employee-inbox").prop("hidden",!employeeMode);
+  $("#legacy-inbox").prop("hidden",employeeMode);
+  document.dispatchEvent(new Event("employee-inbox-update"));
+  if (employeeMode) {
+    list.empty();
+    const action = state.claims.find(claim=>claim.status === "NEEDS_RECEIPT");
+    if (action) notice("보완을 요청받은 신청이 있습니다. 내 신청함에서 사유를 확인하세요.");
+    else if (state.claims.length) notice("내 신청함에서 진행 상태와 다음 담당자를 확인하세요.");
+    return;
+  }
+  if (state.role === "EMPLOYEE" && new URLSearchParams(location.search).get("view")==="employee") loadEmployee();
   const editingAmounts = new Map();
   for (const input of list[0].querySelectorAll("input[data-expense-round]")) {
     editingAmounts.set(input.dataset.expenseRound,input.value);
@@ -323,12 +352,12 @@ function refresh() {
     if (status === claimFilter.value && before === cursors[cursors.length-1]) render(state);
   });
 }
-$(claimFilter).on("change",()=>{
+function changeFilter(){
   const previous = cursors.slice();
   claimFilter.disabled = true;
   $("#older,#newer").prop("disabled",true);
   cursors.splice(0,cursors.length,null);
-  refresh().fail(error=>{
+  return refresh().fail(error=>{
     claimFilter.value = claimFilter.dataset.applied || "";
     cursors.splice(0,cursors.length,...previous);
     reportError(error);
@@ -336,14 +365,15 @@ $(claimFilter).on("change",()=>{
     claimFilter.disabled = false;
     $("#older,#newer").prop("disabled",false);
   });
-});
+}
+$(claimFilter).on("change",changeFilter);
 function changePage(older) {
   const previous = cursors.slice();
   if (older && nextCursor !== null) cursors.push(nextCursor);
   else if (!older && cursors.length > 1) cursors.pop();
   else return;
   $("#older,#newer").prop("disabled",true);
-  refresh().fail(error => {cursors.splice(0,cursors.length,...previous); reportError(error);})
+  return refresh().fail(error => {cursors.splice(0,cursors.length,...previous); reportError(error);})
     .always(()=>$("#older,#newer").prop("disabled",false));
 }
 $("#older").on("click",()=>changePage(true));
@@ -459,8 +489,14 @@ $("#close-period").on("click",function() {
   $(this).prop("disabled",true);
   api("/api/statement/close",{}).done(showStatement).fail(reportError).always(()=>$(this).prop("disabled",false));
 });
+$("#employee-start").on("click",()=>{
+  const url = new URL(location.href);
+  url.searchParams.set("view","employee");
+  history.replaceState(null,"",url);
+  $("#start").trigger("click");
+});
 $("#start").on("click",function() {
-  const start = $(this).prop("disabled",true);
+  const start = $("#start,#employee-start").prop("disabled",true);
   loadCategories().then(()=>api("/api/demo",{organization:$("#organization").val()})).then(render)
     .fail(reportError).always(()=>start.prop("disabled",false));
 });
@@ -475,6 +511,8 @@ function changeRole(role) {
   const selector = $("#role,#delegate").prop("disabled",true);
   const panels = $("#desk > section,#estimate-panel,#policy-panel");
   panels.prop("inert",true);
+  claimFilter.value = "";
+  cursors.splice(0,cursors.length,null);
   api("/api/demo/role",{role}).then(refresh).then(()=>{
     panels.prop("inert",false);
     selector.prop("disabled",false);
@@ -490,12 +528,20 @@ function clearEstimate() {
   $("#estimate-result").empty();
 }
 $("#entry").on("input change","form",clearEstimate);
-$("#employee-view").on("click",function() {
-  const trigger = $(this).prop("disabled",true);
+function loadEmployee() {
+  if(document.getElementById("employee-module"))return;
+  const trigger = $("#employee-view").prop("disabled",true);
   const script = document.createElement("script");
-  script.src = this.dataset.module;
-  script.onerror = () => {trigger.prop("disabled",false); notice("직원 신청 화면을 불러오지 못했습니다. 다시 시도하세요.");};
+  script.id = "employee-module";
+  script.src = trigger[0].dataset.module;
+  script.onerror = () => {script.remove();trigger.prop("disabled",false); notice("직원 신청 화면을 불러오지 못했습니다. 다시 시도하세요.");};
   document.head.append(script);
+}
+$("#employee-view").on("click",()=>{
+  const url = new URL(location.href);
+  url.searchParams.set("view","employee");
+  history.replaceState(null,"",url);
+  loadEmployee();
 });
 $("#estimate").on("click", () => {
   const form = document.querySelector("#employee-submit") || document.querySelector("#submit");
@@ -521,8 +567,14 @@ $("#entry").on("submit","form",event=>{
   const key = previous?.fields === fields ? previous.key : crypto.randomUUID();
   sessionStorage.setItem("pending-claim", JSON.stringify({fields, key}));
   const generation = expectedGeneration === null ? "" : "&expectedGeneration=" + expectedGeneration;
-  api("/api/claims", fields + generation + "&requestKey=" + encodeURIComponent(key)).then(() => {
+  const payload = fields + generation + "&requestKey=" + encodeURIComponent(key);
+  api("/api/claims",payload).then(undefined,error=>{
+    if (!inboxReady || error.status !== 0) throw error;
+    status.text("서버에서 신청 접수 결과를 확인하고 있습니다.");
+    return api("/api/claims",payload);
+  }).then(() => {
     sessionStorage.removeItem("pending-claim");
+    claimFilter.value = "";
     cursors.splice(0,cursors.length,null);
     status.text("신청이 접수됐습니다. 아래 신청 내역에서 확인하세요.");
     return refresh().then(undefined, () => {

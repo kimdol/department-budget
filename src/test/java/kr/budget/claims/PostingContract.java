@@ -682,6 +682,11 @@ abstract class PostingContract {
         service.submit(other,UUID.randomUUID(),"별도 공간","EDUCATION",1000,1);
         assertEquals(List.of(ordered.get(1),ordered.getFirst()),mapper.inbox(workspace,cursor).stream().map(BudgetMapper.InboxItem::claimId).toList());
         assertTrue(mapper.inbox(other,cursor).isEmpty());
+        jdbc.update("update expense_claim set applicant_id='STAFF_02' where claim_id=?",ordered.get(1));
+        var ownPage = mapper.employeeInbox(workspace,"STAFF_01",cursor,"SUBMITTED");
+        assertEquals(List.of(ordered.getFirst()),ownPage.stream().map(BudgetMapper.InboxItem::claimId).toList());
+        assertEquals(ordered.get(1),mapper.employeeInbox(workspace,"STAFF_02",Long.MAX_VALUE,null).getFirst().claimId());
+        assertTrue(mapper.employeeInbox(other,"STAFF_02",Long.MAX_VALUE,null).isEmpty());
     }
 
     @Test
