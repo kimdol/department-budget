@@ -228,7 +228,7 @@ ARM VM 안에서 Oracle Database Free와 MySQL을 실행하는 구성을 우선 
 
 GitHub의 Ubuntu 24.04 ARM 러너에서 위 두 이미지로 Oracle 원장 시험 28건을 통과했다. WAR에서 추출한 스키마를 설치하고 Caddy의 시험용 HTTPS를 거쳐 200,000원 약정과 180,000원 정산을 완료했다. 요청을 재전송해도 Oracle 전표는 2건, 보고서 가용액은 820,000원, MySQL 정산 수신 이력은 1건이었다. OCI의 Oracle Linux에서 기동과 공개 인증서를 확인하는 단계가 남아 있다. [ARM 실행](https://github.com/kimdol/department-budget/actions/runs/44878152345) · [정산 원자료](measurements/arm-settlement-44878152345.json) · [포털 재전송 원자료](measurements/arm-portal-replay-44878152345.csv)
 
-검증한 Java 배포 묶음은 5075c18의 WAR, Oracle 설치 SQL, PHP 수신기와 MySQL 수신 스키마를 포함한다. [전체 CI](https://github.com/kimdol/department-budget/actions/runs/44810504579) · [Oracle 이미지](https://github.com/gvenzl/oci-oracle-free#how-to-use-these-images)
+배포 후보 d5f3440의 묶음은 WAR, Oracle 설치 SQL, MySQL 수신 스키마, Caddy 수신 경로와 PHP-FPM 서비스를 포함한다. ARM·x64 CI에서 127.0.0.1에 열린 수신 포트 두 개를 확인했다. 인증 토큰 없이 전송하면 HTTP 403, 등록하지 않은 경로는 404였다. 브라우저 정산 결과와 MySQL 수신액을 대사했고, 로컬에 보관한 배포 ZIP의 파일 13개를 SHA-256으로 대조했다. [ARM CI](https://github.com/kimdol/department-budget/actions/runs/44878869051) · [x64 CI 및 배포 묶음](https://github.com/kimdol/department-budget/actions/runs/44878869078) · [PHP-FPM 설치](HTTPS.md#포털-수신-연결)
 
 ## 단계별 검증 기록
 
