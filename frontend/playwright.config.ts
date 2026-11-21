@@ -17,7 +17,7 @@ const maven = process.env.TEST_MAVEN || "mvn";
 export default defineConfig({
   testDir: "tests",
   workers: 1,
-  use: { baseURL, channel: "chrome", viewport: { width: 1280, height: 900 },
+  use: { baseURL, channel: process.env.TEST_BROWSER_CHANNEL ?? "chrome", viewport: { width: 1280, height: 900 },
     launchOptions: { args: tls ? ["--ignore-certificate-errors-spki-list=" + tls] : [] } },
   webServer: deployment || process.env.TEST_EXTERNAL_RELEASE === "1" ? undefined : {
     cwd: root,

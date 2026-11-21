@@ -1,0 +1,71 @@
+name: Verify ARM Deployment
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/verify-arm.yml
+permissions:
+  contents: read
+jobs:
+  arm-deployment:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    services:
+      database:
+        image: ghcr.io/gvenzl/oracle-free@sha256:80a93426507ad712f6920949aebbfdb6e651832bc17631c6e49a864651d6cc6b
+        env:
+          ORACLE_RANDOM_PASSWORD: "yes"
+          APP_USER: budget
+          APP_USER_PASSWORD: ${{ github.run_id }}Demo
+        ports:
+          - 127.0.0.1:1521:1521
+        options: --health-cmd healthcheck.sh --health-interval 10s --health-timeout 5s --health-retries 30
+    env:
+      BUDGET_DB_PASSWORD: ${{ github.run_id }}Demo
+      TEST_BROWSER_CHANNEL: chromium
+      MYSQL_TEST_IMAGE: docker.io/library/mysql@sha256:f4539b86c82f2c168fc95b439448bde3b9f48e8460344ce41e39081867d2b58e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm native ARM runtime
+        run: |
+          test "$(uname -m)" = aarch64
+          printf 'PLAYWRIGHT_BROWSERS_PATH=%s/budget-browsers\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y php8.3-cli php8.3-mysql libnss3-tools
+          php -r 'exit(extension_loaded("pdo_mysql") ? 0 : 1);'
+      - run: npm ci && npm run build && npx --no-install playwright install --with-deps chromium
+        working-directory: frontend
+      - run: mvn -B -ntp -f portal-importer/pom.xml verify
+      - run: mvn -B -ntp verify
+        env:
+          BUDGET_TEST_EMPTY_SCHEMA: 'yes'
+      - run: python3 ops/check_oracle_contract.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arm-oracle-contract-results
+          path: target/surefire-reports/oracle-cases.json
+          if-no-files-found: error
+      - name: Install and verify the Oracle WAR on ARM
+        run: bash ops/ci_oracle_release.sh
+        env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+      - name: Reconcile Oracle and MySQL over HTTPS on ARM
+        run: bash ops/ci_https_proxy.sh
+        env:
+          ORACLE_SERVICE_CONTAINER: ${{ job.services.database.id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arm-proxy-transport
+          path: |
+            target/https-proxy/transport.json
+            target/https-proxy/settlement-proof.json
+            target/https-proxy/portal-replay.csv
+          if-no-files-found: error

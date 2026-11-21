@@ -18,7 +18,7 @@ export MYSQL_PASSWORD=$(openssl rand -hex 24)
 export MYSQL_DATABASE=budget MYSQL_USER=receiver
 mysql=$(docker run -d -p 127.0.0.1:13306:3306 -e MYSQL_RANDOM_ROOT_PASSWORD=yes \
     -e MYSQL_DATABASE -e MYSQL_USER -e MYSQL_PASSWORD \
-    -v "$PWD/portal/mysql/V001__projection.sql:/docker-entrypoint-initdb.d/projection.sql:ro" mysql:8.4)
+    -v "$PWD/portal/mysql/V001__projection.sql:/docker-entrypoint-initdb.d/projection.sql:ro" "${MYSQL_TEST_IMAGE:-mysql:8.4}")
 mysql_query() {
     docker exec -e MYSQL_PWD="$MYSQL_PASSWORD" "$mysql" mysql --protocol=TCP -h127.0.0.1 \
         -u "$MYSQL_USER" -N -B "$MYSQL_DATABASE" -e "$1"
