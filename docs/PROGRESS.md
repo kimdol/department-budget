@@ -313,3 +313,10 @@ React 신청함을 처음 사용한 참가자 1명이 영수증이 필요한 교
 왼쪽에 신청 목록 제목과 건별 다음 담당자를 추가하고 두 신청 중 하나를 선택해 우측 상세가 갱신되는 것을 확인했다. 이력 링크는 하단에 구분선을 둔 보조 메뉴로 표시하고, 보완 양식에 첨부 확인 후 다시 제출하는 순서를 표시했다. 공개 Chrome에서 세 화면 폭의 보완·정산과 키보드 이력 이동을 포함해 23건이 통과했고 별도 조건 3건은 건너뛰었다. 수정 뒤 처음 방문하는 사람의 수행 시간은 측정하지 않았다. [변경 코드](https://github.com/kimdol/department-budget/commit/4ef064d) · [공개 시험 결과](measurements/deployment-inbox-navigation.json) · [신청 두 건이 있는 화면](images/employee-inbox.png)
 
 공개 배포에서 390px과 768px 신청 목록을 각각 두 번 열었다. ‘정산 완료’ 필터로 상세를 열기 직전의 세로 스크롤 좌표를 읽고, 목록 복귀 후 같은 좌표·필터·선택 행 포커스를 함께 검사했다. 4회 모두 통과했다. 배포 커밋의 Oracle 원장 시험과 Caddy HTTPS·MySQL 연계 시험도 통과했다. [브라우저 회귀 시험](../frontend/tests/employee-inbox.spec.ts) · [배포 커밋의 CI 결과](https://github.com/kimdol/department-budget/actions/runs/44909305589)
+
+
+## 체험 설정과 개인 장부
+
+조직·부서·역할 설정을 부서 예산 요약 위에 배치했다. 개인 장부는 지출 입력·내역과 예산 설정·예상 비용을 나누고, 저장 결과를 화면에 표시한다. 로컬 Chrome 시험 22건이 통과했고 공개 HTTPS에서 23건이 통과했다. 390px과 1280px에서 예산 500,000원과 지출 32,000원을 입력하고 잔액 468,000원 및 지출 내역을 확인했다. [변경 코드](https://github.com/kimdol/department-budget/commit/bbc6403) · [공개 시험 결과](measurements/deployment-workspace-layout.json) · [Oracle 통합 시험](https://github.com/kimdol/department-budget/actions/runs/44911498560)
+
+공개 주소의 도메인은 해석됐지만 HTTPS 연결과 SSH 배너 수신이 시간 초과됐고, 당시 콘솔에서 VM은 실행 상태였다. 일반 재부팅을 요청했고 재부팅 후 Java·HTTPS 프록시·포털 수신 서비스가 기동했다. 종료 단계에서 기본 스왑 사용량은 497MiB, 가용량은 0MiB였다. 직전 부팅의 커널 저널이 남아 있지 않아 장애 원인은 확정하지 못했다. 기존 부팅 볼륨에 1GiB 스왑을 추가한 뒤 활성 상태와 부팅 시 적용 설정을 확인했다. 재부팅·화면 배포·스왑 추가가 같은 복구 과정에서 진행되어 스왑의 단독 효과는 측정하지 않았다. 접속 장애로 중단된 참가자의 시도는 과제 완료 시간에서 제외한다.
