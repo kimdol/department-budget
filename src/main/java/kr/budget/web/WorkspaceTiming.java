@@ -41,7 +41,8 @@ public class WorkspaceTiming extends OncePerRequestFilter implements Interceptor
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !"GET".equals(request.getMethod()) || !"/api/workspace".equals(request.getServletPath());
+        String path = request.getServletPath();
+        return !"GET".equals(request.getMethod()) || !("/".equals(path) || "/api/workspace".equals(path));
     }
 
     @Override
