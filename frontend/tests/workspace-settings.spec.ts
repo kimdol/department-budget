@@ -48,11 +48,25 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
 
     await start.click();
-    await expect(settings.getByLabel("체험 부서")).toBeVisible();
-    await expect(settings.getByLabel("시연 역할")).toHaveValue("EMPLOYEE");
+    const department = settings.getByLabel("체험 부서");
+    const role = settings.getByLabel("시연 역할");
+    await expect(department).toBeVisible();
+    await expect(role).toHaveValue("EMPLOYEE");
+    const departmentBox = await bounds(department);
+    const roleBox = await bounds(role);
+    expect(departmentBox.x).toBe(heading.x);
+    expect(roleBox.x).toBeGreaterThan(departmentBox.x + departmentBox.width);
+    expect(roleBox.y).toBe(departmentBox.y);
+    expect(roleBox.width).toBe(departmentBox.width);
     await expect(alternate).toBeHidden();
     await expect(settings.getByRole("button", {name: "내 체험 종료"})).toBeVisible();
     expect((await bounds(notice)).x).toBe(heading.x);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    await role.selectOption("MANAGER");
+    await expect(settings.getByRole("button", {name: "신청 직원의 부서장 대행 체험"})).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    await department.selectOption("SECONDARY");
+    await expect(page).toHaveURL(/department=SECONDARY/);
+    await expect(department).toHaveValue("SECONDARY");
   });
 }

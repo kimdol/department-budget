@@ -59,12 +59,28 @@ export function InboxAssistant({claim,available,interpreter=koreanCommands}:{
     } catch {setMessage("처리 결과를 확인할 수 없습니다. 신청 상세에서 상태와 증빙을 확인해 주세요.");}
     finally {lock.current=false;setBusy(false);}
   }
-  return <section aria-label="업무 도우미"><button type="button" aria-expanded={open} onClick={()=>{setOpen(!open);setConfirm(null);}}>대화형 업무 도우미</button>
-    {open&&<><p>가용 예산 알려줘 · 신청 상태 알려줘 · 영수증 첨부해줘 · 다시 제출해줘</p>
-    {claim&&<p>선택한 신청 · {claim.title}</p>}
-    <form onSubmit={e=>{e.preventDefault();void ask();}}><label>업무 요청<input maxLength={160} required value={text} disabled={busy}
-      onChange={e=>{setText(e.target.value);setConfirm(null);}}/></label><button disabled={busy}>요청 확인</button></form>
-    <p role="status">{message}</p>{confirm&&<><button type="button" disabled={busy} onClick={()=>void execute()}>{confirm==="resubmit"?"이 신청 재제출":"이 영수증 첨부"}</button>
-    <button type="button" onClick={()=>{setConfirm(null);setMessage("요청을 취소했습니다.");}}>취소</button></>}</>}
+  return <section className="inbox-assistant" aria-label="업무 도우미">
+    <button type="button" aria-expanded={open} onClick={()=>{setOpen(!open);setConfirm(null);}}>대화형 업무 도우미</button>
+    {open&&<div className="assistant-content">
+      <ul className="assistant-examples" aria-label="요청 예시">
+        <li>가용 예산 알려줘</li>
+        <li>신청 상태 알려줘</li>
+        <li>영수증 첨부해줘</li>
+        <li>다시 제출해줘</li>
+      </ul>
+      {claim&&<p>선택한 신청 · {claim.title}</p>}
+      <form onSubmit={e=>{e.preventDefault();void ask();}}>
+        <label>업무 요청<input maxLength={160} required value={text} disabled={busy}
+          onChange={e=>{setText(e.target.value);setConfirm(null);}}/></label>
+        <button disabled={busy}>요청 확인</button>
+      </form>
+      <p role="status">{message}</p>
+      {confirm&&<div className="assistant-actions">
+        <button className="primary" type="button" disabled={busy} onClick={()=>void execute()}>
+          {confirm==="resubmit"?"이 신청 재제출":"이 영수증 첨부"}
+        </button>
+        <button type="button" onClick={()=>{setConfirm(null);setMessage("요청을 취소했습니다.");}}>취소</button>
+      </div>}
+    </div>}
   </section>;
 }
