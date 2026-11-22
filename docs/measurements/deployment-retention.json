@@ -36,6 +36,12 @@
     "serviceActive": true,
     "scheduledCleanupEnabled": true,
     "scheduledTime": "03:15 Asia/Seoul",
+    "observedScheduledRun": {
+      "loggedAt": "2026-11-22T03:15:01.053+09:00",
+      "service": "department-budget",
+      "logger": "kr.budget.retention.DailyCleanup",
+      "message": "Demo cleanup removed 0 visitor pairs; 0 portal spaces pending"
+    },
     "retentionDays": 30,
     "productionMysqlCleanupCredential": "pending",
     "expiredProductionPairsDeletedDuringVerification": 0

@@ -20,6 +20,12 @@ V025에는 마지막 이용 시각이 없다. V026 적용 시 기존 공간에�
 
 공개 배포 직전 새 기준으로 삭제 후보는 **0쌍**이었고 V026 적용 전후 부서·신청 건수는 같았다. 공개 Chrome에서 기존 신청함의 세 화면 폭, 지연 로딩, 도우미를 포함한 5건이 통과했다. 운영용 MySQL 정리 계정은 별도 등록을 기다린다. 로컬 MySQL에서는 전용 권한으로 만료 공간의 수신·요약을 삭제하고 다른 방문자의 두 기록을 보존했다. `python ops/test_portal.py --retention`으로 재현한다. [배포·용량 기록](measurements/deployment-retention.json) · [실제 Oracle 시험](https://github.com/kimdol/department-budget/actions/runs/44927202859)
 
+2026년 11월 22일 03:15:01(한국 시간) 운영 로그에 삭제된 방문자 0쌍, 정리를 기다리는 포털 공간 0개가 기록됐다. 이 실행에서 MySQL 삭제 권한을 사용할 기회는 없었다. VM에서 최근 실행 결과는 다음 명령으로 확인한다.
+
+```sh
+sudo journalctl -u department-budget --grep='Demo cleanup removed' -n 1 -o cat
+```
+
 관리자가 VM에 접속한 뒤 아래 명령을 실행하면 전용 계정에 필요한 권한을 설정한다. MySQL 관리 암호는 해당 터미널 입력창에서만 사용한다.
 
 ```sh
