@@ -154,3 +154,6 @@ textarea { font: 1rem/1.5 monospace; padding: .6rem; border: 1px solid #aab5c1; 
   .ledger form { gap: .65rem; }
   button { min-height: 44px; }
 }
+@media(max-width:23rem) {
+  .settings-fields:has(#workspace-organization[data-organization="BANK"]:not([hidden])) { grid-template-columns: minmax(0,1fr); }
+}

@@ -63,7 +63,8 @@ function render(state) {
   $("#older").prop("hidden",nextCursor === null);
   $("#newer").prop("hidden",cursors.length <= 1);
   $("#organization-choice").prop("hidden",true);
-  $("#workspace-organization").prop("hidden",false).text(({COMPANY:"일반 기업 경영지원팀",HOSPITAL:"병원 행정부서",BANK:"은행 경영지원팀"})[state.organization]);
+  $("#workspace-organization").prop("hidden",false).attr("data-organization",state.organization)
+    .text(({COMPANY:"일반 기업 경영지원팀",HOSPITAL:"병원 행정부서",BANK:"은행 경영지원팀"})[state.organization]);
   clearEstimate();
   $("#estimate-panel").prop("hidden",state.role !== "EMPLOYEE");
   const nextSteps = {EMPLOYEE:"교육비를 신청한 뒤 시연 역할을 부서장으로 바꾸세요. 약정 완료 후에는 실제 지출액으로 정산을 신청할 수 있습니다.",
