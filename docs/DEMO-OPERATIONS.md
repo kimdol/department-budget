@@ -18,7 +18,7 @@ V025에는 마지막 이용 시각이 없다. V026 적용 시 기존 공간에�
 
 ## 배포 검증과 포털 권한
 
-공개 배포 직전 새 기준으로 삭제 후보는 **0쌍**이었고 V026 적용 전후 부서·신청 건수는 같았다. 공개 Chrome에서 기존 신청함의 세 화면 폭, 지연 로딩, 도우미를 포함한 5건이 통과했다. 운영용 MySQL 정리 계정은 별도 등록을 기다린다. 로컬 MySQL에서는 전용 권한으로 만료 공간의 수신·요약을 삭제하고 다른 방문자의 두 기록을 보존했다. `python ops/test_portal.py --retention`으로 재현한다. [배포·용량 기록](measurements/deployment-retention.json) · [실제 Oracle 시험](https://github.com/kimdol/department-budget/actions/runs/44927202859)
+공개 배포 직전 새 기준으로 삭제 후보는 **0쌍**이었고 V026 적용 전후 부서·신청 건수는 같았다. 공개 Chrome에서 기존 신청함의 세 화면 폭, 지연 로딩, 도우미를 포함한 5건이 통과했다. 로컬 MySQL에서는 전용 권한으로 만료 공간의 수신·요약을 삭제하고 다른 방문자의 두 기록을 보존했다. `python ops/test_portal.py --retention`으로 재현한다. [배포·용량 기록](measurements/deployment-retention.json) · [실제 Oracle 시험](https://github.com/kimdol/department-budget/actions/runs/44927202859)
 
 2026년 11월 22일 03:15:01(한국 시간) 운영 로그에 삭제된 방문자 0쌍, 정리를 기다리는 포털 공간 0개가 기록됐다. 이 실행에서 MySQL 삭제 권한을 사용할 기회는 없었다. VM에서 최근 실행 결과는 다음 명령으로 확인한다.
 
@@ -26,12 +26,16 @@ V025에는 마지막 이용 시각이 없다. V026 적용 시 기존 공간에�
 sudo journalctl -u department-budget --grep='Demo cleanup removed' -n 1 -o cat
 ```
 
+같은 날 전용 계정의 첫 설정 이후 VM이 재부팅됐다. 비공개 설정 파일은 남았지만 저장된 자격 증명으로 접속하면 MySQL 오류 1045가 발생했다. 종전 설정 도구는 파일이 있으면 종료해 재실행할 수 없었다. 수정한 도구는 MySQL에서 계정 생성 여부를 확인한다. 이미 존재하는 계정은 저장된 자격 증명으로 접속해 신원을 확인한 뒤 필요한 권한만 다시 부여한다. 오류 메시지는 처리 단계와 오류 코드만 출력한다.
+
+설정을 재개한 뒤 웹 서비스의 OS 계정으로 MySQL에 접속했다. TLS 1.3을 사용했고, 두 표의 삭제와 식별 열 조회 권한을 확인했다. 각 표에 `WHERE 1=0`과 식별 열 조건을 적용해 DELETE를 실행한 뒤 ROLLBACK했다. 변경된 행은 양쪽 모두 0건이었다. 만료 방문자의 실제 운영 데이터 삭제는 만료 대상이 생기는 날 실행된다.
+
 관리자가 VM에 접속한 뒤 아래 명령을 실행하면 전용 계정에 필요한 권한을 설정한다. MySQL 관리 암호는 해당 터미널 입력창에서만 사용한다.
 
 ```sh
 sudo systemd-run --pty --wait --collect \
   -p EnvironmentFile=/etc/department-budget/portal.env \
-  /usr/bin/python3 /home/opc/department-budget-deploy/portal_cleanup_account.py
+  /usr/bin/python3 /opt/department-budget/tools/portal_cleanup_account.py
 ```
 
 ## 직원 업무 도우미

@@ -43,7 +43,16 @@
       "message": "Demo cleanup removed 0 visitor pairs; 0 portal spaces pending"
     },
     "retentionDays": 30,
-    "productionMysqlCleanupCredential": "pending",
+    "productionMysqlCleanupCredential": "verified",
+    "productionMysqlGrantCheck": {
+      "principal": "budget_cleanup",
+      "transport": "TLSv1.3",
+      "tableDelete": ["budget_event_receipt", "budget_claim_summary"],
+      "columnSelect": ["budget_event_receipt.event_id", "budget_claim_summary.workspace_id"],
+      "receiptRowsAffected": 0,
+      "summaryRowsAffected": 0,
+      "transaction": "ROLLBACK"
+    },
     "expiredProductionPairsDeletedDuringVerification": 0
   }
 }
