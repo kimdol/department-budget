@@ -63,6 +63,8 @@ CI에서는 실제 Oracle 원장과 송신함, HTTPS를 경유한 PHP 수신기,
 
 포털 수신 시험은 PHP 8.1 이상과 PDO MySQL 확장, MySQL 8.4의 mysql·mysqld를 PATH에 둔 뒤 저장소 루트에서 `python ops/test_portal.py`로 실행한다. 별도 임시 데이터 디렉터리와 루프백 포트를 사용하며 시험 종료 시 서버를 닫는다. 승인과 정산을 각각 두 번 보내 실제 수신 이력 2건과 정산액 180,000원을 확인했다. [수신 시험 원자료](docs/measurements/portal-receipts.json)
 
+같은 승인 이벤트를 겹쳐 보낸 시험에서는 MySQL 수신 이력 기본 키의 레코드 잠금 대기를 관측했다. 두 요청은 모두 HTTP 204를 반환했고 수신 이력과 포털 요약은 각각 1건이었다. [동시 수신 재현 절차와 잠금 기록](docs/MYSQL-CONCURRENT-RECEIPTS.md)
+
 Chrome, Java 21, Maven과 Node.js가 설치된 환경에서 `frontend` 디렉터리의 `npm ci`, `npm run build`, `npx playwright test`를 차례로 실행한다. 시험은 루프백 주소에서 전용 메모리 DB와 Tomcat을 시작한다.
 
 ## 실행과 검증

@@ -103,30 +103,44 @@ INSERT INTO budget_claim_summary VALUES('{ws}','{uuid.uuid4()}',1,'APPROVAL',200
                 raise AssertionError("다른 체험 공간의 포털 기록이 보존되지 않았습니다.")
             print("MySQL cleanup acknowledged; other visitor receipt and summary preserved.")
             return
-        webport = free_port()
-        address = "127.0.0.1:" + str(webport)
         php_args = [php]
         if os.name == "nt":
             php_args.extend(["-n", "-d", "extension_dir=" + str(Path(php).parent / "ext"), "-d", "extension=pdo_mysql"])
-        server = subprocess.Popen(php_args + ["-S", address, "-t", str(root / "portal")],
-            env=dict(os.environ, BUDGET_PORTAL_TOKEN=token, PORTAL_MYSQL_DSN=f"mysql:host=127.0.0.1;port={port};dbname=budget",
-                     PORTAL_MYSQL_USER="receiver", PORTAL_MYSQL_PASSWORD=receiver_password),
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        stack.callback(stop, server)
-        def send(data=None):
+        def send(data, address, timeout=3):
             body = json.dumps(data).encode() if data is not None else None
             request = Request("http://" + address + "/receive.php", body,
                               {"Authorization": "Bearer " + token, "Content-Type": "application/json"})
             try:
-                with urlopen(request, timeout=3) as response:
+                with urlopen(request, timeout=timeout) as response:
                     return response.status
             except HTTPError as error:
                 return error.code
             except URLError:
                 return 0
-        wait_for(lambda: send() == 405, server)
+        def start_receiver():
+            address = "127.0.0.1:" + str(free_port())
+            server = subprocess.Popen(php_args + ["-S", address, "-t", str(root / "portal")],
+                env=dict(os.environ, BUDGET_PORTAL_TOKEN=token, PORTAL_MYSQL_DSN=f"mysql:host=127.0.0.1;port={port};dbname=budget",
+                         PORTAL_MYSQL_USER="receiver", PORTAL_MYSQL_PASSWORD=receiver_password),
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            stack.callback(stop, server)
+            wait_for(lambda: send(None, address) == 405, server)
+            return address
+
+        address = start_receiver()
         approval = dict(eventId=str(uuid.uuid4()), claimId=str(uuid.uuid4()), workspaceId=str(uuid.uuid4()),
                         sequenceNo=1, eventType="APPROVAL", amount=200000)
+        if "--concurrency" in sys.argv:
+            from test_portal_concurrency import verify_concurrent_delivery
+
+            alternate = start_receiver()
+            with subprocess.Popen(cli + ["--user=root", "--unbuffered"], stdin=subprocess.PIPE,
+                                  stdout=subprocess.DEVNULL, env=env, text=True) as gate:
+                result = verify_concurrent_delivery(sql, gate, send, address, alternate, approval)
+            result["phpVersion"] = subprocess.check_output(
+                php_args + ["-r", "echo PHP_VERSION;"], text=True).strip()
+            print(json.dumps(result, indent=2))
+            return
         settlement = dict(approval, eventId=str(uuid.uuid4()), sequenceNo=2, eventType="SETTLEMENT", amount=180000)
         replay = settlement
         if "--importer" in sys.argv:
@@ -138,8 +152,9 @@ INSERT INTO budget_claim_summary VALUES('{ws}','{uuid.uuid4()}',1,'APPROVAL',200
             if canonical != normalize("json",json.dumps(settlement)):
                 raise AssertionError("JSON·CSV 메시지 불일치")
             replay = json.loads(canonical)
-        statuses = [send(settlement), send(approval), send(approval), send(settlement), send(replay),
-                    send(dict(settlement, amount=179999)), send(dict(approval, eventId=str(uuid.uuid4())))]
+        statuses = [send(message, address) for message in (
+            settlement, approval, approval, settlement, replay,
+            dict(settlement, amount=179999), dict(approval, eventId=str(uuid.uuid4())))]
         if statuses != [409, 204, 204, 204, 204, 409, 409]:
             raise AssertionError(statuses)
         def read_status(workspace, credential):

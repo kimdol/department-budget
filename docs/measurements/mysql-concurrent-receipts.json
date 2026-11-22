@@ -1,0 +1,131 @@
+{
+  "dateKst": "2026-11-22",
+  "platform": "Windows x64",
+  "python": "3.10.4",
+  "command": "python ops/test_portal.py --concurrency",
+  "runs": [
+    {
+      "mysqlVersion": "8.4.13",
+      "observerIsolation": "REPEATABLE-READ",
+      "eventId": "5cf06341-ca93-4c5a-8d43-3b68df629278",
+      "firstRequestConnectionAtGate": 16,
+      "rowLock": {
+        "requestingConnection": "18",
+        "blockingConnection": "16",
+        "requestingTransaction": "1314",
+        "blockingTransaction": "1312",
+        "reportedRequestingThread": "54",
+        "reportedBlockingThread": "54",
+        "table": "budget_event_receipt",
+        "index": "PRIMARY",
+        "lockType": "RECORD",
+        "waitingMode": "S,REC_NOT_GAP",
+        "waitingStatus": "WAITING",
+        "blockingMode": "X,REC_NOT_GAP",
+        "blockingStatus": "GRANTED",
+        "lockData": "'5cf06341-ca93-4c5a-8d43-3b68df629278'",
+        "waitingStatement": "INSERT INTO budget_event_receipt(event_id,payload_hash)"
+      },
+      "secondSubmissionToObservationMs": 47.0,
+      "visibleRowsWhileWaiting": {
+        "receipts": 0,
+        "summaries": 0
+      },
+      "identicalHttpStatuses": [
+        204,
+        204
+      ],
+      "conflictingHttpStatus": 409,
+      "finalRows": {
+        "receipts": 1,
+        "summaries": 1,
+        "sequence": 1,
+        "type": "APPROVAL",
+        "amount": 200000
+      },
+      "phpVersion": "8.4.28"
+    },
+    {
+      "mysqlVersion": "8.4.13",
+      "observerIsolation": "REPEATABLE-READ",
+      "eventId": "93b8d405-fbfd-4037-8e5d-ed81c04f3902",
+      "firstRequestConnectionAtGate": 16,
+      "rowLock": {
+        "requestingConnection": "18",
+        "blockingConnection": "16",
+        "requestingTransaction": "1314",
+        "blockingTransaction": "1312",
+        "reportedRequestingThread": "54",
+        "reportedBlockingThread": "54",
+        "table": "budget_event_receipt",
+        "index": "PRIMARY",
+        "lockType": "RECORD",
+        "waitingMode": "S,REC_NOT_GAP",
+        "waitingStatus": "WAITING",
+        "blockingMode": "X,REC_NOT_GAP",
+        "blockingStatus": "GRANTED",
+        "lockData": "'93b8d405-fbfd-4037-8e5d-ed81c04f3902'",
+        "waitingStatement": "INSERT INTO budget_event_receipt(event_id,payload_hash)"
+      },
+      "secondSubmissionToObservationMs": 47.0,
+      "visibleRowsWhileWaiting": {
+        "receipts": 0,
+        "summaries": 0
+      },
+      "identicalHttpStatuses": [
+        204,
+        204
+      ],
+      "conflictingHttpStatus": 409,
+      "finalRows": {
+        "receipts": 1,
+        "summaries": 1,
+        "sequence": 1,
+        "type": "APPROVAL",
+        "amount": 200000
+      },
+      "phpVersion": "8.4.28"
+    },
+    {
+      "mysqlVersion": "8.4.13",
+      "observerIsolation": "REPEATABLE-READ",
+      "eventId": "3277e42c-b82d-48b2-a805-4984905ad30d",
+      "firstRequestConnectionAtGate": 16,
+      "rowLock": {
+        "requestingConnection": "18",
+        "blockingConnection": "16",
+        "requestingTransaction": "1314",
+        "blockingTransaction": "1312",
+        "reportedRequestingThread": "54",
+        "reportedBlockingThread": "54",
+        "table": "budget_event_receipt",
+        "index": "PRIMARY",
+        "lockType": "RECORD",
+        "waitingMode": "S,REC_NOT_GAP",
+        "waitingStatus": "WAITING",
+        "blockingMode": "X,REC_NOT_GAP",
+        "blockingStatus": "GRANTED",
+        "lockData": "'3277e42c-b82d-48b2-a805-4984905ad30d'",
+        "waitingStatement": "INSERT INTO budget_event_receipt(event_id,payload_hash)"
+      },
+      "secondSubmissionToObservationMs": 31.0,
+      "visibleRowsWhileWaiting": {
+        "receipts": 0,
+        "summaries": 0
+      },
+      "identicalHttpStatuses": [
+        204,
+        204
+      ],
+      "conflictingHttpStatus": 409,
+      "finalRows": {
+        "receipts": 1,
+        "summaries": 1,
+        "sequence": 1,
+        "type": "APPROVAL",
+        "amount": 200000
+      },
+      "phpVersion": "8.4.28"
+    }
+  ]
+}
